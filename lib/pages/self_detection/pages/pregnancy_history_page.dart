@@ -1,0 +1,82 @@
+import 'package:bumilku_app/theme/theme.dart';
+import 'package:flutter/material.dart';
+import '../self_detection_controller.dart';
+import '../widgets/input_field.dart';
+
+class PregnancyHistoryPage extends StatelessWidget {
+  final SelfDetectionController controller;
+
+  const PregnancyHistoryPage({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Riwayat Kehamilan & Persalinan",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: tPrimaryColor,
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              children: [
+                CustomInputField(
+                  controller: controller.childrenCountController,
+                  label: "Jumlah anak yang sudah lahir",
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Jumlah anak harus diisi';
+                    if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    return null;
+                  },
+                ),
+                CustomInputField(
+                  controller: controller.firstPregnancyAgeController,
+                  label: "Usia bunda saat pertama kali hamil",
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Usia pertama hamil harus diisi';
+                    if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    return null;
+                  },
+                ),
+                CustomInputField(
+                  controller: controller.pregnancyGapController,
+                  label: "Jarak kehamilan dengan anak sebelumnya (bulan)",
+                  keyboardType: TextInputType.number,
+                ),
+                CustomInputField(
+                  controller: controller.obstetricHistoryController,
+                  label: "Riwayat obstetri (keguguran, SC, prematur, hamil ektopik, dll.)",
+                  keyboardType: TextInputType.text,
+                ),
+                CustomInputField(
+                  controller: controller.deliveryComplicationController,
+                  label: "Riwayat komplikasi persalinan (perdarahan, preeklamsia, dll.)",
+                  keyboardType: TextInputType.text,
+                ),
+                CustomInputField(
+                  controller: controller.babyWeightHistoryController,
+                  label: "Riwayat bayi lahir (berat badan rendah / besar >4 kg)",
+                  keyboardType: TextInputType.text,
+                ),
+                CustomInputField(
+                  controller: controller.previousPregnancyController,
+                  label: "Riwayat kehamilan sebelumnya (normal/bermasalah/janin meninggal)",
+                  keyboardType: TextInputType.text,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
