@@ -88,6 +88,9 @@ class _OnboardingMenstruasiPageState extends State<OnboardingMenstruasiPage> {
     if (edd != null) {
       await prefs.setString('currentEDD', edd!.toIso8601String());
     }
+// ... simpan records kamu seperti sekarang
+
+    await prefs.setBool('hasOnboardedMenstruasi', true);
 
     // 3) Arahkan ke halaman loading (nanti halaman loading yang akan push ke congrats)
     if (!mounted) return;
