@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bumilku_app/theme/theme.dart';
+import 'package:bumilku_app/pages/self_detection/data/complaint_education_data.dart';
 
 class ResultPage extends StatelessWidget {
   final Map<String, dynamic> riskResult;
@@ -15,7 +16,13 @@ class ResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final riskLevel = riskResult['riskLevel']?.toString().toLowerCase() ?? 'unknown';
     final score = riskResult['score'] ?? 0;
-    final details = riskResult['details'] ?? [];
+    final details = riskResult['details'] is List ? riskResult['details'] as List<String> : [];
+    final recommendation = riskResult['recommendation']?.toString() ?? 'Tidak ada rekomendasi spesifik';
+    final complaintEducations = riskResult['complaintEducations'] as Map<String, ComplaintEducation>?;
+    final riskEducation = riskResult['riskEducation'] as Map<String, String>?;
+    final generalTips = riskResult['generalTips'] as List<String>?;
+
+    final riskData = _getRiskData(riskLevel);
 
     return Scaffold(
       appBar: AppBar(
@@ -41,9 +48,11 @@ class ResultPage extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              kPrimaryColor.withValues(alpha:0.05),
-              kBackgroundColor.withValues(alpha:0.2),
+              riskData['color'].withValues(alpha:0.1),
+              kBackgroundColor.withValues(alpha:0.3),
+              Colors.white,
             ],
+            stops: const [0.0, 0.3, 1.0],
           ),
         ),
         child: SingleChildScrollView(
@@ -51,28 +60,49 @@ class ResultPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Header dengan ikon animasi
-              _buildRiskHeader(riskLevel, score),
+              // Header dengan animasi dan gradient
+              _buildAnimatedRiskHeader(riskLevel, score, riskData),
 
               const SizedBox(height: 24),
 
-              // Meter risiko visual
-              _buildRiskMeter(riskLevel, score),
+              // Meter risiko visual yang lebih menarik
+              // _buildEnhancedRiskMeter(riskLevel, score, riskData),
 
               const SizedBox(height: 24),
 
               // Detail faktor risiko (jika ada)
-              if (details.isNotEmpty) _buildRiskDetailsCard(details),
-
-              // Card rekomendasi
-              _buildRecommendationCard(),
+              if (details.isNotEmpty)
+                _buildAnimatedRiskDetailsCard(details),
 
               const SizedBox(height: 16),
 
+              // Card rekomendasi dengan desain modern
+              _buildModernRecommendationCard(recommendation, riskData),
+
+              const SizedBox(height: 16),
+
+              // EDUKASI RISIKO
+              if (riskEducation != null)
+                _buildAnimatedRiskEducationSection(riskEducation, riskData),
+
+              const SizedBox(height: 16),
+
+              // EDUKASI KELUHAN
+              if (complaintEducations != null && complaintEducations.isNotEmpty)
+                _buildAnimatedComplaintEducationSection(complaintEducations, riskData),
+
+              const SizedBox(height: 16),
+
+              // TIPS UMUM
+              if (generalTips != null)
+                _buildAnimatedGeneralTipsSection(generalTips, riskData),
+
               const SizedBox(height: 24),
 
-              // Tombol aksi
-              _buildActionButtons(context),
+              // Tombol aksi dengan desain modern
+              _buildModernActionButtons(context, riskData),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -80,171 +110,707 @@ class ResultPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRiskHeader(String riskLevel, int score) {
-    final riskData = _getRiskData(riskLevel);
+  Widget _buildAnimatedRiskHeader(String riskLevel, int score, Map<String, dynamic> riskData) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            riskData['color'].withValues(alpha:0.15),
+            riskData['color'].withValues(alpha:0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: riskData['color'].withValues(alpha:0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Icon dengan background circle
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: riskData['color'].withValues(alpha:0.1),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: riskData['color'].withValues(alpha:0.3),
+                width: 3,
+              ),
+            ),
+            child: Icon(
+              riskData['icon'],
+              size: 50,
+              color: riskData['color'],
+            ),
+          ),
 
-    return Column(
-      children: [
-        // Gunakan icon saja
-        Icon(
-          riskData['icon'],
-          size: 80,
-          color: riskData['color'],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          riskResult['riskLevel'] ?? 'Tidak diketahui',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: riskData['color'],
+          const SizedBox(height: 20),
+
+          // Status risiko dengan badge effect
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              color: riskData['color'],
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: riskData['color'].withValues(alpha:0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Text(
+              riskResult['riskLevel']?.toString().toUpperCase() ?? 'TIDAK DIKETAHUI',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "Skor: $score/100",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
+
+
+          const SizedBox(height: 16),
+
+          // Total poin dengan design modern
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha:0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Total Poin Risiko: ",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  TextSpan(
+                    text: "$score",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: riskData['color'],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          riskData['message'],
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 16,
-            height: 1.4,
+
+          const SizedBox(height: 16),
+
+          Container(
+            height: 8,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: _getRiskProgress(riskLevel),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          riskData['color'],
+                          riskData['color'].withValues(alpha:0.7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 10 - _getRiskProgress(riskLevel),
+                  child: const SizedBox(),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+
+          const SizedBox(height: 16),
+
+          // Pesan
+          Text(
+            riskData['message'],
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              height: 1.5,
+              color: Colors.grey[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildRiskMeter(String riskLevel, int score) {
+  Widget _buildEnhancedRiskMeter(String riskLevel, int score, Map<String, dynamic> riskData) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            const indicatorW = 4.0;
-            final barWidth = constraints.maxWidth;
-            final pct = (score.clamp(0, 100) / 100.0) * 0.9; // 0..0.9 sesuai logika kamu
-            final leftPx = ((barWidth - indicatorW) * pct)
-                .clamp(0.0, barWidth - indicatorW);
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              riskData['color'].withValues(alpha:0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Text(
+                "Status Kehamilan",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              const SizedBox(height: 16),
 
-            return Column(
-              children: [
-                Text(
-                  "Tingkat Risiko Kehamilan",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+              // Risk level indicator dengan progress bar
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      riskData['color'].withValues(alpha:0.1),
+                      riskData['color'].withValues(alpha:0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: riskData['color'].withValues(alpha:0.3),
+                    width: 2,
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                // Meter bar visual
-                Stack(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      height: 20,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Colors.green, Colors.orange, Colors.red],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                    Icon(
+                      riskData['icon'],
+                      color: riskData['color'],
+                      size: 28,
                     ),
-                    Positioned(
-                      left: leftPx, // <<-- sekarang double (px), bukan string
-                      top: -5,
-                      child: Container(
-                        width: indicatorW,
-                        height: 30,
-                        color: Colors.black,
+                    const SizedBox(width: 12),
+                    Text(
+                      riskLevel.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: riskData['color'],
                       ),
                     ),
                   ],
                 ),
+              ),
 
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text("Rendah", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                    Text("Sedang", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                    Text("Tinggi", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+
+              // Progress bar visual
+              Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: _getRiskProgress(riskLevel),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              riskData['color'],
+                              riskData['color'].withValues(alpha:0.7),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 10 - _getRiskProgress(riskLevel),
+                      child: const SizedBox(),
+                    ),
                   ],
                 ),
-              ],
-            );
-          },
+              ),
+
+              const SizedBox(height: 8),
+              Text(
+                "Skor Risiko: $score",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-
-  Widget _buildRecommendationCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.medical_services, color: kPrimaryColor),
-                const SizedBox(width: 8),
-                Text(
-                  "Rekomendasi",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
+  Widget _buildAnimatedComplaintEducationSection(Map<String, ComplaintEducation> educations, Map<String, dynamic> riskData) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOut,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                riskData['color'].withValues(alpha:0.03),
               ],
             ),
-
-            const SizedBox(height: 12),
-
-            Text(
-              riskResult['recommendation'] ?? 'Tidak ada rekomendasi spesifik',
-              style: const TextStyle(fontSize: 16, height: 1.5),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: riskData['color'].withValues(alpha:0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.medical_information, color: riskData['color']),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Edukasi Keluhan",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...educations.entries.map((entry) =>
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha:0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.value.title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: riskData['color'],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.lightbulb_outline, size: 16, color: Colors.amber),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  entry.value.tips,
+                                  style: const TextStyle(fontSize: 14, height: 1.4),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (entry.value.warning.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(Icons.warning, size: 16, color: Colors.red),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    entry.value.warning,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.red[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    )
+                ).toList(),
+              ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
 
-            if (riskResult['nextSteps'] != null) ...[
+  Widget _buildAnimatedRiskEducationSection(Map<String, String> riskEducation, Map<String, dynamic> riskData) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                riskData['color'].withValues(alpha:0.05),
+                Colors.white,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: riskData['color'].withValues(alpha:0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.health_and_safety, color: riskData['color']),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        riskEducation['title'] ?? "Edukasi Risiko",
+                        style: blackTextStyle.copyWith(
+                          fontSize: 16,
+                          fontWeight: bold
+                        ),
+                        maxLines: 2,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                if (riskEducation['description'] != null)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      riskEducation['description']!,
+                      style: const TextStyle(fontSize: 16, height: 1.5),
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                if (riskEducation['recommendations'] != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: riskData['color'],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: riskData['color'].withValues(alpha:0.2),
+                      ),
+                    ),
+                    child: Text(
+                      riskEducation['recommendations']!,
+                      style: whiteTextStyle
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedGeneralTipsSection(List<String> generalTips, Map<String, dynamic> riskData) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                riskData['color'].withValues(alpha:0.03),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: riskData['color'].withValues(alpha:0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.lightbulb_outline, color: riskData['color']),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Tips Kehamilan Sehat",
+                      style: blackTextStyle.copyWith(
+                        fontSize: 16,
+                        fontWeight: bold
+                      )
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...generalTips.asMap().entries.map((entry) =>
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 300 + (entry.key * 100)),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha:0.05),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: riskData['color'].withValues(alpha:0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.favorite,
+                              size: 16,
+                              color: riskData['color'],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              entry.value,
+                              style: const TextStyle(fontSize: 14, height: 1.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                ).toList(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernRecommendationCard(String recommendation, Map<String, dynamic> riskData) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              riskData['color'].withValues(alpha:0.08),
+              Colors.white,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: riskData['color'].withValues(alpha:0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.medical_services, color: riskData['color']),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Rekomendasi",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
-
-              Text(
-                "Langkah Selanjutnya:",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: riskData['color'].withValues(alpha:0.2),
+                  ),
+                ),
+                child: Text(
+                  recommendation,
+                  style: blackTextStyle,
+                  textAlign: TextAlign.center,
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-              const SizedBox(height: 8),
-
-              ...(riskResult['nextSteps'] as List<dynamic>).map((step) =>
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
+  Widget _buildAnimatedRiskDetailsCard(List<dynamic> details) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha:0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.warning, color: Colors.orange[700]),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "Faktor Risiko yang Teridentifikasi",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[800],
+                      ),
+                      maxLines: 2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ...details.asMap().entries.map((entry) =>
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 200 + (entry.key * 100)),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha:0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha:0.2),
+                      ),
+                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.arrow_forward, size: 16, color: kPrimaryColor),
-                        const SizedBox(width: 8),
+                        Icon(Icons.circle, size: 8, color: Colors.red),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            step.toString(),
+                            entry.value.toString(),
                             style: const TextStyle(fontSize: 14, height: 1.4),
                           ),
                         ),
@@ -253,171 +819,98 @@ class ResultPage extends StatelessWidget {
                   )
               ).toList(),
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRiskDetailsCard(List<dynamic> details) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.warning, color: Colors.orange[700]),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "Faktor Risiko yang Teridentifikasi",
-                    style: blackTextStyle.copyWith(
-                      fontSize: 14,
-                      fontWeight: bold
-                    )
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            ...details.map((detail) =>
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.circle, size: 8, color: Colors.red),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          detail.toString(),
-                          style: const TextStyle(fontSize: 14, height: 1.4),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-            ).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildModernActionButtons(BuildContext context, Map<String, dynamic> riskData) {
     return Column(
       children: [
-        // ElevatedButton(
-        //   style: ElevatedButton.styleFrom(
-        //     backgroundColor: kPrimaryColor,
-        //     foregroundColor: Colors.white,
-        //     minimumSize: const Size(double.infinity, 50),
-        //     shape: RoundedRectangleBorder(
-        //       borderRadius: BorderRadius.circular(12),
-        //     ),
-        //     elevation: 2,
-        //   ),
-        //   onPressed: () {
-        //     // Simpan atau bagikan hasil
-        //     _showSaveShareOptions(context);
-        //   },
-        //   child: const Row(
-        //     mainAxisAlignment: MainAxisAlignment.center,
-        //     children: [
-        //       Icon(Icons.share),
-        //       SizedBox(width: 8),
-        //       Text("Simpan & Bagikan Hasil"),
-        //     ],
-        //   ),
-        // ),
-
-        const SizedBox(height: 12),
-
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: kPrimaryColor,
-            side: BorderSide(color: kPrimaryColor),
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        // Tombol kembali
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                riskData['color'].withValues(alpha:0.1),
+                riskData['color'].withValues(alpha:0.05),
+              ],
             ),
+            borderRadius: BorderRadius.circular(15),
           ),
-          onPressed: onBack,
-          child: const Text("Kembali ke Deteksi Mandiri"),
-        ),
-
-        const SizedBox(height: 12),
-
-        if (_getRiskData(riskResult['riskLevel']?.toString().toLowerCase() ?? 'unknown')['showEmergency'] == true)
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 50),
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: riskData['color'],
+              side: BorderSide(color: riskData['color'], width: 2),
+              minimumSize: const Size(double.infinity, 55),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(15),
               ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            onPressed: () {
-              // Hubungi bantuan darurat
-              _contactEmergency(context);
-            },
+            onPressed: onBack,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.emergency),
+                Icon(Icons.arrow_back_rounded),
                 SizedBox(width: 8),
-                Text("Hubungi Bantuan Darurat"),
+                Text(
+                  "Kembali ke Deteksi Mandiri",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ],
             ),
           ),
-      ],
-    );
-  }
+        ),
 
-  void _showSaveShareOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.save, color: kPrimaryColor),
-                title: const Text("Simpan Hasil"),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Implementasi penyimpanan
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.share, color: kPrimaryColor),
-                title: const Text("Bagikan Hasil"),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Implementasi berbagi
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.print, color: kPrimaryColor),
-                title: const Text("Cetak Hasil"),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Implementasi cetak
-                },
-              ),
-            ],
-          ),
-        );
-      },
+        const SizedBox(height: 12),
+
+        // Tombol darurat (jika diperlukan)
+        // if (riskData['showEmergency'] == true)
+        //   Container(
+        //     decoration: BoxDecoration(
+        //       gradient: LinearGradient(
+        //         colors: [
+        //           Colors.red,
+        //           Colors.redAccent,
+        //         ],
+        //       ),
+        //       borderRadius: BorderRadius.circular(15),
+        //       boxShadow: [
+        //         BoxShadow(
+        //           color: Colors.red.withValues(alpha:0.4),
+        //           blurRadius: 10,
+        //           offset: const Offset(0, 3),
+        //         ),
+        //       ],
+        //     ),
+        //     child: ElevatedButton(
+        //       style: ElevatedButton.styleFrom(
+        //         backgroundColor: Colors.transparent,
+        //         shadowColor: Colors.transparent,
+        //         foregroundColor: Colors.white,
+        //         minimumSize: const Size(double.infinity, 55),
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(15),
+        //         ),
+        //         padding: const EdgeInsets.symmetric(vertical: 12),
+        //       ),
+        //       onPressed: () => _contactEmergency(context),
+        //       child: const Row(
+        //         mainAxisAlignment: MainAxisAlignment.center,
+        //         children: [
+        //           Icon(Icons.emergency_rounded),
+        //           SizedBox(width: 8),
+        //           Text(
+        //             "Hubungi Bantuan Darurat",
+        //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+      ],
     );
   }
 
@@ -425,23 +918,86 @@ class ResultPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Hubungi Bantuan Darurat"),
-          content: const Text("Apakah Anda ingin menghubungi layanan bantuan darurat?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white,
+                  Colors.red.withValues(alpha:0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Implementasi panggilan darurat
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text("Hubungi"),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha:0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.emergency, color: Colors.red, size: 30),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Hubungi Bantuan Darurat",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Apakah Anda ingin menghubungi layanan bantuan darurat?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey,
+                          side: BorderSide(color: Colors.grey),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Batal"),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Implementasi panggilan darurat
+                        },
+                        child: const Text("Hubungi"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -449,25 +1005,29 @@ class ResultPage extends StatelessWidget {
 
   Map<String, dynamic> _getRiskData(String riskLevel) {
     switch (riskLevel) {
+      case 'risiko tinggi':
       case 'tinggi':
         return {
           'color': Colors.red,
           'icon': Icons.warning_rounded,
-          'message': 'Hasil menunjukkan tingkat risiko tinggi. Segera konsultasi dengan dokter kandungan.',
+          'message': 'Hasil menunjukkan tingkat risiko tinggi. Segera konsultasi dengan dokter kandungan untuk penanganan lebih lanjut.',
           'showEmergency': true,
         };
+      case 'perlu perhatian':
       case 'sedang':
         return {
           'color': Colors.orange,
           'icon': Icons.info_rounded,
-          'message': 'Hasil menunjukkan tingkat risiko sedang. Perhatikan kondisi dan lakukan pemeriksaan rutin.',
+          'message': 'Hasil menunjukkan tingkat risiko sedang. Perhatikan kondisi dan lakukan pemeriksaan rutin ke dokter kandungan.',
           'showEmergency': false,
         };
+      case 'kehamilan normal':
+      case 'normal':
       case 'rendah':
         return {
           'color': Colors.green,
           'icon': Icons.check_circle_rounded,
-          'message': 'Hasil menunjukkan tingkat risiko rendah. Pertahankan pola hidup sehat dan rutin kontrol.',
+          'message': 'Hasil menunjukkan tingkat risiko rendah. Pertahankan pola hidup sehat dan rutin kontrol kehamilan.',
           'showEmergency': false,
         };
       default:
@@ -477,6 +1037,23 @@ class ResultPage extends StatelessWidget {
           'message': 'Tidak dapat menentukan tingkat risiko. Silakan coba lagi atau konsultasi dengan dokter.',
           'showEmergency': false,
         };
+    }
+  }
+
+  int _getRiskProgress(String riskLevel) {
+    switch (riskLevel) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return 8;
+      case 'perlu perhatian':
+      case 'sedang':
+        return 5;
+      case 'kehamilan normal':
+      case 'normal':
+      case 'rendah':
+        return 2;
+      default:
+        return 1;
     }
   }
 }

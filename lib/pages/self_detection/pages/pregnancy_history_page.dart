@@ -23,9 +23,19 @@ class PregnancyHistoryPage extends StatelessWidget {
               color: tPrimaryColor,
             ),
           ),
+          const SizedBox(height: 8),
+          // Informasi tambahan untuk membantu pengguna
+          Text(
+            "Isilah sesuai dengan riwayat kehamilan dan persalinan sebelumnya",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 12),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.symmetric(vertical: 18),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
                 CustomInputField(
                   controller: controller.childrenCountController,
@@ -37,40 +47,77 @@ class PregnancyHistoryPage extends StatelessWidget {
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
                 CustomInputField(
                   controller: controller.firstPregnancyAgeController,
                   label: "Usia bunda saat pertama kali hamil",
                   keyboardType: TextInputType.number,
+                  suffixText: "tahun",
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Usia pertama hamil harus diisi';
                     if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
                 CustomInputField(
                   controller: controller.pregnancyGapController,
-                  label: "Jarak kehamilan dengan anak sebelumnya (bulan)",
+                  label: "Jarak kehamilan dengan anak sebelumnya",
                   keyboardType: TextInputType.number,
+                  suffixText: "bulan",
                 ),
+                const SizedBox(height: 10),
                 CustomInputField(
                   controller: controller.obstetricHistoryController,
                   label: "Riwayat obstetri (keguguran, SC, prematur, hamil ektopik, dll.)",
                   keyboardType: TextInputType.text,
+                  maxLines: 2,
                 ),
+                const SizedBox(height: 10),
                 CustomInputField(
                   controller: controller.deliveryComplicationController,
                   label: "Riwayat komplikasi persalinan (perdarahan, preeklamsia, dll.)",
                   keyboardType: TextInputType.text,
+                  maxLines: 2,
                 ),
+                const SizedBox(height: 10),
                 CustomInputField(
                   controller: controller.babyWeightHistoryController,
                   label: "Riwayat bayi lahir (berat badan rendah / besar >4 kg)",
                   keyboardType: TextInputType.text,
                 ),
+                const SizedBox(height: 10),
                 CustomInputField(
                   controller: controller.previousPregnancyController,
                   label: "Riwayat kehamilan sebelumnya (normal/bermasalah/janin meninggal)",
                   keyboardType: TextInputType.text,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 10),
+                // Informasi contoh pengisian
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[100]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Contoh pengisian:",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: tPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text("• Riwayat obstetri: Pernah keguguran 1x, SC 1x", style: TextStyle(fontSize: 12)),
+                      Text("• Komplikasi: Perdarahan pasca persalinan", style: TextStyle(fontSize: 12)),
+                      Text("• Bayi lahir: BBLR 2.3 kg", style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
                 ),
               ],
             ),

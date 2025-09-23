@@ -27,18 +27,39 @@ class VitalDataPage extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
-                CustomInputField(
-                  controller: controller.bloodPressureController,
-                  label: "Tekanan darah (mmHg)",
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Tekanan darah harus diisi';
-                    if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
-                    return null;
-                  },
+                // Tekanan darah sistolik dan diastolik dalam satu baris
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomInputField(
+                        controller: controller.systolicBpController,
+                        label: "Sistolik (mmHg)",
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Sistolik harus diisi';
+                          if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: CustomInputField(
+                        controller: controller.diastolicBpController,
+                        label: "Diastolik (mmHg)",
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Diastolik harus diisi';
+                          if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
+                // const SizedBox(height: 16),
                 CustomInputField(
                   controller: controller.temperatureController,
                   label: "Suhu tubuh (°C)",
@@ -49,6 +70,7 @@ class VitalDataPage extends StatelessWidget {
                     return null;
                   },
                 ),
+                // const SizedBox(height: 16),
                 CustomInputField(
                   controller: controller.pulseController,
                   label: "Nadi (x/menit)",
@@ -59,6 +81,7 @@ class VitalDataPage extends StatelessWidget {
                     return null;
                   },
                 ),
+                // const SizedBox(height: 16),
                 CustomInputField(
                   controller: controller.respirationController,
                   label: "Frekuensi napas (x/menit)",
@@ -68,6 +91,33 @@ class VitalDataPage extends StatelessWidget {
                     if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
                     return null;
                   },
+                ),
+                // const SizedBox(height: 16),
+                // Informasi nilai normal
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[100]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Nilai Normal:",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: tPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text("• Tekanan darah: 90/60 - 139/89 mmHg", style: TextStyle(fontSize: 12)),
+                      Text("• Suhu tubuh: 36 - 37.5°C", style: TextStyle(fontSize: 12)),
+                      Text("• Nadi: 60 - 100 x/menit", style: TextStyle(fontSize: 12)),
+                      Text("• Frekuensi napas: 16 - 20 x/menit", style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
                 ),
               ],
             ),

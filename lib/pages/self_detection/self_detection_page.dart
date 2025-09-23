@@ -59,20 +59,47 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
     }
   }
 
+  // Future<void> _startRiskFlow() async {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(builder: (_) => const LoadingPage()),
+  //   );
+  //
+  //   await Future.delayed(const Duration(milliseconds: 700));
+  //   _controller.calculateRisk();
+  //
+  //   // TAMBAHKAN DATA EDUKASI KE riskResult
+  //   final Map<String, dynamic> riskResult = {
+  //     'riskLevel': _normalizeRiskLevel(_controller.result),
+  //     'score': _controller.score.round(),
+  //     'recommendation': _controller.recommendation,
+  //     'details': _controller.redFlagReasons,
+  //     // TAMBAH DATA EDUKASI DI SINI:
+  //     'complaintEducations': _controller.selectedComplaintEducations,
+  //     'riskEducation': _controller.riskLevelEducation,
+  //     'generalTips': _controller.getGeneralPregnancyTips(),
+  //   };
+  //
+  //   if (!mounted) return;
+  //
+  //   Navigator.of(context).pushReplacement(
+  //     MaterialPageRoute(
+  //       builder: (_) => ResultPage(
+  //         riskResult: riskResult,
+  //         onBack: () => Navigator.of(context).pop(),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Future<void> _startRiskFlow() async {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const LoadingPage()),
     );
 
     await Future.delayed(const Duration(milliseconds: 700));
-    _controller.calculateRisk();
 
-    final Map<String, dynamic> riskResult = {
-      'riskLevel': _normalizeRiskLevel(_controller.result),
-      'score': _controller.score.round(), // Skor numerik
-      'recommendation': _controller.recommendation,
-      'details': _controller.getRiskFactors(), // Faktor risiko detail
-    };
+    // Hitung risiko berdasarkan formula yang benar
+    final Map<String, dynamic> riskResult = _controller.calculateRiskBasedOnFormula();
 
     if (!mounted) return;
 
