@@ -113,6 +113,8 @@ class VitalDataPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text("• Tekanan darah: 90/60 - 139/89 mmHg", style: TextStyle(fontSize: 12)),
+                      Text("   - Sistolik (atas): 90-139 mmHg", style: TextStyle(fontSize: 12)),
+                      Text("   - Diastolik (bawah): 60-89 mmHg", style: TextStyle(fontSize: 12)),
                       Text("• Suhu tubuh: 36 - 37.5°C", style: TextStyle(fontSize: 12)),
                       Text("• Nadi: 60 - 100 x/menit", style: TextStyle(fontSize: 12)),
                       Text("• Frekuensi napas: 16 - 20 x/menit", style: TextStyle(fontSize: 12)),

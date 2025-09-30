@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "333438066571",
+    "project_id": "bumilku-e9cd8",
+    "storage_bucket": "bumilku-e9cd8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:333438066571:android:f447e97eb49cf0c785598e",
+        "android_client_info": {
+          "package_name": "com.gloriyan.bumilku_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkKxXuwWtZcf2dD8jVI2wqILElgLxIL5M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

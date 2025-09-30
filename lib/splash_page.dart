@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:bumilku_app/services/medis_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/half_circle_painter.dart';
 import '../theme/theme.dart';
@@ -18,36 +19,46 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      getInit();
+      _checkAuthAndNavigate();
     });
   }
 
-  Future<void> getInit() async {
-    // jalanin delay dan inisialisasi prefs bersamaan
-    final prefsFuture = SharedPreferences.getInstance();
-    final delayFuture = Future.delayed(const Duration(seconds: 3));
-    final prefs = await prefsFuture;
-    await delayFuture;
+  Future<void> _checkAuthAndNavigate() async {
+    final auth = FirebaseAuth.instance;
+    final user = auth.currentUser;
+
+    print("=== [SplashPage] Start check ===");
+    print("CurrentUser: ${user?.uid}");
+
+    await Future.delayed(const Duration(seconds: 2)); // splash delay
 
     if (!mounted) return;
 
-    // cek flag utama
-    final hasOnboarded = prefs.getBool('hasOnboardedMenstruasi') ?? false;
+    if (user == null) {
+      print("=== [SplashPage] User belum login → ke /login");
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    } else {
+      try {
+        // 🔑 perbaikan: cek data medis berdasarkan userId
+        print("=== [SplashPage] Cek data medis untuk userId: ${user.uid}");
+        final medis = await MedisServices().getActiveMedis(user.uid);
 
-    // opsi fallback: kalau ada data lama juga dianggap sudah onboarding
-    final recordsJson = prefs.getString('pregnancyRecords');
-    final hasRecords = recordsJson != null && recordsJson != '[]';
-
-    final goHome = hasOnboarded || hasRecords;
-
-    // hapus seluruh stack supaya tidak bisa back ke splash/onboarding
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      goHome ? '/home' : '/onboarding',
-          (route) => false,
-    );
+        if (medis != null) {
+          print("=== [SplashPage] User punya medis aktif ===");
+          print("MedisId: ${medis.id}");
+          print("babyName: ${medis.babyName}");
+          print("EDD: ${medis.edd}");
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+        } else {
+          print("=== [SplashPage] Tidak ada data medis aktif → ke onboarding");
+          Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
+        }
+      } catch (e) {
+        print("!!! [SplashPage] ERROR ambil data medis: $e");
+        Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
+      }
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +72,8 @@ class _SplashPageState extends State<SplashPage> {
             child: CustomPaint(
               size: const Size(100, 100),
               painter: HalfCirclePainter(
-                  color: const Color(
-                      0x33B8FFD8)), // Gunakan painter yang telah Anda buat
+                color: const Color(0x33B8FFD8),
+              ),
             ),
           ),
           Positioned(
@@ -71,8 +82,8 @@ class _SplashPageState extends State<SplashPage> {
             child: CustomPaint(
               size: const Size(100, 100),
               painter: HalfCirclePainter(
-                  color: const Color(
-                      0x3396FFC6)), // Gunakan painter yang telah Anda buat
+                color: const Color(0x3396FFC6),
+              ),
             ),
           ),
           Center(
@@ -96,9 +107,7 @@ class _SplashPageState extends State<SplashPage> {
                   backgroundColor: kBoxGreenColor,
                   semanticsLabel: 'Loading...',
                 ),
-                const SizedBox(
-                  height: 80,
-                ),
+                const SizedBox(height: 80),
               ],
             ),
           ),

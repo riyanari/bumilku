@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bumilku_app/theme/theme.dart';
 
-class LoadingPage extends StatelessWidget {
-  const LoadingPage({super.key});
+class LoadingSelfDetectionPage extends StatelessWidget {
+  const LoadingSelfDetectionPage({super.key});
 
   @override
   Widget build(BuildContext context) {

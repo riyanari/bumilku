@@ -5,11 +5,13 @@ import 'package:bumilku_app/pages/self_detection/data/complaint_education_data.d
 class ResultPage extends StatelessWidget {
   final Map<String, dynamic> riskResult;
   final VoidCallback onBack;
+  final VoidCallback onSave;
 
   const ResultPage({
     super.key,
     required this.riskResult,
     required this.onBack,
+    required this.onSave,
   });
 
   @override
@@ -41,6 +43,16 @@ class ResultPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: onBack,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              _showSaveConfirmation(context); // ✅ Konfirmasi save di sini
+            },
+            tooltip: "Simpan Hasil",
+          ),
+        ],
+        // ❌ HAPUS ACTIONS (button save di appbar)
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -62,11 +74,6 @@ class ResultPage extends StatelessWidget {
             children: [
               // Header dengan animasi dan gradient
               _buildAnimatedRiskHeader(riskLevel, score, riskData),
-
-              const SizedBox(height: 24),
-
-              // Meter risiko visual yang lebih menarik
-              // _buildEnhancedRiskMeter(riskLevel, score, riskData),
 
               const SizedBox(height: 24),
 
@@ -181,7 +188,6 @@ class ResultPage extends StatelessWidget {
             ),
           ),
 
-
           const SizedBox(height: 16),
 
           // Total poin dengan design modern
@@ -224,6 +230,7 @@ class ResultPage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          // Progress bar visual
           Container(
             height: 8,
             decoration: BoxDecoration(
@@ -268,124 +275,6 @@ class ResultPage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildEnhancedRiskMeter(String riskLevel, int score, Map<String, dynamic> riskData) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              riskData['color'].withValues(alpha:0.05),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Text(
-                "Status Kehamilan",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Risk level indicator dengan progress bar
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      riskData['color'].withValues(alpha:0.1),
-                      riskData['color'].withValues(alpha:0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: riskData['color'].withValues(alpha:0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      riskData['icon'],
-                      color: riskData['color'],
-                      size: 28,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      riskLevel.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: riskData['color'],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Progress bar visual
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: _getRiskProgress(riskLevel),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              riskData['color'],
-                              riskData['color'].withValues(alpha:0.7),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 10 - _getRiskProgress(riskLevel),
-                      child: const SizedBox(),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 8),
-              Text(
-                "Skor Risiko: $score",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -548,8 +437,8 @@ class ResultPage extends StatelessWidget {
                       child: Text(
                         riskEducation['title'] ?? "Edukasi Risiko",
                         style: blackTextStyle.copyWith(
-                          fontSize: 16,
-                          fontWeight: bold
+                            fontSize: 16,
+                            fontWeight: bold
                         ),
                         maxLines: 2,
                       ),
@@ -582,8 +471,8 @@ class ResultPage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      riskEducation['recommendations']!,
-                      style: whiteTextStyle
+                        riskEducation['recommendations']!,
+                        style: whiteTextStyle
                     ),
                   ),
               ],
@@ -630,11 +519,11 @@ class ResultPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      "Tips Kehamilan Sehat",
-                      style: blackTextStyle.copyWith(
-                        fontSize: 16,
-                        fontWeight: bold
-                      )
+                        "Tips Kehamilan Sehat",
+                        style: blackTextStyle.copyWith(
+                            fontSize: 16,
+                            fontWeight: bold
+                        )
                     ),
                   ],
                 ),
@@ -828,6 +717,46 @@ class ResultPage extends StatelessWidget {
   Widget _buildModernActionButtons(BuildContext context, Map<String, dynamic> riskData) {
     return Column(
       children: [
+        // ✅ TOMBOL SAVE (hanya yang di bawah)
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.blue.withValues(alpha:0.1),
+                Colors.blue.withValues(alpha:0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.blue,
+              side: const BorderSide(color: Colors.blue, width: 2),
+              minimumSize: const Size(double.infinity, 55),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed: () {
+              _showSaveConfirmation(context);
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.save_alt_rounded),
+                SizedBox(width: 8),
+                Text(
+                  "Simpan Hasil Deteksi",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
         // Tombol kembali
         Container(
           decoration: BoxDecoration(
@@ -863,58 +792,11 @@ class ResultPage extends StatelessWidget {
             ),
           ),
         ),
-
-        const SizedBox(height: 12),
-
-        // Tombol darurat (jika diperlukan)
-        // if (riskData['showEmergency'] == true)
-        //   Container(
-        //     decoration: BoxDecoration(
-        //       gradient: LinearGradient(
-        //         colors: [
-        //           Colors.red,
-        //           Colors.redAccent,
-        //         ],
-        //       ),
-        //       borderRadius: BorderRadius.circular(15),
-        //       boxShadow: [
-        //         BoxShadow(
-        //           color: Colors.red.withValues(alpha:0.4),
-        //           blurRadius: 10,
-        //           offset: const Offset(0, 3),
-        //         ),
-        //       ],
-        //     ),
-        //     child: ElevatedButton(
-        //       style: ElevatedButton.styleFrom(
-        //         backgroundColor: Colors.transparent,
-        //         shadowColor: Colors.transparent,
-        //         foregroundColor: Colors.white,
-        //         minimumSize: const Size(double.infinity, 55),
-        //         shape: RoundedRectangleBorder(
-        //           borderRadius: BorderRadius.circular(15),
-        //         ),
-        //         padding: const EdgeInsets.symmetric(vertical: 12),
-        //       ),
-        //       onPressed: () => _contactEmergency(context),
-        //       child: const Row(
-        //         mainAxisAlignment: MainAxisAlignment.center,
-        //         children: [
-        //           Icon(Icons.emergency_rounded),
-        //           SizedBox(width: 8),
-        //           Text(
-        //             "Hubungi Bantuan Darurat",
-        //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
       ],
     );
   }
 
-  void _contactEmergency(BuildContext context) {
+  void _showSaveConfirmation(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
@@ -926,7 +808,7 @@ class ResultPage extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   Colors.white,
-                  Colors.red.withValues(alpha:0.05),
+                  Colors.blue.withValues(alpha:0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
@@ -938,14 +820,14 @@ class ResultPage extends StatelessWidget {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha:0.1),
+                    color: Colors.blue.withValues(alpha:0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.emergency, color: Colors.red, size: 30),
+                  child: const Icon(Icons.save_alt_rounded, color: Colors.blue, size: 30),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  "Hubungi Bantuan Darurat",
+                  "Simpan Hasil Deteksi",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -954,7 +836,7 @@ class ResultPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  "Apakah Anda ingin menghubungi layanan bantuan darurat?",
+                  "Apakah Anda ingin menyimpan hasil deteksi ini? Hasil akan disimpan dalam riwayat deteksi.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, height: 1.4),
                 ),
@@ -965,7 +847,7 @@ class ResultPage extends StatelessWidget {
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.grey,
-                          side: BorderSide(color: Colors.grey),
+                          side: const BorderSide(color: Colors.grey),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -979,7 +861,7 @@ class ResultPage extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -988,9 +870,10 @@ class ResultPage extends StatelessWidget {
                         ),
                         onPressed: () {
                           Navigator.pop(context);
-                          // Implementasi panggilan darurat
+                          onSave();
+                          _showSaveSuccess(context);
                         },
-                        child: const Text("Hubungi"),
+                        child: const Text("Simpan"),
                       ),
                     ),
                   ],
@@ -1000,6 +883,24 @@ class ResultPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showSaveSuccess(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white),
+            SizedBox(width: 8),
+            Text("Hasil deteksi berhasil disimpan!"),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 

@@ -61,6 +61,13 @@ class _PertanyaanUmumPageState extends State<PertanyaanUmumPage> {
     ],
     'Gejala & Perubahan Tubuh': [
       {
+        'title': 'Bagaimana bisa tahu kalau saya hamil?',
+        'desc':
+        'Tanda Tidak Pasti (Presumtif): haid terlambat, mual muntah, payudara nyeri/membesar, sering buang air kecil, cepat lelah/pusing/mengantuk, perubahan nafsu makan. Tanda ini belum pasti karena bisa disebabkan faktor lain.'
+            '\n\nTanda Kemungkinan (Probabel): rahim membesar, perubahan pada leher rahim, tes kehamilan positif. Mengarah ke hamil tapi masih bisa salah.'
+            '\n\nTanda Pasti (Positif): terlihat janin dengan USG, terdengar detak jantung janin, teraba bagian tubuh janin. Inilah tanda yang memastikan hamil.',
+      },
+      {
         'title': 'Bercak saat hamil, apa perlu saya khawatirkan?',
         'desc':
         'Bercak atau flek saat hamil bisa terjadi dan tidak selalu berbahaya. Pada awal kehamilan, bercak ringan kadang normal, misalnya karena proses menempelkan janin di dinding rahim. Namun bunda tetap perlu waspada. Bila bercak berwarna merah segar, keluar banyak, disertai nyeri perut, pusing, atau keluar gumpalan darah, sebaiknya segera periksa ke tenaga kesehatan. Bercak seperti ini bisa menjadi tanda masalah pada kehamilan. Jadi, jangan panik dulu, tapi tetap perhatikan jumlah, warna, dan keluhan lain yang menyertai. Untuk memastikan kondisi bunda dan janin aman, periksakan diri',
@@ -113,8 +120,20 @@ class _PertanyaanUmumPageState extends State<PertanyaanUmumPage> {
             'dan menentukan cara persalinan yang paling aman. Jangan panik, '
             'tetap jaga kesehatan dan ikuti anjuran pemeriksaan teratur.',
       },
+      {
+        'title': 'Apakah aman hamil setelah usia 35 tahun?',
+        'desc':
+        'Hamil setelah usia 35 tahun masih bisa aman, banyak bunda yang sehat dan melahirkan normal di usia ini. '
+            'Namun, memang ada risiko yang sedikit lebih tinggi dibanding hamil di usia lebih muda, seperti tekanan darah tinggi, '
+            'diabetes saat hamil, keguguran, atau bayi lahir dengan kelainan kromosom. '
+            'Selain itu, kemungkinan persalinan dengan operasi caesar juga lebih besar.'
+            '\n\nWalaupun begitu, risiko ini bisa dikurangi dengan perencanaan kehamilan yang baik, rutin kontrol ke fasilitas kesehatan, '
+            'makan bergizi, istirahat cukup, dan menjaga gaya hidup sehat. Dengan pengawasan medis yang tepat, '
+            'hamil setelah usia 35 tahun tetap bisa berlangsung dengan aman bagi bunda maupun bayi.',
+      },
     ],
   };
+
 
   final Map<String, bool> _categoryExpansionState = {};
 
@@ -196,103 +215,118 @@ class _PertanyaanUmumPageState extends State<PertanyaanUmumPage> {
               ),
             ),
           ),
+          // Bagian body: Expanded -> SingleChildScrollView
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  // Show all questions if searching, otherwise show categorized
-                  _searchQuery.isNotEmpty
-                      ? Column(
-                    children: _getAllQuestions()
-                        .map(
-                          (pertanyaan) => Column(
-                        children: [
-                          InfoContainerCustom(
-                            title: pertanyaan['title']!,
-                            desc: pertanyaan['desc']!,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                  // Mode Search
+                  if (_searchQuery.isNotEmpty)
+                    _getAllQuestions().isNotEmpty
+                        ? Column(
+                      children: _getAllQuestions()
+                          .map(
+                            (pertanyaan) => Column(
+                          children: [
+                            InfoContainerCustom(
+                              title: pertanyaan['title']!,
+                              desc: pertanyaan['desc']!,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      )
+                          .toList(),
+                    )
+                        : Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: Text(
+                        "Tidak ditemukan pertanyaan.\nCoba dengan keyword lain.",
+                        textAlign: TextAlign.center,
+                        style: primaryTextStyle.copyWith(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     )
-                        .toList(),
-                  )
-                      : Column(
-                    children: _categorizedQuestions.entries.map((entry) {
-                      final category = entry.key;
-                      final questions = _filterQuestions(entry.value);
+                  else
+                  // Mode Normal (Kategori)
+                    Column(
+                      children: _categorizedQuestions.entries.map((entry) {
+                        final category = entry.key;
+                        final questions = _filterQuestions(entry.value);
 
-                      if (questions.isEmpty) return const SizedBox.shrink();
+                        if (questions.isEmpty) return const SizedBox.shrink();
 
-                      return Column(
-                        children: [
-                          // Category Header
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _categoryExpansionState[category] =
-                                !_categoryExpansionState[category]!;
-                              });
-                            },
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor.withValues(alpha:0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    category,
-                                    style: primaryTextStyle.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Icon(
-                                    _categoryExpansionState[category]!
-                                        ? Icons.expand_less
-                                        : Icons.expand_more,
-                                    color: kPrimaryColor,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Questions in this category
-                          if (_categoryExpansionState[category]!)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 18.0),
-                              child: Column(
-                                children: questions
-                                    .map(
-                                      (pertanyaan) => Column(
-                                    children: [
-                                      InfoContainerCustom(
-                                        title: pertanyaan['title']!,
-                                        desc: pertanyaan['desc']!,
+                        return Column(
+                          children: [
+                            // Header Kategori
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _categoryExpansionState[category] =
+                                  !_categoryExpansionState[category]!;
+                                });
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor.withValues(alpha:0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      category,
+                                      style: primaryTextStyle.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      const SizedBox(height: 12),
-                                    ],
-                                  ),
-                                )
-                                    .toList(),
+                                    ),
+                                    Icon(
+                                      _categoryExpansionState[category]!
+                                          ? Icons.expand_less
+                                          : Icons.expand_more,
+                                      color: kPrimaryColor,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          const SizedBox(height: 16),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                            const SizedBox(height: 8),
+                            if (_categoryExpansionState[category]!)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 18.0),
+                                child: Column(
+                                  children: questions
+                                      .map(
+                                        (pertanyaan) => Column(
+                                      children: [
+                                        InfoContainerCustom(
+                                          title: pertanyaan['title']!,
+                                          desc: pertanyaan['desc']!,
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                    ),
+                                  )
+                                      .toList(),
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      }).toList(),
+                    ),
                 ],
               ),
             ),
           ),
+
         ],
       ),
     );

@@ -39,7 +39,7 @@ class HealthHistoryPage extends StatelessWidget {
               children: [
                 CustomInputField(
                   controller: controller.diseaseHistoryController,
-                  label: "Penyakit yang pernah/sedang diderita (hipertensi, diabetes, jantung, dll.)",
+                  label: "Penyakit yang pernah/sedang diderita (tekanan darah tinggi, diabetes, jantung, dll.)",
                   keyboardType: TextInputType.text,
                 ),
                 
@@ -80,10 +80,10 @@ class HealthHistoryPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text("• Penyakit: Hipertensi sejak 2020", style: TextStyle(fontSize: 12)),
+                      Text("• Penyakit: tekanan darah tinggi sejak 2020", style: TextStyle(fontSize: 12)),
                       Text("• Alergi: Alergi antibiotik Amoxicillin", style: TextStyle(fontSize: 12)),
                       Text("• Operasi: Usus buntu tahun 2018", style: TextStyle(fontSize: 12)),
-                      Text("• Obat: Obat hipertensi rutin, vitamin prenatal", style: TextStyle(fontSize: 12)),
+                      Text("• Obat: Obat tekanan darah tinggi rutin, vitamin prenatal", style: TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),

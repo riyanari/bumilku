@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bumilku_app/pages/self_detection/pages/complaints_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/health_history_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/lifestyle_page.dart';
@@ -10,7 +12,9 @@ import 'package:bumilku_app/pages/self_detection/self_detection_controller.dart'
 import 'package:bumilku_app/pages/self_detection/widgets/page_indicator.dart';
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'detection_history_page.dart';
 import 'loading_self_detection.dart';
 
 class SelfDetectionPageView extends StatefulWidget {
@@ -91,15 +95,55 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   //   );
   // }
 
+  Future<void> _saveDetectionResult(Map<String, dynamic> riskResult) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> existingResults = prefs.getStringList('detection_results') ?? [];
+
+      print('📊 Sebelum save: ${existingResults.length} hasil tersimpan');
+
+      // Simpan hanya data essential (tanpa ComplaintEducation)
+      final newResult = {
+        "date": DateTime.now().toIso8601String(),
+        "data": {
+          "riskLevel": riskResult['riskLevel']?.toString() ?? 'unknown',
+          "score": riskResult['score'] ?? 0,
+          "details": riskResult['details'] is List ? riskResult['details'] : [],
+          "recommendation": riskResult['recommendation']?.toString() ?? 'Tidak ada rekomendasi',
+          // Skip complaintEducations karena complex object
+          "riskEducation": riskResult['riskEducation'] is Map ? riskResult['riskEducation'] : null,
+          "generalTips": riskResult['generalTips'] is List ? riskResult['generalTips'] : null,
+        },
+      };
+
+      print('✅ Data baru disiapkan: ${newResult["date"]}');
+
+      existingResults.add(jsonEncode(newResult));
+      await prefs.setStringList('detection_results', existingResults);
+
+      final savedResults = prefs.getStringList('detection_results') ?? [];
+      print('📊 Setelah save: ${savedResults.length} hasil tersimpan');
+
+    } catch (e) {
+      print('❌ Error menyimpan data: $e');
+    }
+  }
+
   Future<void> _startRiskFlow() async {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LoadingPage()),
+      MaterialPageRoute(builder: (_) => const LoadingSelfDetectionPage()),
     );
 
     await Future.delayed(const Duration(milliseconds: 700));
 
     // Hitung risiko berdasarkan formula yang benar
     final Map<String, dynamic> riskResult = _controller.calculateRiskBasedOnFormula();
+
+    print('🔍 Risk Result Data:');
+    print('Risk Level: ${riskResult['riskLevel']}');
+    print('Score: ${riskResult['score']}');
+    print('Details: ${riskResult['details']}');
+    print('Recommendation: ${riskResult['recommendation']}');
 
     if (!mounted) return;
 
@@ -108,6 +152,12 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
         builder: (_) => ResultPage(
           riskResult: riskResult,
           onBack: () => Navigator.of(context).pop(),
+          onSave: () async { // ✅ Tambahkan async di sini
+            // Implementasi logika penyimpanan di sini
+            print('💾 Memulai proses penyimpanan...');
+            await _saveDetectionResult(riskResult);
+            print('💾 Proses penyimpanan selesai');
+          },
         ),
       ),
     );
@@ -129,7 +179,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
       appBar: AppBar(
         title: Text(
           "Deteksi Mandiri Ibu Hamil",
-          style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
+          style: whiteTextStyle.copyWith(fontSize: 14, fontWeight: bold),
         ),
         backgroundColor: kPrimaryColor,
         elevation: 0,
@@ -138,6 +188,17 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: "Riwayat Deteksi",
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const DetectionHistoryPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

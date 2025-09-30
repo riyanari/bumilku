@@ -1,32 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/medis_model.dart';
 import '../theme/theme.dart';
 import 'HomePage.dart';
 
 class CongratsPage extends StatelessWidget {
-  final String babyName;
-  final DateTime edd;
+  final MedisModel medis;
 
-  const CongratsPage({super.key, required this.babyName, required this.edd});
+  const CongratsPage({super.key, required this.medis});
 
   @override
   Widget build(BuildContext context) {
+    print("=== [CongratsPage] Data Medis ===");
+    print("id: ${medis.id}");
+    print("userId: ${medis.userId}");
+    print("babyName: ${medis.babyName}");
+    print("EDD: ${medis.edd}");
+    print("cycleLength: ${medis.cycleLength}");
+    print("selectedLmp: ${medis.selectedLmp}");
+    print("pregnancyOrder: ${medis.pregnancyOrder}");
+    print("createdAt: ${medis.createdAt}");
+
     final dateFmt = DateFormat('d MMMM y', 'id_ID');
+    final babyName = medis.babyName ?? "Bayi";
 
     return Scaffold(
-      // backgroundColor diabaikan karena kita pakai background image full
       backgroundColor: tSecondary10Color,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background image full screen
-          Image.asset(
-            'assets/bg_congrats.png',
-            fit: BoxFit.cover,
-          ),
-
-          // (opsional) overlay tipis biar teks tetap kebaca
-          // Container(color: Colors.black.withOpacity(0.1)),
+          // Background
+          Image.asset('assets/bg_congrats.png', fit: BoxFit.cover),
 
           // Konten utama
           SafeArea(
@@ -46,22 +50,29 @@ class CongratsPage extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Image.asset("assets/left_padi.png", height: 80,),
+                          Image.asset("assets/left_padi.png", height: 80),
                           Column(
                             children: [
                               Text(
                                 'Selamat, Bunda!',
-                                style: primaryTextStyle.copyWith(fontWeight: bold, fontSize: 22),
+                                style: primaryTextStyle.copyWith(
+                                  fontWeight: bold,
+                                  fontSize: MediaQuery.of(context).size.width < 390 ? 18 : 22,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
+                              const SizedBox(height: 8),
                               Text(
                                 'Bunda akan bertemu $babyName pada',
                                 style: blackTextStyle.copyWith(fontSize: 12),
                                 textAlign: TextAlign.center,
                               ),
                               Text(
-                                dateFmt.format(edd),
-                                style: primaryTextStyle.copyWith(fontSize: 20, fontWeight: bold),
+                                dateFmt.format(medis.edd),
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: bold,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -69,7 +80,6 @@ class CongratsPage extends StatelessWidget {
                           Image.asset("assets/right_padi.png", height: 80),
                         ],
                       ),
-
                       const SizedBox(height: 30),
                       SizedBox(
                         width: double.infinity,
@@ -77,7 +87,9 @@ class CongratsPage extends StatelessWidget {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kPrimaryColor,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                           onPressed: () {
                             Navigator.pushAndRemoveUntil(
@@ -86,7 +98,13 @@ class CongratsPage extends StatelessWidget {
                                   (route) => false,
                             );
                           },
-                          child: Text('Mulai', style: whiteTextStyle.copyWith(fontWeight: bold, fontSize: 14)),
+                          child: Text(
+                            'Mulai',
+                            style: whiteTextStyle.copyWith(
+                              fontWeight: bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       ),
                     ],
