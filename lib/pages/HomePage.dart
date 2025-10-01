@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:bumilku_app/pages/materi_maternitas.dart';
 import 'package:bumilku_app/pages/pertanyaan_umum_page.dart';
 import 'package:bumilku_app/pages/self_detection/detection_history_page.dart';
@@ -5,9 +6,11 @@ import 'package:bumilku_app/pages/self_detection/self_detection_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/auth_cubit.dart';
 import '../cubit/medis_cubit.dart';
 import '../theme/theme.dart';
 import 'calendar_menstruasi.dart';
+import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,7 +26,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // PERBAIKAN: Ganti getMedis dengan getUserMedis
       context.read<MedisCubit>().getUserMedis(user.uid);
     }
   }
@@ -314,139 +316,234 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: kBackground2Color,
-        body: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18.0, 30, 18, 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Image.asset("assets/lg_bumilku.png", height: 20,),
-                    SizedBox(width: 8,),
-                    Column(
-                      children: [
-                        Text(
-                          "BUMILKU",
-                          style: primaryTextStyle.copyWith(
-                            fontSize: 18,
-                            fontWeight: bold,
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        // Listen untuk state AuthInitial (setelah logout success)
+        if (state is AuthInitial) {
+          // Navigate ke login page dan hapus semua route
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => LoginPage()),
+                (route) => false,
+          );
+        }
+
+        // Handle logout error
+        if (state is AuthFailed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Logout gagal: ${state.error}'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: kBackgroundColor,
+          body: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18.0, 30, 18, 30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header dengan logo dan icon logout langsung
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset("assets/lg_bumilku.png", height: 20,),
+                          SizedBox(width: 8,),
+                          Text(
+                            "BUMILKU",
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 18,
+                              fontWeight: bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Icon logout langsung
+                      GestureDetector(
+                        onTap: () {
+                          _showLogoutConfirmation(context);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: kBackground2Color,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.logout,
+                            color: kPrimaryColor,
+                            size: 20,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-                BlocBuilder<MedisCubit, MedisState>(
-                  builder: (context, state) {
-                    if (state is MedisLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is MedisSuccess) {
-                      // PERBAIKAN: Ambil data dari activeMedis atau history pertama
-                      final activeMedis = state.activeMedis;
-                      final medisHistory = state.medisHistory;
+                      ),
+                    ],
+                  ),
 
-                      // Jika ada kehamilan aktif, tampilkan yang aktif
-                      // Jika tidak ada yang aktif, tampilkan yang terbaru dari riwayat
-                      final medisToShow = activeMedis ??
-                          (medisHistory.isNotEmpty ? medisHistory.first : null);
+                  SizedBox(height: 10),
 
-                      if (medisToShow == null) {
+                  // Calendar dan data medis
+                  BlocBuilder<MedisCubit, MedisState>(
+                    builder: (context, state) {
+                      if (state is MedisLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is MedisSuccess) {
+                        final activeMedis = state.activeMedis;
+                        final medisHistory = state.medisHistory;
+
+                        final medisToShow = activeMedis ??
+                            (medisHistory.isNotEmpty ? medisHistory.first : null);
+
+                        if (medisToShow == null) {
+                          return Column(
+                            children: [
+                              Text("Belum ada data kehamilan"),
+                              SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _showAddPregnancyDialog(context);
+                                },
+                                child: Text("Tambah Kehamilan"),
+                              ),
+                            ],
+                          );
+                        }
+
+                        return CalendarMenstruasi(
+                          medisId: medisToShow.id,
+                          cycleLength: medisToShow.cycleLength,
+                          lmp: medisToShow.selectedLmp,
+                          edd: medisToShow.edd,
+                          onSave: (cycleLength, lmp) {
+                            final adjustment = cycleLength - 28;
+                            final newEdd = lmp.add(Duration(days: 280 + adjustment));
+
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              if (activeMedis != null) {
+                                context.read<MedisCubit>().addMedis(
+                                  userId: user.uid,
+                                  cycleLength: cycleLength,
+                                  selectedLmp: lmp,
+                                  edd: newEdd,
+                                  babyName: activeMedis.babyName,
+                                );
+                              } else {
+                                context.read<MedisCubit>().addMedis(
+                                  userId: user.uid,
+                                  cycleLength: cycleLength,
+                                  selectedLmp: lmp,
+                                  edd: newEdd,
+                                );
+                              }
+                            }
+                          },
+                        );
+                      } else if (state is MedisFailed) {
                         return Column(
                           children: [
-                            Text("Belum ada data kehamilan"),
+                            Text("Error: ${state.error}"),
                             SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
-                                // Navigate ke halaman tambah kehamilan
+                                final user = FirebaseAuth.instance.currentUser;
+                                if (user != null) {
+                                  context.read<MedisCubit>().getUserMedis(user.uid);
+                                }
+                              },
+                              child: Text("Coba Lagi"),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return Column(
+                          children: [
+                            Text("Data medis belum tersedia"),
+                            SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
                                 _showAddPregnancyDialog(context);
                               },
-                              child: Text("Tambah Kehamilan"),
+                              child: Text("Tambah Kehamilan Pertama"),
                             ),
                           ],
                         );
                       }
-
-                      return CalendarMenstruasi(
-                        medisId: medisToShow.id,
-                        cycleLength: medisToShow.cycleLength,
-                        lmp: medisToShow.selectedLmp,
-                        edd: medisToShow.edd,
-                        onSave: (cycleLength, lmp) {
-                          // hitung ulang EDD
-                          final adjustment = cycleLength - 28;
-                          final newEdd = lmp.add(Duration(days: 280 + adjustment));
-
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user != null) {
-                            // PERBAIKAN: Update kehamilan yang aktif
-                            if (activeMedis != null) {
-                              // Update kehamilan aktif yang sudah ada
-                              context.read<MedisCubit>().addMedis(
-                                userId: user.uid,
-                                cycleLength: cycleLength,
-                                selectedLmp: lmp,
-                                edd: newEdd,
-                                babyName: activeMedis.babyName,
-                              );
-                            } else {
-                              // Buat kehamilan baru
-                              context.read<MedisCubit>().addMedis(
-                                userId: user.uid,
-                                cycleLength: cycleLength,
-                                selectedLmp: lmp,
-                                edd: newEdd,
-                              );
-                            }
-                          }
-                        },
-                      );
-                    } else if (state is MedisFailed) {
-                      return Column(
-                        children: [
-                          Text("Error: ${state.error}"),
-                          SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () {
-                              final user = FirebaseAuth.instance.currentUser;
-                              if (user != null) {
-                                context.read<MedisCubit>().getUserMedis(user.uid);
-                              }
-                            },
-                            child: Text("Coba Lagi"),
-                          ),
-                        ],
-                      );
-                    } else {
-                      return Column(
-                        children: [
-                          Text("Data medis belum tersedia"),
-                          SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () {
-                              _showAddPregnancyDialog(context);
-                            },
-                            child: Text("Tambah Kehamilan Pertama"),
-                          ),
-                        ],
-                      );
-                    }
-                  },
-                ),
-                SizedBox(height: 20),
-                feature()
-              ],
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  feature()
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  // Dialog konfirmasi logout
+  void _showLogoutConfirmation(BuildContext context) {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.warning,
+      animType: AnimType.bottomSlide,
+      title: 'Konfirmasi Logout',
+      desc: 'Apakah Anda yakin ingin logout dari aplikasi BUMILKU?',
+      btnCancel: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: tGreyColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Text(
+          "Batal",
+          style: whiteTextStyle.copyWith(
+              fontSize: 16,
+              fontWeight: bold
+          )
+        ),
+      ),
+      btnOk: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kPrimaryColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        onPressed: () {
+          context.read<AuthCubit>().signOut();
+        },
+        child: Text(
+          "Logout",
+          style: whiteTextStyle.copyWith(
+            fontSize: 16,
+            fontWeight: bold
+          )
+        ),
+      ),
+      titleTextStyle: blackTextStyle.copyWith(
+        fontSize: 20,
+        fontWeight: bold
+      ),
+      descTextStyle: const TextStyle(
+        fontSize: 16,
+        color: tGreyColor,
+      ),
+    ).show();
+  }
+
 
   // Dialog untuk menambah kehamilan baru
   void _showAddPregnancyDialog(BuildContext context) {
@@ -466,7 +563,6 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Default values untuk kehamilan baru
               final defaultLmp = DateTime.now().subtract(Duration(days: 30));
               final defaultEdd = defaultLmp.add(Duration(days: 280));
 

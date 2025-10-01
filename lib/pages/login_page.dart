@@ -89,21 +89,21 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             _imageLogin(),
             _formLogin(context, isLoading),
-            if (isLoading) _loadingOverlay(),
+            // if (isLoading) _loadingOverlay(),
           ],
         );
       },
     );
   }
 
-  Widget _loadingOverlay() {
-    return Container(
-      color: Colors.black.withValues(alpha:0.3),
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
+  // Widget _loadingOverlay() {
+  //   return Container(
+  //     color: Colors.black.withValues(alpha:0.3),
+  //     child: Center(
+  //       child: CircularProgressIndicator(),
+  //     ),
+  //   );
+  // }
 
   Widget _imageLogin() {
     return Semantics(
