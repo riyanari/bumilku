@@ -11,11 +11,11 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  void signIn({required String email, required String password}) async {
+  void signIn({required String username, required String password}) async {
     try {
       emit(AuthLoading());
       UserModel user = await AuthServices().signIn(
-        email: email,
+        username: username,
         password: password,
       );
       emit(AuthSuccess(user));

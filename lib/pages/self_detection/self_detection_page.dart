@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:bumilku_app/pages/self_detection/pages/complaints_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/health_history_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/lifestyle_page.dart';
@@ -11,9 +9,11 @@ import 'package:bumilku_app/pages/self_detection/result_page.dart';
 import 'package:bumilku_app/pages/self_detection/self_detection_controller.dart';
 import 'package:bumilku_app/pages/self_detection/widgets/page_indicator.dart';
 import 'package:bumilku_app/theme/theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../cubit/self_detection_cubit.dart';
 import 'detection_history_page.dart';
 import 'loading_self_detection.dart';
 
@@ -27,6 +27,7 @@ class SelfDetectionPageView extends StatefulWidget {
 class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   final PageController _pageController = PageController();
   final SelfDetectionController _controller = SelfDetectionController();
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
@@ -95,39 +96,73 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   //   );
   // }
 
-  Future<void> _saveDetectionResult(Map<String, dynamic> riskResult) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final List<String> existingResults = prefs.getStringList('detection_results') ?? [];
+  // Future<void> _saveDetectionResult(Map<String, dynamic> riskResult) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final List<String> existingResults = prefs.getStringList('detection_results') ?? [];
+  //
+  //     print('📊 Sebelum save: ${existingResults.length} hasil tersimpan');
+  //
+  //     // Simpan hanya data essential (tanpa ComplaintEducation)
+  //     final newResult = {
+  //       "date": DateTime.now().toIso8601String(),
+  //       "data": {
+  //         "riskLevel": riskResult['riskLevel']?.toString() ?? 'unknown',
+  //         "score": riskResult['score'] ?? 0,
+  //         "details": riskResult['details'] is List ? riskResult['details'] : [],
+  //         "recommendation": riskResult['recommendation']?.toString() ?? 'Tidak ada rekomendasi',
+  //         // Skip complaintEducations karena complex object
+  //         "riskEducation": riskResult['riskEducation'] is Map ? riskResult['riskEducation'] : null,
+  //         "generalTips": riskResult['generalTips'] is List ? riskResult['generalTips'] : null,
+  //       },
+  //     };
+  //
+  //     print('✅ Data baru disiapkan: ${newResult["date"]}');
+  //
+  //     existingResults.add(jsonEncode(newResult));
+  //     await prefs.setStringList('detection_results', existingResults);
+  //
+  //     final savedResults = prefs.getStringList('detection_results') ?? [];
+  //     print('📊 Setelah save: ${savedResults.length} hasil tersimpan');
+  //
+  //   } catch (e) {
+  //     print('❌ Error menyimpan data: $e');
+  //   }
+  // }
 
-      print('📊 Sebelum save: ${existingResults.length} hasil tersimpan');
-
-      // Simpan hanya data essential (tanpa ComplaintEducation)
-      final newResult = {
-        "date": DateTime.now().toIso8601String(),
-        "data": {
-          "riskLevel": riskResult['riskLevel']?.toString() ?? 'unknown',
-          "score": riskResult['score'] ?? 0,
-          "details": riskResult['details'] is List ? riskResult['details'] : [],
-          "recommendation": riskResult['recommendation']?.toString() ?? 'Tidak ada rekomendasi',
-          // Skip complaintEducations karena complex object
-          "riskEducation": riskResult['riskEducation'] is Map ? riskResult['riskEducation'] : null,
-          "generalTips": riskResult['generalTips'] is List ? riskResult['generalTips'] : null,
-        },
-      };
-
-      print('✅ Data baru disiapkan: ${newResult["date"]}');
-
-      existingResults.add(jsonEncode(newResult));
-      await prefs.setStringList('detection_results', existingResults);
-
-      final savedResults = prefs.getStringList('detection_results') ?? [];
-      print('📊 Setelah save: ${savedResults.length} hasil tersimpan');
-
-    } catch (e) {
-      print('❌ Error menyimpan data: $e');
-    }
-  }
+  // Future<void> _startRiskFlow() async {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(builder: (_) => const LoadingSelfDetectionPage()),
+  //   );
+  //
+  //   await Future.delayed(const Duration(milliseconds: 700));
+  //
+  //   // Hitung risiko berdasarkan formula yang benar
+  //   final Map<String, dynamic> riskResult = _controller.calculateRiskBasedOnFormula();
+  //
+  //   print('🔍 Risk Result Data:');
+  //   print('Risk Level: ${riskResult['riskLevel']}');
+  //   print('Score: ${riskResult['score']}');
+  //   print('Details: ${riskResult['details']}');
+  //   print('Recommendation: ${riskResult['recommendation']}');
+  //
+  //   if (!mounted) return;
+  //
+  //   Navigator.of(context).pushReplacement(
+  //     MaterialPageRoute(
+  //       builder: (_) => ResultPage(
+  //         riskResult: riskResult,
+  //         onBack: () => Navigator.of(context).pop(),
+  //         onSave: () async { // ✅ Tambahkan async di sini
+  //           // Implementasi logika penyimpanan di sini
+  //           print('💾 Memulai proses penyimpanan...');
+  //           await _saveDetectionResult(riskResult);
+  //           print('💾 Proses penyimpanan selesai');
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _startRiskFlow() async {
     Navigator.of(context).push(
@@ -149,15 +184,21 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => ResultPage(
-          riskResult: riskResult,
-          onBack: () => Navigator.of(context).pop(),
-          onSave: () async { // ✅ Tambahkan async di sini
-            // Implementasi logika penyimpanan di sini
-            print('💾 Memulai proses penyimpanan...');
-            await _saveDetectionResult(riskResult);
-            print('💾 Proses penyimpanan selesai');
-          },
+        builder: (_) => BlocProvider.value(
+          value: BlocProvider.of<SelfDetectionCubit>(context),
+          child: ResultPage(
+            riskResult: riskResult,
+            onBack: () => Navigator.of(context).pop(),
+            onSave: () async {
+              if (_currentUser != null) {
+                // Gunakan Cubit untuk save ke Firebase
+                context.read<SelfDetectionCubit>().saveDetectionResult(
+                  userId: _currentUser.uid,
+                  riskResult: riskResult,
+                );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -194,7 +235,12 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
             tooltip: "Riwayat Deteksi",
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const DetectionHistoryPage()),
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: BlocProvider.of<SelfDetectionCubit>(context),
+                    child: const DetectionHistoryPage(),
+                  ),
+                ),
               );
             },
           ),

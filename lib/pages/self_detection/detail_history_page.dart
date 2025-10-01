@@ -1,41 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:bumilku_app/theme/theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+
+import '../../cubit/self_detection_cubit.dart';
+import '../../models/self_detection_model.dart';
 
 class DetailHistoryPage extends StatelessWidget {
-  final Map<String, dynamic> historyItem;
-  final int itemIndex;
-  final VoidCallback onDelete;
+  final SelfDetectionModel detection;
 
   const DetailHistoryPage({
     super.key,
-    required this.historyItem,
-    required this.itemIndex,
-    required this.onDelete,
+    required this.detection,
   });
+
+  Color _getRiskColor(String riskLevel) {
+    switch (riskLevel.toLowerCase()) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return Colors.red;
+      case 'perlu perhatian':
+      case 'sedang':
+        return Colors.orange;
+      case 'kehamilan normal':
+      case 'normal':
+      case 'rendah':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getRiskIcon(String riskLevel) {
+    switch (riskLevel.toLowerCase()) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return Icons.warning_rounded;
+      case 'perlu perhatian':
+      case 'sedang':
+        return Icons.info_rounded;
+      case 'kehamilan normal':
+      case 'normal':
+      case 'rendah':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.help_rounded;
+    }
+  }
+
+  String _getRiskStatus(String riskLevel) {
+    switch (riskLevel.toLowerCase()) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return "Perlu Penanganan";
+      case 'perlu perhatian':
+      case 'sedang':
+        return "Perlu Perhatian";
+      case 'kehamilan normal':
+      case 'normal':
+      case 'rendah':
+        return "Aman";
+      default:
+        return "Tidak Diketahui";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final riskData = historyItem["data"];
-    final riskLevel = riskData["riskLevel"]?.toString() ?? "Tidak diketahui";
-    final score = riskData["score"] ?? 0;
-    final details = riskData["details"] is List
-        ? (riskData["details"] as List).map((e) => e.toString()).toList()
-        : [];
-    final recommendation = riskData["recommendation"]?.toString() ?? 'Tidak ada rekomendasi spesifik';
-    final riskEducation = riskData["riskEducation"] as Map<String, dynamic>?;
-    final generalTips = riskData["generalTips"] is List
-        ? (riskData["generalTips"] as List).map((e) => e.toString()).toList()
-        : [];
-
-    final date = DateTime.parse(historyItem["date"]);
-    final formattedDate = "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}";
-
-    final riskColor = _getRiskColor(riskLevel);
+    final displayDate = detection.createdAt ?? detection.date;
+    final formattedDate = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID').format(displayDate);
+    final riskColor = _getRiskColor(detection.riskLevel);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Detail Riwayat Deteksi",
+          "Detail Deteksi",
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -73,45 +113,69 @@ class DetailHistoryPage extends StatelessWidget {
           child: Column(
             children: [
               // Header Info
-              _buildHeaderCard(riskLevel, score, formattedDate, riskColor),
+              _buildHeaderCard(riskColor, formattedDate),
 
               const SizedBox(height: 20),
 
-              // Faktor Risiko
-              if (details.isNotEmpty)
-                _buildSectionCard(
-                  "Faktor Risiko Teridentifikasi",
-                  Icons.warning,
-                  Colors.orange,
-                  details.map((detail) => _buildListItem("•", detail)).toList(),
-                ),
+              // Informasi Risiko
+              _buildSectionCard(
+                "Informasi Risiko",
+                Icons.assessment,
+                kPrimaryColor,
+                [
+                  _buildDetailItem("Tingkat Risiko", detection.riskLevel.toUpperCase(),
+                      color: riskColor),
+                  _buildDetailItem("Skor", "${detection.score}"),
+                  _buildDetailItem("Status", _getRiskStatus(detection.riskLevel)),
+                ],
+              ),
 
               const SizedBox(height: 16),
 
               // Rekomendasi
               _buildSectionCard(
                 "Rekomendasi",
-                Icons.medical_services,
-                kPrimaryColor,
-                [_buildListItem("", recommendation)],
+                Icons.recommend,
+                Colors.green,
+                [
+                  _buildDetailItem("", detection.recommendation),
+                ],
               ),
 
-              const SizedBox(height: 16),
+              // Detail Temuan
+              if (detection.details.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                _buildSectionCard(
+                  "Detail Temuan",
+                  Icons.list,
+                  Colors.orange,
+                  detection.details.map((detail) => _buildDetailItem("•", detail)).toList(),
+                ),
+              ],
 
               // Edukasi Risiko
-              if (riskEducation != null && riskEducation.isNotEmpty)
-                _buildRiskEducationSection(riskEducation, riskColor),
-
-              const SizedBox(height: 16),
+              if (detection.riskEducation != null && detection.riskEducation!['description'] != null) ...[
+                const SizedBox(height: 16),
+                _buildSectionCard(
+                  "Edukasi Risiko",
+                  Icons.school,
+                  Colors.blue,
+                  [
+                    _buildDetailItem("", detection.riskEducation!['description']!),
+                  ],
+                ),
+              ],
 
               // Tips Umum
-              if (generalTips.isNotEmpty)
+              if (detection.generalTips != null && detection.generalTips!.isNotEmpty) ...[
+                const SizedBox(height: 16),
                 _buildSectionCard(
                   "Tips Kehamilan Sehat",
                   Icons.lightbulb_outline,
                   Colors.amber,
-                  generalTips.map((tip) => _buildListItem("❤️", tip)).toList(),
+                  detection.generalTips!.map((tip) => _buildDetailItem("❤️", tip.toString())).toList(),
                 ),
+              ],
 
               const SizedBox(height: 30),
 
@@ -124,7 +188,7 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCard(String riskLevel, int score, String date, Color riskColor) {
+  Widget _buildHeaderCard(Color riskColor, String formattedDate) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -152,7 +216,7 @@ class DetailHistoryPage extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  _getRiskIcon(riskLevel),
+                  _getRiskIcon(detection.riskLevel),
                   size: 40,
                   color: riskColor,
                 ),
@@ -162,7 +226,7 @@ class DetailHistoryPage extends StatelessWidget {
 
               // Risk Level
               Text(
-                riskLevel.toUpperCase(),
+                detection.riskLevel.toUpperCase(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -174,11 +238,12 @@ class DetailHistoryPage extends StatelessWidget {
 
               // Date
               Text(
-                date,
+                formattedDate,
                 style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
+                textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 16),
@@ -187,8 +252,8 @@ class DetailHistoryPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildInfoItem("Poin Risiko", "$score", Icons.assessment),
-                  _buildInfoItem("Status", _getRiskStatus(riskLevel), Icons.info),
+                  _buildInfoItem("Poin Risiko", "${detection.score}", Icons.assessment),
+                  _buildInfoItem("Status", _getRiskStatus(detection.riskLevel), Icons.info),
                 ],
               ),
             ],
@@ -240,53 +305,7 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRiskEducationSection(Map<String, dynamic> riskEducation, Color riskColor) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: riskColor.withValues(alpha:0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.health_and_safety, size: 20, color: riskColor),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  riskEducation['title']?.toString() ?? "Edukasi Risiko",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: riskColor,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Content
-            if (riskEducation['description'] != null)
-              _buildListItem("📋", riskEducation['description']!.toString()),
-
-            if (riskEducation['recommendations'] != null)
-              _buildListItem("💡", riskEducation['recommendations']!.toString()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildListItem(String prefix, String text) {
+  Widget _buildDetailItem(String prefix, String text, {Color? color}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -294,13 +313,21 @@ class DetailHistoryPage extends StatelessWidget {
         children: [
           Text(
             prefix,
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(fontSize: 14, height: 1.4),
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.4,
+                color: color,
+              ),
             ),
           ),
         ],
@@ -357,103 +384,45 @@ class DetailHistoryPage extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
+    AwesomeDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.delete_outline, color: Colors.red),
-              SizedBox(width: 8),
-              Text("Hapus Riwayat"),
-            ],
-          ),
-          content: const Text("Apakah Anda yakin ingin menghapus riwayat deteksi ini? Tindakan ini tidak dapat dibatalkan."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: tPrimaryColor),
-              onPressed: () {
-                Navigator.pop(context); // Tutup dialog konfirmasi
-                onDelete();
-                Navigator.pop(context); // Kembali ke halaman riwayat
-
-                // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text("Riwayat berhasil dihapus!"),
-                      ],
-                    ),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              child: Text("Hapus", style: whiteTextStyle,),
-            ),
-          ],
-        );
+      dialogType: DialogType.warning,
+      animType: AnimType.bottomSlide,
+      title: 'Hapus Riwayat',
+      desc: 'Apakah Anda yakin ingin menghapus riwayat deteksi ini?\nTindakan ini tidak dapat dibatalkan.',
+      btnCancelText: "Batal",
+      btnOkText: "Hapus",
+      btnCancelOnPress: () {},
+      btnOkOnPress: () {
+        _deleteDetection(context);
       },
+      btnCancelColor: kPrimaryColor,
+      btnOkColor: Colors.red,
+    ).show();
+  }
+
+  void _deleteDetection(BuildContext context) {
+    // Hapus dari Firebase via Cubit
+    context.read<SelfDetectionCubit>().deleteDetection(detection.id);
+
+    // Kembali ke halaman riwayat
+    Navigator.pop(context);
+
+    // Tampilkan snackbar sukses
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white),
+            SizedBox(width: 8),
+            Text("Riwayat berhasil dihapus!"),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 2),
+      ),
     );
-  }
-
-  Color _getRiskColor(String riskLevel) {
-    switch (riskLevel.toLowerCase()) {
-      case 'risiko tinggi':
-      case 'tinggi':
-        return Colors.red;
-      case 'perlu perhatian':
-      case 'sedang':
-        return Colors.orange;
-      case 'kehamilan normal':
-      case 'normal':
-      case 'rendah':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getRiskIcon(String riskLevel) {
-    switch (riskLevel.toLowerCase()) {
-      case 'risiko tinggi':
-      case 'tinggi':
-        return Icons.warning_rounded;
-      case 'perlu perhatian':
-      case 'sedang':
-        return Icons.info_rounded;
-      case 'kehamilan normal':
-      case 'normal':
-      case 'rendah':
-        return Icons.check_circle_rounded;
-      default:
-        return Icons.help_rounded;
-    }
-  }
-
-  String _getRiskStatus(String riskLevel) {
-    switch (riskLevel.toLowerCase()) {
-      case 'risiko tinggi':
-      case 'tinggi':
-        return "Perlu Penanganan";
-      case 'perlu perhatian':
-      case 'sedang':
-        return "Perlu Perhatian";
-      case 'kehamilan normal':
-      case 'normal':
-      case 'rendah':
-        return "Aman";
-      default:
-        return "Tidak Diketahui";
-    }
   }
 }

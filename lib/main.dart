@@ -1,5 +1,6 @@
 import 'package:bumilku_app/cubit/auth_cubit.dart';
 import 'package:bumilku_app/cubit/medis_cubit.dart';
+import 'package:bumilku_app/cubit/self_detection_cubit.dart';
 import 'package:bumilku_app/pages/HomePage.dart';
 import 'package:bumilku_app/pages/login_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
@@ -30,6 +31,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
             create: (context) => MedisCubit(),
+        ),
+        BlocProvider(
+            create: (context) => SelfDetectionCubit(),
         ),
       ],
       child: MaterialApp(

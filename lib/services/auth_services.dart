@@ -7,9 +7,10 @@ class AuthServices {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<UserModel> signIn({
-    required String email,
+    required String username,
     required String password,
   }) async {
+    String email = "$username@bumilku.com";
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,

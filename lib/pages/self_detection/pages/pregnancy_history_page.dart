@@ -87,7 +87,7 @@ class PregnancyHistoryPage extends StatelessWidget {
                 CustomInputField(
                   controller: controller.babyWeightHistoryController,
                   label:
-                      "Riwayat bayi lahir (berat badan rendah / besar >4 kg)",
+                      "Riwayat bayi lahir (berat badan normal >=2.5 / besar >4 kg)",
                   keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 10),
@@ -139,7 +139,7 @@ class PregnancyHistoryPage extends StatelessWidget {
                       ),
                       SizedBox(height: 8,),
                       Text(
-                        "• Bayi lahir: BBLR 2.3 kg",
+                        "• Bayi lahir: Berart badan normal minimal 2.5 kg",
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
