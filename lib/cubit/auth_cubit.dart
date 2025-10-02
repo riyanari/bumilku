@@ -50,6 +50,29 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  // TAMBAHKAN METHOD UPDATE PROFILE
+  void updateProfile({
+    required String userId,
+    required String name,
+    required String alamat,
+    required DateTime tglLahir,
+  }) async {
+    try {
+      emit(AuthLoading());
+
+      UserModel updatedUser = await AuthServices().updateProfile(
+        userId: userId,
+        name: name,
+        alamat: alamat,
+        tglLahir: tglLahir,
+      );
+
+      emit(AuthSuccess(updatedUser));
+    } catch (e) {
+      emit(AuthFailed(e.toString()));
+    }
+  }
+
   void signOut() async {
     try {
       emit(AuthLoading());

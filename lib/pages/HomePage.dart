@@ -1,6 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:bumilku_app/pages/materi_maternitas.dart';
 import 'package:bumilku_app/pages/pertanyaan_umum_page.dart';
+import 'package:bumilku_app/pages/profile_page.dart';
 import 'package:bumilku_app/pages/self_detection/detection_history_page.dart';
 import 'package:bumilku_app/pages/self_detection/self_detection_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -366,23 +367,49 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      // Icon logout langsung
-                      GestureDetector(
-                        onTap: () {
-                          _showLogoutConfirmation(context);
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: kBackground2Color,
-                            borderRadius: BorderRadius.circular(8),
+                      // Container untuk icon profile dan logout
+                      Row(
+                        children: [
+                          // Icon Profile
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (_) => ProfilePage(),
+                              ));
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: kBackground2Color,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.person,
+                                color: kPrimaryColor,
+                                size: 18,
+                              ),
+                            ),
                           ),
-                          child: Icon(
-                            Icons.logout,
-                            color: kPrimaryColor,
-                            size: 20,
+                          SizedBox(width: 8),
+                          // Icon Logout
+                          GestureDetector(
+                            onTap: () {
+                              _showLogoutConfirmation(context);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: kBackground2Color,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.logout,
+                                color: kPrimaryColor,
+                                size: 18,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
