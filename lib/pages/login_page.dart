@@ -70,8 +70,15 @@ class _LoginPageState extends State<LoginPage> {
         if (state is AuthFailed) {
           _showErrorDialog(state.error);
         } else if (state is AuthSuccess) {
-          // Login berhasil, navigasi ke home
-          Navigator.of(context).pushReplacementNamed('/home');
+          // // Login berhasil, navigasi ke home
+          // Navigator.of(context).pushReplacementNamed('/home');
+          final user = state.user; // ini UserModel
+
+          if (user.role.toLowerCase() == 'admin') {
+            Navigator.of(context).pushReplacementNamed('/list-bunda');
+          } else {
+            Navigator.of(context).pushReplacementNamed('/home');
+          }
         }
       },
       child: Scaffold(
@@ -89,21 +96,11 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             _imageLogin(),
             _formLogin(context, isLoading),
-            // if (isLoading) _loadingOverlay(),
           ],
         );
       },
     );
   }
-
-  // Widget _loadingOverlay() {
-  //   return Container(
-  //     color: Colors.black.withValues(alpha:0.3),
-  //     child: Center(
-  //       child: CircularProgressIndicator(),
-  //     ),
-  //   );
-  // }
 
   Widget _imageLogin() {
     return Semantics(

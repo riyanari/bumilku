@@ -2,6 +2,7 @@ import 'package:bumilku_app/cubit/auth_cubit.dart';
 import 'package:bumilku_app/cubit/medis_cubit.dart';
 import 'package:bumilku_app/cubit/self_detection_cubit.dart';
 import 'package:bumilku_app/pages/HomePage.dart';
+import 'package:bumilku_app/pages/admin/list_bunda_page.dart';
 import 'package:bumilku_app/pages/login_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
 import 'package:bumilku_app/splash_page.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
           '/login': (_) => const LoginPage(),
           '/home': (_) => HomePage(),
           '/onboarding': (_) => OnboardingSignupPage(),
+          '/list-bunda': (_) => const ListBundaPage(),
         },
         // ✅ Tambahkan localization
         localizationsDelegates: const [
