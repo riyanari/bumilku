@@ -778,20 +778,73 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         if (state is SelfDetectionHistoryLoaded) {
           final history = state.detectionHistory;
 
-          if (history.isEmpty) {
+          // Data contoh untuk gerakan janin (dalam aplikasi nyata, data ini akan diambil dari database)
+          final List<FetalMovementRecord> movementRecords = [
+            FetalMovementRecord(
+              date: DateTime.now().subtract(const Duration(days: 1)),
+              movementCount: 15,
+              duration: 45,
+              pattern: 'Lebih aktif malam hari',
+              comparison: 'Sama saja',
+              complaints: ['Tidak ada'],
+            ),
+            FetalMovementRecord(
+              date: DateTime.now().subtract(const Duration(days: 2)),
+              movementCount: 12,
+              duration: 60,
+              pattern: 'Lebih aktif siang hari',
+              comparison: 'Lebih aktif',
+              complaints: ['Pusing/lemas'],
+            ),
+            FetalMovementRecord(
+              date: DateTime.now().subtract(const Duration(days: 3)),
+              movementCount: 8,
+              duration: 120,
+              pattern: 'Tidak ada pola khusus',
+              comparison: 'Lebih sedikit',
+              complaints: ['Nyeri perut'],
+            ),
+          ];
+
+          // Gabungkan semua data dalam satu list
+          final allItems = [
+            _buildSectionHeader("Pemantauan Gerakan Janin"),
+            // Di dalam _buildSelfDetectionTab, ganti pemanggilan _buildMovementStats menjadi:
+            _buildMovementStats(
+              movementRecords,
+              movementRecords.isNotEmpty ? movementRecords.first.movementCount : 0,
+              movementRecords.isNotEmpty ? movementRecords.first.duration : 0,
+              movementRecords.isNotEmpty ? (movementRecords.first.movementCount / (movementRecords.first.duration / 60)) : 0.0,
+              {
+                'color': movementRecords.isNotEmpty && movementRecords.first.movementCount >= 10 ? 'green' : 'orange',
+                'title': movementRecords.isNotEmpty && movementRecords.first.movementCount >= 10 ? 'Kondisi Normal' : 'Perlu Perhatian',
+                'message': movementRecords.isNotEmpty && movementRecords.first.movementCount >= 10
+                    ? 'Gerakan janin dalam batas normal. Tetap pantau secara rutin.'
+                    : 'Gerakan janin kurang dari normal. Perlu pemantauan lebih lanjut.',
+              },
+              movementRecords.isNotEmpty ? movementRecords.first.comparison : '',
+              movementRecords.isNotEmpty ? movementRecords.first.pattern : '',
+              movementRecords.isNotEmpty ? movementRecords.first.complaints : [],
+            ),
+            _buildSectionHeader("Riwayat Self Detection"),
+            ...history.map((detection) => _buildDetectionCard(detection)).toList(),
+            _buildSectionHeader("Riwayat Gerakan Janin"),
+            ...movementRecords.map((record) => _buildMovementCard(record)).toList(),
+          ];
+
+          if (history.isEmpty && movementRecords.isEmpty) {
             return _buildEmptyState(
               Icons.analytics_outlined,
-              "Belum Ada Riwayat Deteksi",
-              "Hasil deteksi mandiri akan muncul di sini",
+              "Belum Ada Data",
+              "Data deteksi mandiri dan gerakan janin akan muncul di sini",
             );
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: history.length,
+            itemCount: allItems.length,
             itemBuilder: (context, index) {
-              final detection = history[index];
-              return _buildDetectionCard(detection);
+              return allItems[index];
             },
           );
         }
@@ -801,98 +854,568 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     );
   }
 
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20, bottom: 12),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.pink.shade700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMovementStats(
+      List<FetalMovementRecord> movementRecords,
+      int movementCount,
+      int duration,
+      double movementsPerHour,
+      Map<String, dynamic> status,
+      String comparison,
+      String pattern,
+      List<dynamic> additionalComplaints,
+      ) {
+    final statusColor = _getFetalMovementColor(status['color'] ?? 'grey');
+    final statusIcon = _getFetalMovementIcon(status['color'] ?? 'grey');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.blue.shade50,
+            Colors.purple.shade50,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Row(
+            children: [
+              Icon(Icons.favorite, color: Colors.pink, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                "Statistik Gerakan Janin",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Statistik Cards
+          Row(
+            children: [
+              Expanded(
+                child: _buildMovementStatCard(
+                  "Rata-rata Gerakan",
+                  "${_calculateAverageMovement(movementRecords)}",
+                  Icons.trending_up,
+                  Colors.green,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMovementStatCard(
+                  "Sesi Normal",
+                  "${_countNormalSessions(movementRecords)}",
+                  Icons.check_circle,
+                  Colors.blue,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMovementStatCard(
+                  "Total Sesi",
+                  "${movementRecords.length}",
+                  Icons.list_alt,
+                  Colors.orange,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Status Gerakan Janin
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha:0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: statusColor.withValues(alpha:0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(statusIcon, size: 20, color: statusColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      (status['title'] ?? 'DATA TERCATAT').toString().toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  status['message']?.toString() ?? 'Data gerakan janin telah tercatat',
+                  style: const TextStyle(fontSize: 14, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Detail Pencatatan
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha:0.7),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Detail Pencatatan Terbaru:",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Grid untuk detail pencatatan
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 2,
+                  children: [
+                    _buildDetailItem("Jumlah Gerakan", "$movementCount kali", Icons.numbers),
+                    _buildDetailItem("Durasi", "$duration menit", Icons.timer),
+                    _buildDetailItem("Gerakan per Jam", "${movementsPerHour.toStringAsFixed(1)}/jam", Icons.speed),
+                    _buildDetailItem("Perbandingan", comparison.isNotEmpty ? comparison : 'Tidak ada data', Icons.compare),
+                    _buildDetailItem("Pola Aktivitas", pattern.isNotEmpty ? pattern : 'Tidak ada data', Icons.pattern),
+                    if (additionalComplaints.isNotEmpty && additionalComplaints[0] != 'Tidak ada')
+                      _buildDetailItem("Keluhan", additionalComplaints.join(', '), Icons.medical_services),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Informasi Standar
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info, color: Colors.blue[700], size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Standar normal: minimal 10 gerakan dalam 2 jam",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "atau minimal 5 gerakan per jam",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(String title, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.pink.withValues(alpha:0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 12, color: Colors.pink),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Helper methods untuk warna dan icon
+  Color _getFetalMovementColor(String color) {
+    switch (color) {
+      case 'red':
+        return Colors.red;
+      case 'green':
+        return Colors.green;
+      case 'orange':
+        return Colors.orange;
+      case 'blue':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getFetalMovementIcon(String color) {
+    switch (color) {
+      case 'red':
+        return Icons.warning;
+      case 'green':
+        return Icons.check_circle;
+      case 'orange':
+        return Icons.info;
+      case 'blue':
+        return Icons.timelapse;
+      default:
+        return Icons.help;
+    }
+  }
+
+  Widget _buildMovementStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha:0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha:0.3)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha:0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDetectionCard(SelfDetectionModel detection) {
     final displayDate = detection.createdAt ?? detection.date;
     final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(displayDate);
     final riskColor = _getRiskColor(detection.riskLevel);
 
-    return GestureDetector(
-      onTap: () => _navigateToDetectionDetail(context, detection),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha:0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha:0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: riskColor.withValues(alpha:0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: riskColor.withValues(alpha:0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: riskColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _getRiskIcon(detection.riskLevel),
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        detection.riskLevel.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: riskColor,
+                        ),
+                      ),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: riskColor.withValues(alpha:0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "${detection.score} poin",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
                       color: riskColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _getRiskIcon(detection.riskLevel),
-                      color: Colors.white,
-                      size: 22,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          detection.riskLevel.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: riskColor,
-                          ),
-                        ),
-                        Text(
-                          formattedDate,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: Colors.grey.shade400,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
-            // Info
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildDetectionInfoItem("Poin Risiko", "${detection.score}", Icons.assessment),
-                  _buildDetectionInfoItem("Detail", "${detection.details.length} faktor", Icons.list_alt),
-                  _buildDetectionInfoItem("Status", _getRiskStatus(detection.riskLevel), Icons.info_outline),
-                ],
+          // Info
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildDetectionInfoItem("Detail", "${detection.details.length} faktor", Icons.list_alt),
+                _buildDetectionInfoItem("Status", _getRiskStatus(detection.riskLevel), Icons.info_outline),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMovementCard(FetalMovementRecord record) {
+    final isNormal = record.movementCount >= 10;
+    final statusColor = isNormal ? Colors.green : Colors.orange;
+    final statusIcon = isNormal ? Icons.check_circle : Icons.info;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha:0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha:0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
             ),
-          ],
-        ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(statusIcon, size: 16, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        DateFormat('dd/MM/yyyy HH:mm').format(record.date),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                      Text(
+                        isNormal ? "Gerakan Normal" : "Perlu Perhatian",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: statusColor.withValues(alpha:0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  "${record.movementCount} gerakan",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Informasi utama
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildMovementDetailItem("Durasi", "${record.duration} menit", Icons.timer),
+                    _buildMovementDetailItem("Pola", record.pattern, Icons.pattern),
+                    _buildMovementDetailItem("Perbandingan", record.comparison, Icons.compare),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Keluhan
+                if (record.complaints.isNotEmpty && record.complaints[0] != 'Tidak ada')
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Keluhan:",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        record.complaints.join(', '),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -901,18 +1424,18 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: Colors.pink.withValues(alpha:0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 18, color: Colors.pink),
+          child: Icon(icon, size: 16, color: Colors.pink),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -920,12 +1443,54 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 10,
+            fontSize: 9,
             color: Colors.grey,
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildMovementDetailItem(String title, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, size: 14, color: Colors.pink),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 9,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 2),
+        SizedBox(
+          width: 70,
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Helper methods untuk gerakan janin
+  int _calculateAverageMovement(List<FetalMovementRecord> records) {
+    if (records.isEmpty) return 0;
+    final total = records.fold(0, (sum, record) => sum + record.movementCount);
+    return total ~/ records.length;
+  }
+
+  int _countNormalSessions(List<FetalMovementRecord> records) {
+    return records.where((record) => record.movementCount >= 10).length;
   }
 
   // Common State Widgets
@@ -1126,4 +1691,23 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     }
     return 'B';
   }
+}
+
+// Model untuk data gerakan janin
+class FetalMovementRecord {
+  final DateTime date;
+  final int movementCount;
+  final int duration;
+  final String pattern;
+  final String comparison;
+  final List<String> complaints;
+
+  FetalMovementRecord({
+    required this.date,
+    required this.movementCount,
+    required this.duration,
+    required this.pattern,
+    required this.comparison,
+    required this.complaints,
+  });
 }

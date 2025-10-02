@@ -1,4 +1,5 @@
 import 'package:bumilku_app/pages/self_detection/pages/complaints_page.dart';
+import 'package:bumilku_app/pages/self_detection/pages/fetal_movement_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/health_history_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/lifestyle_page.dart';
 import 'package:bumilku_app/pages/self_detection/pages/menstrual_page.dart';
@@ -29,6 +30,31 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   final SelfDetectionController _controller = SelfDetectionController();
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
+  List<Widget> _buildPages() {
+    final pages = <Widget>[
+      VitalDataPage(controller: _controller),
+      ComplaintsPage(controller: _controller),
+    ];
+
+    // Tambahkan halaman gerakan janin jika dipilih
+    if (_controller.shouldShowFetalMovementPage) {
+      pages.add(FetalMovementPage(controller: _controller));
+    }
+
+    // Tambahkan halaman lainnya
+    pages.addAll([
+      PregnancyHistoryPage(controller: _controller),
+      HealthHistoryPage(controller: _controller),
+      PhysicalDataPage(controller: _controller),
+      MenstrualPage(controller: _controller),
+      LifestylePage(controller: _controller),
+    ]);
+
+    return pages;
+  }
+
+  int get _totalPages => _buildPages().length;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +65,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   void dispose() {
     _controller.removeListener(_onControllerUpdate);
     _controller.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -47,7 +74,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   }
 
   void _nextPage() {
-    if (_controller.currentPage < 6) {
+    if (_controller.currentPage < _totalPages - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -64,105 +91,126 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
     }
   }
 
-  // Future<void> _startRiskFlow() async {
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(builder: (_) => const LoadingPage()),
-  //   );
-  //
-  //   await Future.delayed(const Duration(milliseconds: 700));
-  //   _controller.calculateRisk();
-  //
-  //   // TAMBAHKAN DATA EDUKASI KE riskResult
-  //   final Map<String, dynamic> riskResult = {
-  //     'riskLevel': _normalizeRiskLevel(_controller.result),
-  //     'score': _controller.score.round(),
-  //     'recommendation': _controller.recommendation,
-  //     'details': _controller.redFlagReasons,
-  //     // TAMBAH DATA EDUKASI DI SINI:
-  //     'complaintEducations': _controller.selectedComplaintEducations,
-  //     'riskEducation': _controller.riskLevelEducation,
-  //     'generalTips': _controller.getGeneralPregnancyTips(),
-  //   };
-  //
-  //   if (!mounted) return;
-  //
-  //   Navigator.of(context).pushReplacement(
-  //     MaterialPageRoute(
-  //       builder: (_) => ResultPage(
-  //         riskResult: riskResult,
-  //         onBack: () => Navigator.of(context).pop(),
-  //       ),
-  //     ),
-  //   );
-  // }
+  bool _validateCurrentPage() {
+    final currentPage = _controller.currentPage;
+    final pages = _buildPages();
 
-  // Future<void> _saveDetectionResult(Map<String, dynamic> riskResult) async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     final List<String> existingResults = prefs.getStringList('detection_results') ?? [];
-  //
-  //     print('📊 Sebelum save: ${existingResults.length} hasil tersimpan');
-  //
-  //     // Simpan hanya data essential (tanpa ComplaintEducation)
-  //     final newResult = {
-  //       "date": DateTime.now().toIso8601String(),
-  //       "data": {
-  //         "riskLevel": riskResult['riskLevel']?.toString() ?? 'unknown',
-  //         "score": riskResult['score'] ?? 0,
-  //         "details": riskResult['details'] is List ? riskResult['details'] : [],
-  //         "recommendation": riskResult['recommendation']?.toString() ?? 'Tidak ada rekomendasi',
-  //         // Skip complaintEducations karena complex object
-  //         "riskEducation": riskResult['riskEducation'] is Map ? riskResult['riskEducation'] : null,
-  //         "generalTips": riskResult['generalTips'] is List ? riskResult['generalTips'] : null,
-  //       },
-  //     };
-  //
-  //     print('✅ Data baru disiapkan: ${newResult["date"]}');
-  //
-  //     existingResults.add(jsonEncode(newResult));
-  //     await prefs.setStringList('detection_results', existingResults);
-  //
-  //     final savedResults = prefs.getStringList('detection_results') ?? [];
-  //     print('📊 Setelah save: ${savedResults.length} hasil tersimpan');
-  //
-  //   } catch (e) {
-  //     print('❌ Error menyimpan data: $e');
-  //   }
-  // }
+    if (currentPage < pages.length) {
+      final page = pages[currentPage];
 
-  // Future<void> _startRiskFlow() async {
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(builder: (_) => const LoadingSelfDetectionPage()),
-  //   );
-  //
-  //   await Future.delayed(const Duration(milliseconds: 700));
-  //
-  //   // Hitung risiko berdasarkan formula yang benar
-  //   final Map<String, dynamic> riskResult = _controller.calculateRiskBasedOnFormula();
-  //
-  //   print('🔍 Risk Result Data:');
-  //   print('Risk Level: ${riskResult['riskLevel']}');
-  //   print('Score: ${riskResult['score']}');
-  //   print('Details: ${riskResult['details']}');
-  //   print('Recommendation: ${riskResult['recommendation']}');
-  //
-  //   if (!mounted) return;
-  //
-  //   Navigator.of(context).pushReplacement(
-  //     MaterialPageRoute(
-  //       builder: (_) => ResultPage(
-  //         riskResult: riskResult,
-  //         onBack: () => Navigator.of(context).pop(),
-  //         onSave: () async { // ✅ Tambahkan async di sini
-  //           // Implementasi logika penyimpanan di sini
-  //           print('💾 Memulai proses penyimpanan...');
-  //           await _saveDetectionResult(riskResult);
-  //           print('💾 Proses penyimpanan selesai');
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
+      // Gunakan runtimeType untuk pengecekan tipe yang lebih aman
+      if (page is VitalDataPage) {
+        return _validateVitalData();
+      } else if (page is FetalMovementPage) {
+        return _validateFetalMovementPage();
+      } else if (page is PregnancyHistoryPage) {
+        return _validatePregnancyHistory();
+      } else if (page is PhysicalDataPage) {
+        return _validatePhysicalData();
+      } else if (page is MenstrualPage) {
+        return _controller.selectedLMPDate != null;
+      } else if (page is LifestylePage) {
+        return _validateLifestyleData();
+      }
+      // Untuk halaman lain (ComplaintsPage, HealthHistoryPage) tidak perlu validasi
+    }
+
+    return true;
+  }
+
+  bool _validateVitalData() {
+    final validators = [
+          (value) => value.isEmpty ? 'Tekanan darah sistolik harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Tekanan darah diastolik harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Suhu tubuh harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Nadi harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Frekuensi napas harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+    ];
+
+    final controllers = [
+      _controller.systolicBpController,
+      _controller.diastolicBpController,
+      _controller.temperatureController,
+      _controller.pulseController,
+      _controller.respirationController,
+    ];
+
+    for (int i = 0; i < controllers.length; i++) {
+      final error = validators[i](controllers[i].text);
+      if (error != null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _validateFetalMovementPage() {
+    return _controller.fetalMovementCount > 0 &&
+        _controller.fetalMovementDuration > 0 &&
+        _controller.movementComparison.isNotEmpty;
+  }
+
+  bool _validatePregnancyHistory() {
+    final validators = [
+          (value) => value.isEmpty ? 'Jumlah anak harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Usia pertama hamil harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Jarak kehamilan harus diisi' : null,
+    ];
+
+    final controllers = [
+      _controller.childrenCountController,
+      _controller.firstPregnancyAgeController,
+      _controller.pregnancyGapController,
+    ];
+
+    for (int i = 0; i < controllers.length; i++) {
+      final error = validators[i](controllers[i].text);
+      if (error != null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _validatePhysicalData() {
+    final validators = [
+          (value) => value.isEmpty ? 'Tinggi badan harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Berat sebelum hamil harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty ? 'Berat saat ini harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+    ];
+
+    final controllers = [
+      _controller.heightController,
+      _controller.weightBeforeController,
+      _controller.currentWeightController,
+    ];
+
+    for (int i = 0; i < controllers.length; i++) {
+      final error = validators[i](controllers[i].text);
+      if (error != null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _validateLifestyleData() {
+    final validators = [
+          (value) => value.isEmpty ? 'Usia saat ini harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+    ];
+
+    final controllers = [
+      _controller.currentAgeController,
+    ];
+
+    for (int i = 0; i < controllers.length; i++) {
+      final error = validators[i](controllers[i].text);
+      if (error != null) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   Future<void> _startRiskFlow() async {
     Navigator.of(context).push(
@@ -204,18 +252,20 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
     );
   }
 
-// Ubah "Risiko tinggi" / "Perlu perhatian" / "Kehamilan normal" -> "tinggi" / "sedang" / "rendah"
-  String _normalizeRiskLevel(String raw) {
-    final lower = raw.toLowerCase();
-    if (lower.contains('tinggi')) return 'tinggi';
-    if (lower.contains('perlu perhatian') || lower.contains('sedang')) return 'sedang';
-    if (lower.contains('normal') || lower.contains('rendah')) return 'rendah';
-    return 'tidak diketahui';
+  String _getButtonText() {
+    final currentPage = _controller.currentPage;
+    if (currentPage == _totalPages - 1) {
+      return "Hitung Risiko";
+    } else {
+      return "Lanjut";
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
+    final totalPages = _totalPages;
+    final currentPage = _controller.currentPage;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -260,26 +310,17 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
         child: Column(
           children: [
             PageIndicator(
-              currentPage: _controller.currentPage,
-              pageCount: 7,
+              currentPage: currentPage,
+              pageCount: totalPages,
             ),
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                // allowImplicitScrolling: true,
                 onPageChanged: (index) {
                   _controller.currentPage = index;
                 },
-                children: [
-                  VitalDataPage(controller: _controller),
-                  ComplaintsPage(controller: _controller),
-                  PregnancyHistoryPage(controller: _controller),
-                  HealthHistoryPage(controller: _controller),
-                  PhysicalDataPage(controller: _controller),
-                  MenstrualPage(controller: _controller),
-                  LifestylePage(controller: _controller),
-                ],
+                children: _buildPages(),
               ),
             ),
             // Navigation Buttons
@@ -298,7 +339,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
               ),
               child: Row(
                 children: [
-                  if (_controller.currentPage > 0)
+                  if (currentPage > 0)
                     Expanded(
                       child: SizedBox(
                         height: 50,
@@ -315,56 +356,38 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
                         ),
                       ),
                     ),
-                  if (_controller.currentPage > 0) const SizedBox(width: 12),
-                  if (_controller.currentPage < 6)
-                    Expanded(
-                      child: SizedBox(
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: tPrimaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 2,
+                  if (currentPage > 0) const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: tPrimaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          onPressed: () {
-                            if (_controller.validateCurrentPage()) {
-                              _nextPage();
-                            } else {
-                              setState(() {});
-                            }
-                          },
-                          child: Text("Lanjut", style: whiteTextStyle),
+                          elevation: 2,
                         ),
-                      ),
-                    ),
-                  if (_controller.currentPage == 6)
-                    Expanded(
-                      child: SizedBox(
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: tPrimaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 2,
-                          ),
-                          onPressed: () {
-                            if (_controller.validateCurrentPage()) {
+                        onPressed: () {
+                          if (_validateCurrentPage()) {
+                            if (currentPage == totalPages - 1) {
                               _startRiskFlow();
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Harap lengkapi data pada langkah ini.")),
-                              );
-                              setState(() {});
+                              _nextPage();
                             }
-                          },
-                          child: Text("Hitung Risiko", style: whiteTextStyle),
-                        ),
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Harap lengkapi data pada langkah ini."),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(_getButtonText(), style: whiteTextStyle),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

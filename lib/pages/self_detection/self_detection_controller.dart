@@ -3,6 +3,18 @@ import 'data/complaint_education_data.dart';
 import 'data/pregnancy_tips_data.dart';
 import 'data/risk_education_data.dart';
 
+// Pindahkan enum PageType ke luar class agar bisa diakses dari mana saja
+enum PageType {
+  vitalData,
+  complaints,
+  fetalMovement,
+  pregnancyHistory,
+  healthHistory,
+  physicalData,
+  menstrual,
+  lifestyle,
+}
+
 class SelfDetectionController extends ChangeNotifier {
   int _currentPage = 0;
   DateTime? _selectedLMPDate;
@@ -49,9 +61,59 @@ class SelfDetectionController extends ChangeNotifier {
   final TextEditingController physicalActivityController = TextEditingController();
   final TextEditingController familySupportController = TextEditingController();
 
+  // Data gerakan janin
+  DateTime? _fetalMovementDateTime;
+  int _fetalMovementCount = 0;
+  int _fetalMovementDuration = 0;
+  String _fetalActivityPattern = '';
+  String _movementComparison = '';
+  List<String> _fetalAdditionalComplaints = [];
+
+  // Getter dan setter untuk data gerakan janin
+  DateTime? get fetalMovementDateTime => _fetalMovementDateTime;
+  set fetalMovementDateTime(DateTime? value) {
+    _fetalMovementDateTime = value;
+    notifyListeners();
+  }
+
+  int get fetalMovementCount => _fetalMovementCount;
+  set fetalMovementCount(int value) {
+    _fetalMovementCount = value;
+    notifyListeners();
+  }
+
+  int get fetalMovementDuration => _fetalMovementDuration;
+  set fetalMovementDuration(int value) {
+    _fetalMovementDuration = value;
+    notifyListeners();
+  }
+
+  String get fetalActivityPattern => _fetalActivityPattern;
+  set fetalActivityPattern(String value) {
+    _fetalActivityPattern = value;
+    notifyListeners();
+  }
+
+  String get movementComparison => _movementComparison;
+  set movementComparison(String value) {
+    _movementComparison = value;
+    notifyListeners();
+  }
+
+  List<String> get fetalAdditionalComplaints => _fetalAdditionalComplaints;
+  set fetalAdditionalComplaints(List<String> value) {
+    _fetalAdditionalComplaints = value;
+    notifyListeners();
+  }
+
+  // Method untuk mengecek apakah perlu menampilkan halaman gerakan janin
+  bool get shouldShowFetalMovementPage {
+    return complaintSelected["Gerakan Janin"] == true;
+  }
+
   // Keluhan dan severity
   final List<String> complaints = [
-    "Mual dan muntah", "Kembung", "Maag / nyeri ulu hati", "Sakit kepala",
+    "Mual dan muntah", "Kembung", "Maag / nyeri ulu hati", "Sakit kepala", "Gerakan Janin",
     "Kram perut", "Keputihan", "Ngidam", "Pendarahan / bercak dari jalan lahir",
     "Bengkak pada kaki / tangan / wajah", "Sembelit", "Kelelahan berlebihan",
     "Ngantuk dan pusing", "Perubahan mood", "Masalah tidur", "Hilang nafsu makan",
@@ -60,7 +122,7 @@ class SelfDetectionController extends ChangeNotifier {
   ];
 
   final Map<String, int> complaintSeverity = {
-    "Mual dan muntah": 0, "Kembung": 0, "Maag / nyeri ulu hati": 1,
+    "Mual dan muntah": 0, "Kembung": 0, "Maag / nyeri ulu hati": 1, "Gerakan Janin": 2,
     "Sakit kepala": 1, "Kram perut": 1, "Keputihan": 0, "Ngidam": 0,
     "Pendarahan / bercak dari jalan lahir": 2, "Bengkak pada kaki / tangan / wajah": 2,
     "Sembelit": 0, "Kelelahan berlebihan": 0, "Ngantuk dan pusing": 0,
@@ -92,6 +154,18 @@ class SelfDetectionController extends ChangeNotifier {
   set selectedLMPDate(DateTime? value) {
     _selectedLMPDate = value;
     notifyListeners();
+  }
+
+  // Getter untuk total halaman
+  int get totalPages => _getPageOrder().length;
+
+  // Getter untuk current page type
+  PageType get currentPageType {
+    final pages = _getPageOrder();
+    if (_currentPage < pages.length) {
+      return pages[_currentPage];
+    }
+    return PageType.vitalData;
   }
 
   SelfDetectionController() {
@@ -144,7 +218,6 @@ class SelfDetectionController extends ChangeNotifier {
     }
   }
 
-  // TAMBAHKAN METHOD _getRecommendation YANG HILANG
   String _getRecommendation(String riskLevel) {
     switch (riskLevel) {
       case "Risiko Tinggi":
@@ -158,13 +231,10 @@ class SelfDetectionController extends ChangeNotifier {
     }
   }
 
-  // Tambahkan metode baru untuk menghitung risiko berdasarkan formula
   Map<String, dynamic> calculateRiskBasedOnFormula() {
-    // Hitung skor sesuai formula
     int totalScore = _calculateScore();
     bool hasRedFlag = _hasRedFlag;
 
-    // Tentukan risk level berdasarkan formula
     String riskLevel;
     if (hasRedFlag || totalScore >= 4) {
       riskLevel = "Risiko Tinggi";
@@ -174,27 +244,83 @@ class SelfDetectionController extends ChangeNotifier {
       riskLevel = "Normal";
     }
 
-    // Dapatkan rekomendasi berdasarkan risk level
     String recommendation = _getRecommendation(riskLevel);
-
-    // Dapatkan edukasi
     _riskLevelEducation = RiskEducationData.getEducation(riskLevel);
+
+    // HITUNG STATUS GERAKAN JANIN UNTUK DISERTAKAN DI HASIL
+    final fetalMovementStatus = _calculateFetalMovementStatus();
 
     return {
       'riskLevel': riskLevel.toLowerCase(),
-      'score': totalScore, // Skor asli (0-23)
+      'score': totalScore,
       'recommendation': recommendation,
       'details': _redFlagReasons,
       'complaintEducations': _selectedComplaintEducations,
       'riskEducation': _riskLevelEducation,
       'generalTips': getGeneralPregnancyTips(),
       'hasRedFlag': hasRedFlag,
+
+      // DATA GERAKAN JANIN YANG LEBIH DETAIL
+      'hasFetalMovementData': shouldShowFetalMovementPage,
+      'fetalMovementCount': _fetalMovementCount,
+      'fetalMovementDuration': _fetalMovementDuration,
+      'movementComparison': _movementComparison,
+      'fetalActivityPattern': _fetalActivityPattern,
+      'fetalAdditionalComplaints': _fetalAdditionalComplaints,
+      'fetalMovementDateTime': _fetalMovementDateTime?.toIso8601String(),
+      'fetalMovementStatus': fetalMovementStatus, // Status dinamis
+      'movementsPerHour': _fetalMovementCount > 0 && _fetalMovementDuration > 0
+          ? (_fetalMovementCount / _fetalMovementDuration * 60)
+          : 0.0,
     };
   }
 
-  // PERBAIKI metode calculateRisk yang sudah ada:
+  // Tambahkan method untuk menghitung status gerakan janin
+  Map<String, dynamic> _calculateFetalMovementStatus() {
+    if (_fetalMovementCount == 0 || _fetalMovementDuration == 0) {
+      return {
+        'status': 'incomplete',
+        'title': 'Data Tercatat',
+        'message': 'Data gerakan janin belum lengkap',
+        'color': 'grey'
+      };
+    }
+
+    final movementsPerHour = (_fetalMovementCount / _fetalMovementDuration) * 60;
+
+    if (movementsPerHour >= 5.0) {
+      return {
+        'status': 'normal',
+        'title': 'Kondisi Normal',
+        'message': 'Gerakan janin dalam batas normal',
+        'color': 'green'
+      };
+    } else if (movementsPerHour >= 3.0) {
+      return {
+        'status': 'monitoring',
+        'title': 'Perlu Pemantauan',
+        'message': 'Perlu pemantauan gerakan janin',
+        'color': 'blue'
+      };
+    } else if (movementsPerHour >= 1.0) {
+      return {
+        'status': 'attention',
+        'title': 'Perlu Perhatian',
+        'message': 'Perlu perhatian - gerakan janin berkurang',
+        'color': 'orange'
+      };
+    } else {
+      return {
+        'status': 'emergency',
+        'title': 'Perhatian Khusus',
+        'message': 'Segera periksa - gerakan janin sangat berkurang',
+        'color': 'red'
+      };
+    }
+  }
+
   void calculateRisk() {
-    _score = _calculateScore(); // Hapus .toDouble(), karena _score sudah int
+    _score = _calculateScore();
 
     if (_hasRedFlag || _score >= 4) {
       result = "Risiko Tinggi";
@@ -211,6 +337,34 @@ class SelfDetectionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Tambahkan method untuk menilai gerakan janin secara dinamis
+  int _assessFetalMovement() {
+    int score = 0;
+
+    // Hanya beri penilaian jika ada data gerakan janin
+    if (_fetalMovementCount > 0 && _fetalMovementDuration > 0) {
+      final movementsPerHour = (_fetalMovementCount / _fetalMovementDuration) * 60;
+
+      // Beri skor berdasarkan gerakan per jam
+      if (movementsPerHour < 1.0) {
+        score += 2; // Sangat berbahaya
+        _hasRedFlag = true;
+        _redFlagReasons.add("Gerakan janin sangat berkurang (${movementsPerHour.toStringAsFixed(1)} gerakan/jam)");
+      } else if (movementsPerHour < 3.0) {
+        score += 1; // Perlu perhatian
+        _redFlagReasons.add("Gerakan janin berkurang (${movementsPerHour.toStringAsFixed(1)} gerakan/jam)");
+      }
+
+      // Tambahkan penilaian untuk perbandingan gerakan
+      if (_movementComparison == 'Lebih sedikit') {
+        score += 1;
+        _redFlagReasons.add("Penurunan gerakan janin dibanding hari sebelumnya");
+      }
+    }
+
+    return score;
+  }
+
   int _calculateScore() {
     int totalScore = 0;
     _hasRedFlag = false;
@@ -219,6 +373,10 @@ class SelfDetectionController extends ChangeNotifier {
 
     totalScore += _assessVitalData();
     totalScore += _assessComplaints();
+    // TAMBAHKAN PENILAIAN GERAKAN JANIN JIKA ADA DATA
+    if (shouldShowFetalMovementPage) {
+      totalScore += _assessFetalMovement();
+    }
     totalScore += _assessPregnancyHistory();
     totalScore += _assessHealthHistory();
     totalScore += _assessPhysicalData();
@@ -239,7 +397,6 @@ class SelfDetectionController extends ChangeNotifier {
       int severity = complaintSeverity[complaint] ?? 0;
       score += severity;
 
-      // Simpan edukasi untuk keluhan yang dipilih
       var education = ComplaintEducationData.getEducation(complaint);
       if (education != null) {
         _selectedComplaintEducations[complaint] = education;
@@ -256,7 +413,6 @@ class SelfDetectionController extends ChangeNotifier {
   int _assessVitalData() {
     int score = 0;
 
-    // Blood Pressure Assessment
     double? systolic = double.tryParse(systolicBpController.text);
     double? diastolic = double.tryParse(diastolicBpController.text);
 
@@ -270,7 +426,6 @@ class SelfDetectionController extends ChangeNotifier {
       }
     }
 
-    // Temperature Assessment
     double? temp = double.tryParse(temperatureController.text);
     if (temp != null) {
       if (temp > 38) {
@@ -282,7 +437,6 @@ class SelfDetectionController extends ChangeNotifier {
       }
     }
 
-    // Pulse Assessment
     int? pulse = int.tryParse(pulseController.text);
     if (pulse != null) {
       if (pulse < 50 || pulse > 120) {
@@ -294,7 +448,6 @@ class SelfDetectionController extends ChangeNotifier {
       }
     }
 
-    // Respiration Assessment
     int? respiration = int.tryParse(respirationController.text);
     if (respiration != null) {
       if (respiration < 12 || respiration > 24) {
@@ -312,7 +465,6 @@ class SelfDetectionController extends ChangeNotifier {
   int _assessPregnancyHistory() {
     int score = 0;
 
-    // Check for previous complications
     String complications = deliveryComplicationController.text.toLowerCase();
     String obstetricHistory = obstetricHistoryController.text.toLowerCase();
     String previousPregnancy = previousPregnancyController.text.toLowerCase();
@@ -337,7 +489,7 @@ class SelfDetectionController extends ChangeNotifier {
         } else {
           score += 1;
         }
-        break; // Count only the most serious complication
+        break;
       }
     }
 
@@ -349,7 +501,6 @@ class SelfDetectionController extends ChangeNotifier {
 
     String diseaseHistory = diseaseHistoryController.text.toLowerCase();
 
-    // Serious chronic conditions
     List<String> seriousConditions = [
       "hipertensi", "diabetes", "jantung", "ginjal", "hiv", "hepatitis", "tb aktif"
     ];
@@ -363,7 +514,6 @@ class SelfDetectionController extends ChangeNotifier {
       }
     }
 
-    // Mild conditions
     if (score == 0) {
       List<String> mildConditions = ["asma", "alergi", "tb sembuh"];
       for (var condition in mildConditions) {
@@ -380,7 +530,6 @@ class SelfDetectionController extends ChangeNotifier {
   int _assessPhysicalData() {
     int score = 0;
 
-    // BMI Assessment
     if (bmiValue != null) {
       if (bmiValue! >= 30) {
         score += 2;
@@ -391,7 +540,6 @@ class SelfDetectionController extends ChangeNotifier {
       }
     }
 
-    // LILA Assessment
     double? lila = double.tryParse(lilaController.text);
     if (lila != null && lila < 23.5) {
       score += 1;
@@ -403,13 +551,11 @@ class SelfDetectionController extends ChangeNotifier {
   int _assessMenstrualPregnancyData() {
     int score = 0;
 
-    // Check for irregular menstrual cycle
     String cycle = menstrualCycleController.text.toLowerCase();
     if (cycle.contains("tidak teratur")) {
       score += 1;
     }
 
-    // Check ultrasound results
     String ultrasound = ultrasoundResultController.text.toLowerCase();
     if (ultrasound.contains("masalah") || ultrasound.contains("abnormal")) {
       score += 2;
@@ -417,7 +563,6 @@ class SelfDetectionController extends ChangeNotifier {
       _redFlagReasons.add("Hasil USG menunjukkan masalah");
     }
 
-    // Check fetal movement
     String movement = fetalMovementController.text.toLowerCase();
     if (movement.contains("tidak") || movement.contains("berkurang")) {
       score += 2;
@@ -431,13 +576,11 @@ class SelfDetectionController extends ChangeNotifier {
   int _assessLifestyleData() {
     int score = 0;
 
-    // Age Assessment
     int? age = int.tryParse(currentAgeController.text);
     if (age != null && (age < 20 || age > 35)) {
       score += 1;
     }
 
-    // Smoking Assessment
     if (smokingStatus["Merokok"] == true) {
       score += 2;
       _hasRedFlag = true;
@@ -446,7 +589,6 @@ class SelfDetectionController extends ChangeNotifier {
       score += 1;
     }
 
-    // Alcohol/Drug Assessment
     if (alcoholDrugStatus["Mengonsumsi alkohol"] == true ||
         alcoholDrugStatus["Mengonsumsi obat terlarang"] == true) {
       score += 2;
@@ -454,7 +596,6 @@ class SelfDetectionController extends ChangeNotifier {
       _redFlagReasons.add("Konsumsi alkohol/obat terlarang");
     }
 
-    // Family Support Assessment
     String support = familySupportController.text.toLowerCase();
     if (support.contains("tidak") || support.contains("minim")) {
       score += 1;
@@ -464,24 +605,58 @@ class SelfDetectionController extends ChangeNotifier {
   }
 
   bool validateCurrentPage() {
-    switch (_currentPage) {
-      case 0: // Data Vital
-        return _validateVitalData();
-      case 1: // Keluhan
-        return true; // No validation needed for checkboxes
-      case 2: // Riwayat Kehamilan & Persalinan
-        return _validatePregnancyHistory();
-      case 3: // Riwayat Kesehatan
-        return true; // No mandatory fields
-      case 4: // Data Fisik
-        return _validatePhysicalData();
-      case 5: // Data Haid & Kehamilan
-        return _selectedLMPDate != null;
-      case 6: // Faktor Sosial & Gaya Hidup
-        return _validateLifestyleData();
-      default:
-        return true;
+    final pages = _getPageOrder();
+
+    if (_currentPage >= pages.length) {
+      return true;
     }
+
+    final pageType = pages[_currentPage];
+
+    switch (pageType) {
+      case PageType.vitalData:
+        return _validateVitalData();
+      case PageType.complaints:
+        return true;
+      case PageType.fetalMovement:
+        return _validateFetalMovementPage();
+      case PageType.pregnancyHistory:
+        return _validatePregnancyHistory();
+      case PageType.healthHistory:
+        return true;
+      case PageType.physicalData:
+        return _validatePhysicalData();
+      case PageType.menstrual:
+        return _selectedLMPDate != null;
+      case PageType.lifestyle:
+        return _validateLifestyleData();
+      }
+  }
+
+  bool _validateFetalMovementPage() {
+    bool isValid = _fetalMovementCount > 0 &&
+        _fetalMovementDuration > 0 &&
+        _movementComparison.isNotEmpty;
+
+    return isValid;
+  }
+
+  List<PageType> _getPageOrder() {
+    final pages = [PageType.vitalData, PageType.complaints];
+
+    if (shouldShowFetalMovementPage) {
+      pages.add(PageType.fetalMovement);
+    }
+
+    pages.addAll([
+      PageType.pregnancyHistory,
+      PageType.healthHistory,
+      PageType.physicalData,
+      PageType.menstrual,
+      PageType.lifestyle,
+    ]);
+
+    return pages;
   }
 
   bool _validateVitalData() {
@@ -501,15 +676,13 @@ class SelfDetectionController extends ChangeNotifier {
       respirationController,
     ];
 
-    bool allValid = true;
     for (int i = 0; i < controllers.length; i++) {
       final error = validators[i](controllers[i].text);
       if (error != null) {
-        allValid = false;
+        return false;
       }
     }
-
-    return allValid;
+    return true;
   }
 
   bool _validatePregnancyHistory() {
@@ -525,15 +698,13 @@ class SelfDetectionController extends ChangeNotifier {
       pregnancyGapController,
     ];
 
-    bool allValid = true;
     for (int i = 0; i < controllers.length; i++) {
       final error = validators[i](controllers[i].text);
       if (error != null) {
-        allValid = false;
+        return false;
       }
     }
-
-    return allValid;
+    return true;
   }
 
   bool _validatePhysicalData() {
@@ -549,15 +720,13 @@ class SelfDetectionController extends ChangeNotifier {
       currentWeightController,
     ];
 
-    bool allValid = true;
     for (int i = 0; i < controllers.length; i++) {
       final error = validators[i](controllers[i].text);
       if (error != null) {
-        allValid = false;
+        return false;
       }
     }
-
-    return allValid;
+    return true;
   }
 
   bool _validateLifestyleData() {
@@ -569,18 +738,15 @@ class SelfDetectionController extends ChangeNotifier {
       currentAgeController,
     ];
 
-    bool allValid = true;
     for (int i = 0; i < controllers.length; i++) {
       final error = validators[i](controllers[i].text);
       if (error != null) {
-        allValid = false;
+        return false;
       }
     }
-
-    return allValid;
+    return true;
   }
 
-  // Method untuk mendapatkan tips umum
   List<String> getGeneralPregnancyTips() {
     return PregnancyTipsData.getTips();
   }

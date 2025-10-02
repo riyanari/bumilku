@@ -179,6 +179,15 @@ class ComplaintEducationData {
       tips: "Minum cukup air, istirahat.",
       warning: "Jika kontraksi makin sering/kuat → segera ke RS.",
     ),
+    // Di ComplaintEducationData - perbaiki data gerakan janin
+    "Gerakan Janin": ComplaintEducation(
+      title: "Gerakan Janin",
+      theory: "Gerakan janin merupakan tanda vitalitas janin, mulai dapat dirasakan ibu pada usia kehamilan sekitar 18–20 minggu. Dipengaruhi oleh aktivitas janin, volume cairan ketuban, dan sensitivitas ibu.",
+      normalCondition: "Gerakan terasa setiap hari, rata-rata minimal 5 gerakan per jam atau 10 gerakan dalam 2 jam setelah usia kehamilan 28 minggu.",
+      risk: "Gerakan janin berkurang atau tidak terasa bisa menandakan hipoksia janin, gangguan pertumbuhan intrauterin, atau gawat janin.",
+      tips: "Lakukan pencatatan gerakan janin secara rutin, pilih waktu saat janin biasanya aktif (misalnya setelah makan). Gunakan sistem hitung yang dinamis berdasarkan durasi pencatatan.",
+      warning: "Bila gerakan janin kurang dari 3 gerakan per jam atau terjadi penurunan drastis aktivitas janin → segera periksa ke tenaga kesehatan.",
+    ),
   };
 
   static ComplaintEducation? getEducation(String complaintName) {

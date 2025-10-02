@@ -77,6 +77,27 @@ class AuthServices {
     }
   }
 
+  // TAMBAHKAN METHOD UPDATE PROFILE
+  Future<UserModel> updateProfile({
+    required String userId,
+    required String name,
+    required String alamat,
+    required DateTime tglLahir,
+  }) async {
+    try {
+      UserModel updatedUser = await UserServices().updateUser(
+        userId: userId,
+        name: name,
+        alamat: alamat,
+        tglLahir: tglLahir,
+      );
+
+      return updatedUser;
+    } catch (e) {
+      throw Exception(_getUserFriendlyError(e));
+    }
+  }
+
   Future<void> signOut() async {
     try {
       await _auth.signOut();

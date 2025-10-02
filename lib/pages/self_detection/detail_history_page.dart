@@ -66,11 +66,70 @@ class DetailHistoryPage extends StatelessWidget {
     }
   }
 
+  // METHOD BARU: Warna untuk status gerakan janin
+  Color _getFetalMovementColor(String colorName) {
+    switch (colorName) {
+      case 'green':
+        return Colors.green;
+      case 'blue':
+        return Colors.blue;
+      case 'orange':
+        return Colors.orange;
+      case 'red':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // METHOD BARU: Icon untuk status gerakan janin
+  IconData _getFetalMovementIcon(String colorName) {
+    switch (colorName) {
+      case 'green':
+        return Icons.check_circle;
+      case 'blue':
+        return Icons.timelapse;
+      case 'orange':
+        return Icons.info;
+      case 'red':
+        return Icons.warning;
+      default:
+        return Icons.hourglass_empty;
+    }
+  }
+
+  // METHOD BARU: Parse fetal movement status
+  Map<String, dynamic> _parseFetalMovementStatus(dynamic statusData) {
+    if (statusData is Map<String, dynamic>) {
+      return statusData;
+    } else if (statusData is Map) {
+      return Map<String, dynamic>.from(statusData);
+    } else {
+      return {
+        'status': 'incomplete',
+        'title': 'Data Tercatat',
+        'message': 'Data gerakan janin telah tercatat',
+        'color': 'grey'
+      };
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayDate = detection.createdAt ?? detection.date;
     final formattedDate = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID').format(displayDate);
     final riskColor = _getRiskColor(detection.riskLevel);
+
+    // DATA GERAKAN JANIN
+    final hasFetalMovementData = detection.hasFetalMovementData == true;
+    final fetalMovementCount = detection.fetalMovementCount ?? 0;
+    final fetalMovementDuration = detection.fetalMovementDuration ?? 0;
+    final movementsPerHour = detection.movementsPerHour ?? 0.0;
+    final fetalMovementStatusDynamic = detection.fetalMovementStatus;
+    final fetalMovementStatus = _parseFetalMovementStatus(fetalMovementStatusDynamic);
+    final movementComparison = detection.movementComparison?.toString() ?? '';
+    final fetalActivityPattern = detection.fetalActivityPattern?.toString() ?? '';
+    final fetalAdditionalComplaints = detection.fetalAdditionalComplaints ?? [];
 
     return Scaffold(
       appBar: AppBar(
@@ -116,6 +175,20 @@ class DetailHistoryPage extends StatelessWidget {
               _buildHeaderCard(riskColor, formattedDate),
 
               const SizedBox(height: 20),
+
+              // HASIL GERAKAN JANIN (jika ada data)
+              if (hasFetalMovementData) ...[
+                _buildFetalMovementSection(
+                  fetalMovementCount,
+                  fetalMovementDuration,
+                  movementsPerHour,
+                  fetalMovementStatus,
+                  movementComparison,
+                  fetalActivityPattern,
+                  fetalAdditionalComplaints,
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // Informasi Risiko
               _buildSectionCard(
@@ -184,6 +257,190 @@ class DetailHistoryPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // WIDGET BARU: Section untuk menampilkan hasil gerakan janin
+  Widget _buildFetalMovementSection(
+      int movementCount,
+      int duration,
+      double movementsPerHour,
+      Map<String, dynamic> status,
+      String comparison,
+      String pattern,
+      List<dynamic> additionalComplaints,
+      ) {
+    final statusColor = _getFetalMovementColor(status['color'] ?? 'grey');
+    final statusIcon = _getFetalMovementIcon(status['color'] ?? 'grey');
+
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha:0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.favorite, size: 20, color: statusColor),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "Hasil Pencatatan Gerakan Janin",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Status gerakan janin
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha:0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: statusColor.withValues(alpha:0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(statusIcon, size: 20, color: statusColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        (status['title'] ?? 'DATA TERCATAT').toString().toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    status['message']?.toString() ?? 'Data gerakan janin telah tercatat',
+                    style: const TextStyle(fontSize: 14, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Detail pencatatan
+            Text(
+              "Detail Pencatatan:",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            _buildFetalMovementDetailItem(
+                "Jumlah Gerakan",
+                "$movementCount kali"
+            ),
+            _buildFetalMovementDetailItem(
+                "Durasi Pencatatan",
+                "$duration menit"
+            ),
+            _buildFetalMovementDetailItem(
+                "Gerakan per Jam",
+                "${movementsPerHour.toStringAsFixed(1)} gerakan/jam"
+            ),
+            _buildFetalMovementDetailItem(
+                "Perbandingan dengan Kemarin",
+                comparison.isNotEmpty ? comparison : 'Tidak ada data'
+            ),
+            _buildFetalMovementDetailItem(
+                "Pola Aktivitas",
+                pattern.isNotEmpty ? pattern : 'Tidak ada data'
+            ),
+
+            // Keluhan tambahan
+            if (additionalComplaints.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildFetalMovementDetailItem(
+                  "Keluhan Tambahan",
+                  additionalComplaints.join(', ')
+              ),
+            ],
+
+            const SizedBox(height: 12),
+
+            // Informasi tambahan
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, color: Colors.blue[700], size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Standar normal: minimal 5 gerakan per jam",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper untuk item detail gerakan janin
+  Widget _buildFetalMovementDetailItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Text(
+              value,
+              style: blackTextStyle.copyWith(
+                  fontSize: 12,
+                  fontWeight: semiBold
+              )
+          ),
+        ],
       ),
     );
   }

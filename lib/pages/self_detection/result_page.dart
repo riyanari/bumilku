@@ -24,6 +24,19 @@ class ResultPage extends StatelessWidget {
     final riskEducation = riskResult['riskEducation'] as Map<String, String>?;
     final generalTips = riskResult['generalTips'] as List<String>?;
 
+    // DATA GERAKAN JANIN - PERBAIKAN TYPE CASTING
+    final hasFetalMovementData = riskResult['hasFetalMovementData'] == true;
+    final fetalMovementCount = riskResult['fetalMovementCount'] ?? 0;
+    final fetalMovementDuration = riskResult['fetalMovementDuration'] ?? 0;
+    final movementsPerHour = riskResult['movementsPerHour'] ?? 0.0;
+
+    // PERBAIKAN: Handle dynamic type untuk fetalMovementStatus
+    final dynamic fetalMovementStatusDynamic = riskResult['fetalMovementStatus'];
+    final Map<String, dynamic> fetalMovementStatus = _parseFetalMovementStatus(fetalMovementStatusDynamic);
+
+    final movementComparison = riskResult['movementComparison']?.toString() ?? '';
+    final fetalActivityPattern = riskResult['fetalActivityPattern']?.toString() ?? '';
+
     final riskData = _getRiskData(riskLevel);
 
     return Scaffold(
@@ -47,12 +60,11 @@ class ResultPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () {
-              _showSaveConfirmation(context); // ✅ Konfirmasi save di sini
+              _showSaveConfirmation(context);
             },
             tooltip: "Simpan Hasil",
           ),
         ],
-        // ❌ HAPUS ACTIONS (button save di appbar)
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -80,6 +92,19 @@ class ResultPage extends StatelessWidget {
               // Detail faktor risiko (jika ada)
               if (details.isNotEmpty)
                 _buildAnimatedRiskDetailsCard(details),
+
+              const SizedBox(height: 16),
+
+              // HASIL GERAKAN JANIN (jika ada data)
+              if (hasFetalMovementData)
+                _buildFetalMovementSection(
+                    fetalMovementCount,
+                    fetalMovementDuration,
+                    movementsPerHour,
+                    fetalMovementStatus,
+                    movementComparison,
+                    fetalActivityPattern
+                ),
 
               const SizedBox(height: 16),
 
@@ -115,6 +140,238 @@ class ResultPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // METHOD BARU: Parse fetal movement status dengan aman
+  Map<String, dynamic> _parseFetalMovementStatus(dynamic statusData) {
+    if (statusData is Map<String, dynamic>) {
+      return statusData;
+    } else if (statusData is Map) {
+      // Convert Map<dynamic, dynamic> to Map<String, dynamic>
+      return Map<String, dynamic>.from(statusData);
+    } else {
+      // Return default jika data tidak valid
+      return {
+        'status': 'incomplete',
+        'title': 'Data Tercatat',
+        'message': 'Data gerakan janin telah tercatat',
+        'color': 'grey'
+      };
+    }
+  }
+
+  // WIDGET BARU: Section untuk menampilkan hasil gerakan janin
+  Widget _buildFetalMovementSection(
+      int movementCount,
+      int duration,
+      double movementsPerHour,
+      Map<String, dynamic> status,
+      String comparison,
+      String pattern
+      ) {
+    final statusColor = _getFetalMovementColor(status['color'] ?? 'grey');
+    final statusIcon = _getFetalMovementIcon(status['color'] ?? 'grey');
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                statusColor.withValues(alpha:0.08),
+                Colors.white,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha:0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(statusIcon, color: statusColor, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "Hasil Pencatatan Gerakan Janin",
+                        style: blackTextStyle.copyWith(
+                          fontSize: 14,
+                          fontWeight: bold
+                        )
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Status gerakan janin
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha:0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor.withValues(alpha:0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (status['title'] ?? 'DATA TERCATAT').toString().toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        status['message']?.toString() ?? 'Data gerakan janin telah tercatat',
+                        style: const TextStyle(fontSize: 14, height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Detail pencatatan
+                Text(
+                  "Detail Pencatatan:",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                _buildFetalMovementDetailItem(
+                    "Jumlah Gerakan",
+                    "$movementCount kali"
+                ),
+                _buildFetalMovementDetailItem(
+                    "Durasi Pencatatan",
+                    "$duration menit"
+                ),
+                _buildFetalMovementDetailItem(
+                    "Gerakan per Jam",
+                    "${movementsPerHour.toStringAsFixed(1)} gerakan/jam"
+                ),
+                _buildFetalMovementDetailItem(
+                    "Perbandingan dengan Kemarin",
+                    comparison.isNotEmpty ? comparison : 'Tidak ada data'
+                ),
+                _buildFetalMovementDetailItem(
+                    "Pola Aktivitas",
+                    pattern.isNotEmpty ? pattern : 'Tidak ada data'
+                ),
+
+                const SizedBox(height: 12),
+
+                // Informasi tambahan
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info, color: Colors.blue[700], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Standar normal: minimal 5 gerakan per jam",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper untuk item detail gerakan janin
+  Widget _buildFetalMovementDetailItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: blackTextStyle.copyWith(
+              fontSize: 12,
+              fontWeight: semiBold
+            )
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper untuk mendapatkan warna berdasarkan status gerakan janin
+  Color _getFetalMovementColor(String colorName) {
+    switch (colorName) {
+      case 'green':
+        return Colors.green;
+      case 'blue':
+        return Colors.blue;
+      case 'orange':
+        return Colors.orange;
+      case 'red':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Helper untuk mendapatkan icon berdasarkan status gerakan janin
+  IconData _getFetalMovementIcon(String colorName) {
+    switch (colorName) {
+      case 'green':
+        return Icons.check_circle;
+      case 'blue':
+        return Icons.timelapse;
+      case 'orange':
+        return Icons.info;
+      case 'red':
+        return Icons.warning;
+      default:
+        return Icons.hourglass_empty;
+    }
   }
 
   Widget _buildAnimatedRiskHeader(String riskLevel, int score, Map<String, dynamic> riskData) {

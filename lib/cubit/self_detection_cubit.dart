@@ -23,6 +23,12 @@ class SelfDetectionCubit extends Cubit<SelfDetectionState> {
     try {
       emit(SelfDetectionLoading());
 
+      // DEBUG: Print data sebelum save
+      print("💾 CUBIT: Saving detection result with fetal movement data:");
+      print("   hasFetalMovementData: ${riskResult['hasFetalMovementData']}");
+      print("   fetalMovementCount: ${riskResult['fetalMovementCount']}");
+      print("   fetalMovementDuration: ${riskResult['fetalMovementDuration']}");
+
       await _selfDetectionService.saveDetectionResult(
         userId: userId,
         riskResult: riskResult,
@@ -44,8 +50,14 @@ class SelfDetectionCubit extends Cubit<SelfDetectionState> {
 
       final history = await _selfDetectionService.getDetectionHistory(userId);
 
-      // Convert ke SelfDetectionModel
+      // Convert ke SelfDetectionModel - ✅ PERBAIKI DI SINI!
       final detectionHistory = history.map((data) {
+        // DEBUG: Print data dari service
+        print("🔄 CUBIT: Converting data to SelfDetectionModel:");
+        print("   ID: ${data['id']}");
+        print("   hasFetalMovementData: ${data['hasFetalMovementData']}");
+        print("   fetalMovementCount: ${data['fetalMovementCount']}");
+
         return SelfDetectionModel(
           id: data['id'] ?? '',
           userId: data['userId'] ?? '',
@@ -59,6 +71,17 @@ class SelfDetectionCubit extends Cubit<SelfDetectionState> {
           createdAt: data['createdAt'] != null
               ? DateTime.tryParse(data['createdAt'])
               : null,
+
+          // ✅ TAMBAHKAN DATA GERAKAN JANIN DI SINI!
+          hasFetalMovementData: data['hasFetalMovementData'] == true,
+          fetalMovementCount: (data['fetalMovementCount'] as num?)?.toInt(),
+          fetalMovementDuration: (data['fetalMovementDuration'] as num?)?.toInt(),
+          movementsPerHour: (data['movementsPerHour'] as num?)?.toDouble(),
+          fetalMovementStatus: data['fetalMovementStatus'] as Map<String, dynamic>?,
+          movementComparison: data['movementComparison'] as String?,
+          fetalActivityPattern: data['fetalActivityPattern'] as String?,
+          fetalAdditionalComplaints: data['fetalAdditionalComplaints'] as List<dynamic>?,
+          fetalMovementDateTime: data['fetalMovementDateTime'] as String?,
         );
       }).toList();
 

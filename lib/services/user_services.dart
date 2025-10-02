@@ -20,6 +20,38 @@ class UserServices {
     }
   }
 
+  // TAMBAHKAN METHOD UPDATE USER
+  Future<UserModel> updateUser({
+    required String userId,
+    required String name,
+    required String alamat,
+    required DateTime tglLahir,
+  }) async {
+    try {
+      await _userReference.doc(userId).update({
+        'name': name,
+        'alamat': alamat,
+        'tglLahir': tglLahir,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Get updated user data
+      DocumentSnapshot snapshot = await _userReference.doc(userId).get();
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+      return UserModel(
+        id: snapshot.id,
+        username: data['username'],
+        name: data['name'],
+        role: data['role'],
+        alamat: data['alamat'],
+        tglLahir: (data['tglLahir'] as Timestamp).toDate(),
+      );
+    } catch (e) {
+      throw Exception('Gagal mengupdate profile: $e');
+    }
+  }
+
   Future<UserModel> getUserById(String id) async {
     try {
       DocumentSnapshot snapshot = await _userReference.doc(id).get();
