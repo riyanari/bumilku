@@ -6,6 +6,27 @@ import '../models/user_model.dart';
 class AuthServices {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
+  String _getUserFriendlyError(dynamic error) {
+    final errorString = error.toString().toLowerCase();
+
+    if (errorString.contains('user-not-found') ||
+        errorString.contains('invalid-credential')) {
+      return 'Username tidak ditemukan. Periksa kembali username atau password Anda.';
+    } else if (errorString.contains('wrong-password')) {
+      return 'Password yang dimasukkan salah. Silakan coba lagi.';
+    } else if (errorString.contains('network-request-failed')) {
+      return 'Koneksi internet terputus. Periksa koneksi Anda.';
+    } else if (errorString.contains('too-many-requests')) {
+      return 'Terlalu banyak percobaan login. Tunggu beberapa saat lagi.';
+    } else if (errorString.contains('email-already-in-use')) {
+      return 'Username sudah digunakan. Silakan pilih username lain.';
+    } else if (errorString.contains('weak-password')) {
+      return 'Password terlalu lemah. Gunakan minimal 6 karakter.';
+    } else {
+      return 'Terjadi kesalahan. Silakan coba lagi.';
+    }
+  }
+
   Future<UserModel> signIn({
     required String username,
     required String password,
@@ -22,7 +43,7 @@ class AuthServices {
       );
       return user;
     } catch (e) {
-      rethrow;
+      throw Exception(_getUserFriendlyError(e));
     }
   }
 

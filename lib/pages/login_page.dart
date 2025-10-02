@@ -19,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   bool kunciPassword = true;
   bool isUsernameError = false;
   bool isPasswordError = false;
+  String? _loginError; // Tambahkan state untuk error login
 
   @override
   void dispose() {
@@ -32,10 +33,11 @@ class _LoginPageState extends State<LoginPage> {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
 
-    // Validasi form
+    // Reset error state
     setState(() {
       isUsernameError = username.isEmpty;
       isPasswordError = password.isEmpty;
+      _loginError = null; // Reset error login
     });
 
     if (!isUsernameError && !isPasswordError) {
@@ -47,32 +49,17 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Login Gagal'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthFailed) {
-          _showErrorDialog(state.error);
+          // Set error message instead of showing dialog
+          setState(() {
+            _loginError = state.error;
+          });
         } else if (state is AuthSuccess) {
-          // // Login berhasil, navigasi ke home
-          // Navigator.of(context).pushReplacementNamed('/home');
-          final user = state.user; // ini UserModel
+          final user = state.user;
 
           if (user.role.toLowerCase() == 'admin') {
             Navigator.of(context).pushReplacementNamed('/list-bunda');
@@ -235,6 +222,61 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                 ),
+
+                // Tampilkan error login di sini (bukan dialog)
+                if (_loginError != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red.shade200,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Colors.red.shade600,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _loginError!,
+                            style: TextStyle(
+                              color: Colors.red.shade700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            color: Colors.red.shade600,
+                            size: 16,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _loginError = null;
+                            });
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 24,
+                            minHeight: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
                 const SizedBox(height: 10),
                 isLoading
                     ? const LoadingButton()

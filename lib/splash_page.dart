@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bumilku_app/services/medis_service.dart';
+import 'package:bumilku_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -39,23 +40,42 @@ class _SplashPageState extends State<SplashPage> {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
     } else {
       try {
-        // 🔑 perbaikan: cek data medis berdasarkan userId
-        print("=== [SplashPage] Cek data medis untuk userId: ${user.uid}");
-        final medis = await MedisServices().getActiveMedis(user.uid);
+        // 🔑 Cek role user terlebih dahulu
+        print("=== [SplashPage] Cek role user: ${user.uid}");
+        final userData = await UserServices().getUserById(user.uid);
 
-        if (medis != null) {
-          print("=== [SplashPage] User punya medis aktif ===");
-          print("MedisId: ${medis.id}");
-          print("babyName: ${medis.babyName}");
-          print("EDD: ${medis.edd}");
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+        if (userData != null) {
+          print("=== [SplashPage] Role user: ${userData.role}");
+
+          // Jika role admin, langsung ke halaman list bunda
+          if (userData.role.toLowerCase() == 'admin') {
+            print("=== [SplashPage] User adalah admin → ke /list-bunda");
+            Navigator.pushNamedAndRemoveUntil(context, '/list-bunda', (_) => false);
+            return;
+          }
+
+          // Jika bukan admin, cek data medis seperti biasa
+          print("=== [SplashPage] User adalah bunda → cek data medis");
+          final medis = await MedisServices().getActiveMedis(user.uid);
+
+          if (medis != null) {
+            print("=== [SplashPage] User punya medis aktif ===");
+            print("MedisId: ${medis.id}");
+            print("babyName: ${medis.babyName}");
+            print("EDD: ${medis.edd}");
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+          } else {
+            print("=== [SplashPage] Tidak ada data medis aktif → ke onboarding");
+            Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
+          }
         } else {
-          print("=== [SplashPage] Tidak ada data medis aktif → ke onboarding");
-          Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
+          print("!!! [SplashPage] User data tidak ditemukan → ke login");
+          Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
         }
       } catch (e) {
-        print("!!! [SplashPage] ERROR ambil data medis: $e");
-        Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
+        print("!!! [SplashPage] ERROR: $e");
+        // Fallback ke login jika ada error
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
       }
     }
   }
