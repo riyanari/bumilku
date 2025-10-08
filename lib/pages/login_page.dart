@@ -1,3 +1,4 @@
+import 'package:bumilku_app/pages/signup/email_verification_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,40 +14,118 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final FocusNode passwordFocusNode = FocusNode();
   bool kunciPassword = true;
-  bool isUsernameError = false;
+  bool isEmailError = false;
   bool isPasswordError = false;
-  String? _loginError; // Tambahkan state untuk error login
+  String? _loginError;
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     passwordFocusNode.dispose();
     super.dispose();
   }
 
   void _login() {
-    final username = usernameController.text.trim();
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     // Reset error state
     setState(() {
-      isUsernameError = username.isEmpty;
+      isEmailError = email.isEmpty;
       isPasswordError = password.isEmpty;
-      _loginError = null; // Reset error login
+      _loginError = null;
     });
 
-    if (!isUsernameError && !isPasswordError) {
-      // Panggil AuthCubit untuk login
+    if (!isEmailError && !isPasswordError) {
       context.read<AuthCubit>().signIn(
-        username: username,
+        email: email,
         password: password,
       );
     }
+  }
+
+  // 👇 METHOD BARU: Navigate ke Email Verification Page
+  void _navigateToEmailVerification(String userId, String email) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EmailVerificationPage(
+          userId: userId,
+          email: email,
+        ),
+      ),
+          (route) => false,
+    );
+  }
+
+  // METHOD UNTUK LUPA PASSWORD
+  void _showForgotPasswordDialog() {
+    final TextEditingController forgotPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Lupa Password", style: primaryTextStyle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Masukkan email Anda untuk mengatur ulang password",
+              style: secondaryTextStyle,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: forgotPasswordController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: "Email",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Batal", style: secondaryTextStyle),
+          ),
+          BlocListener<AuthCubit, AuthState>(
+            listener: (context, state) {
+              if (state is AuthPasswordResetSent) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Email reset password telah dikirim!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else if (state is AuthFailed) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.error),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: TextButton(
+              onPressed: () {
+                final email = forgotPasswordController.text.trim();
+                if (email.isNotEmpty) {
+                  context.read<AuthCubit>().resetPassword(email);
+                }
+              },
+              child: Text("Kirim", style: primaryTextStyle),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -54,7 +133,18 @@ class _LoginPageState extends State<LoginPage> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthFailed) {
-          // Set error message instead of showing dialog
+          // 👇 CEK APAKAH ERRORNYA EMAIL BELUM TERVERIFIKASI
+          if (state.error.contains('EMAIL_NOT_VERIFIED')) {
+            final parts = state.error.split(':');
+            if (parts.length >= 3) {
+              final userId = parts[1];
+              final userEmail = parts[2];
+              print("=== [LoginPage] Email belum terverifikasi, navigasi ke verification page ===");
+              _navigateToEmailVerification(userId, userEmail);
+              return;
+            }
+          }
+
           setState(() {
             _loginError = state.error;
           });
@@ -129,12 +219,12 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 Semantics(
-                  label: 'Username Input Field. Masukkan username',
+                  label: 'Email Input Field. Masukkan email',
                   child: TextFormField(
-                    controller: usernameController,
-                    keyboardType: TextInputType.text,
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      hintText: 'Masukkan Username',
+                      hintText: 'Masukkan Email',
                       hintStyle: const TextStyle(
                         color: kPrimaryColor,
                         fontWeight: FontWeight.w300,
@@ -143,7 +233,7 @@ class _LoginPageState extends State<LoginPage> {
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(
-                        Icons.person,
+                        Icons.email,
                         color: kPrimaryColor,
                       ),
                       border: OutlineInputBorder(
@@ -153,12 +243,12 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         borderRadius: BorderRadius.circular(40.0),
                       ),
-                      errorText: isUsernameError ? 'Username harus diisi' : null,
+                      errorText: isEmailError ? 'Email harus diisi' : null,
                     ),
                     onChanged: (value) {
-                      if (isUsernameError && value.isNotEmpty) {
+                      if (isEmailError && value.isNotEmpty) {
                         setState(() {
-                          isUsernameError = false;
+                          isEmailError = false;
                         });
                       }
                     },
@@ -222,8 +312,23 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                 ),
-
-                // Tampilkan error login di sini (bukan dialog)
+                SizedBox(height: 4,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: _showForgotPasswordDialog,
+                      child: Text(
+                        "Lupa Password?",
+                        style: whiteTextStyle.copyWith(
+                          fontSize: 12,
+                          decoration: TextDecoration.underline,
+                        ),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
                 if (_loginError != null) ...[
                   const SizedBox(height: 10),
                   Container(

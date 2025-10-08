@@ -7,7 +7,6 @@ import 'package:bumilku_app/cubit/self_detection_cubit.dart';
 
 import '../../models/medis_model.dart';
 import '../../models/self_detection_model.dart';
-import '../self_detection/detail_history_page.dart';
 
 class BundaMonitoringPage extends StatefulWidget {
   final UserModel bunda;
@@ -170,7 +169,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "@${widget.bunda.username}",
+                  "@${widget.bunda.email}",
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade700,
@@ -1584,16 +1583,6 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             textAlign: TextAlign.center,
           ),
         ],
-      ),
-    );
-  }
-
-  // Navigation
-  void _navigateToDetectionDetail(BuildContext context, SelfDetectionModel detection) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailHistoryPage(detection: detection),
       ),
     );
   }

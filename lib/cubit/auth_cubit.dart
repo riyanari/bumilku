@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../models/user_model.dart';
@@ -11,11 +12,11 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  void signIn({required String username, required String password}) async {
+  void signIn({required String email, required String password}) async {
     try {
       emit(AuthLoading());
       UserModel user = await AuthServices().signIn(
-        username: username,
+        email: email,
         password: password,
       );
       emit(AuthSuccess(user));
@@ -26,7 +27,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> signUp({
     required String name,
-    required String username,
+    required String email,
     required String password,
     required String role,
     required String alamat,
@@ -34,9 +35,10 @@ class AuthCubit extends Cubit<AuthState> {
   }) async {
     try {
       emit(AuthLoading());
+      print("[AuthCubit] Starting sign up process...");
 
       UserModel user = await AuthServices().signUp(
-        username: username,
+        email: email,
         password: password,
         name: name,
         role: role,
@@ -44,7 +46,59 @@ class AuthCubit extends Cubit<AuthState> {
         tglLahir: tglLahir,
       );
 
-      emit(AuthSuccess(user));
+      print("[AuthCubit] Sign up successful, emitting AuthEmailVerificationRequired");
+
+      // 👇 STATE YANG BENAR
+      emit(AuthEmailVerificationRequired(
+        user: user,
+        email: email,
+      ));
+
+    } catch (e) {
+      print("[AuthCubit] Sign up failed: $e");
+      emit(AuthFailed(e.toString()));
+    }
+  }
+
+  // METHOD UNTUK KIRIM ULANG VERIFIKASI EMAIL
+  Future<void> sendEmailVerification() async {
+    try {
+      emit(AuthLoading());
+      await AuthServices().sendEmailVerification();
+      emit(AuthEmailVerificationSent());
+    } catch (e) {
+      emit(AuthFailed(e.toString()));
+    }
+  }
+
+// DAN METHOD checkEmailVerification JUGA
+  Future<void> checkEmailVerification() async {
+    try {
+      emit(AuthLoading());
+      bool isVerified = await AuthServices().checkEmailVerification();
+      if (isVerified) {
+        // JIKA SUDAH TERVERIFIKASI, AMBIL DATA USER TERBARU
+        User? firebaseUser = AuthServices().getCurrentUser();
+        if (firebaseUser != null) {
+          UserModel user = await UserServices().getUserById(firebaseUser.uid);
+          emit(AuthSuccess(user));
+        } else {
+          emit(AuthFailed("User tidak ditemukan"));
+        }
+      } else {
+        emit(AuthEmailNotVerified());
+      }
+    } catch (e) {
+      emit(AuthFailed(e.toString()));
+    }
+  }
+
+  // METHOD UNTUK LUPA PASSWORD
+  void resetPassword(String email) async {
+    try {
+      emit(AuthLoading());
+      await AuthServices().resetPassword(email);
+      emit(AuthPasswordResetSent());
     } catch (e) {
       emit(AuthFailed(e.toString()));
     }

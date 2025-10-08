@@ -16,7 +16,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _usernameController;
+  late TextEditingController _emailController;
   late TextEditingController _alamatController;
   late TextEditingController _tglLahirController;
   late DateTime _selectedDate;
@@ -28,7 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final authState = context.read<AuthCubit>().state;
     if (authState is AuthSuccess) {
       _nameController = TextEditingController(text: authState.user.name);
-      _usernameController = TextEditingController(text: authState.user.username);
+      _emailController = TextEditingController(text: authState.user.email);
       _alamatController = TextEditingController(text: authState.user.alamat);
       _tglLahirController = TextEditingController(
         text: DateFormat('dd MMMM yyyy').format(authState.user.tglLahir),
@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       // Default values jika state tidak tersedia
       _nameController = TextEditingController();
-      _usernameController = TextEditingController();
+      _emailController = TextEditingController();
       _alamatController = TextEditingController();
       _tglLahirController = TextEditingController();
       _selectedDate = DateTime.now();
@@ -47,7 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void dispose() {
     _nameController.dispose();
-    _usernameController.dispose();
+    _emailController.dispose();
     _alamatController.dispose();
     _tglLahirController.dispose();
     super.dispose();
@@ -328,7 +328,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  '@${user.username}',
+                                  '@${user.email}',
                                   style: greyTextStyle.copyWith(
                                     fontSize: 14,
                                     fontWeight: medium,
@@ -402,8 +402,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           // Username (READONLY)
                           _buildInfoCard(
                             icon: Icons.alternate_email_rounded,
-                            title: 'Username',
-                            value: user.username,
+                            title: 'Email',
+                            value: user.email,
                             color: Colors.blue,
                           ),
                           SizedBox(height: 12),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-
 import '../../theme/theme.dart';
 
 class DataSignUpPage extends StatelessWidget {
   final GlobalKey<FormState> formKey;
-  final TextEditingController usernameController;
+  final TextEditingController emailController; // UBAH: usernameController -> emailController
   final TextEditingController passwordController;
   final TextEditingController confirmPasswordController;
   final bool kunciPassword;
@@ -12,11 +11,12 @@ class DataSignUpPage extends StatelessWidget {
   final VoidCallback togglePasswordVisibility;
   final VoidCallback toggleConfirmPasswordVisibility;
   final VoidCallback signUp;
+  final bool isLoading; // TAMBAH: loading state
 
   const DataSignUpPage({
     super.key,
     required this.formKey,
-    required this.usernameController,
+    required this.emailController, // UBAH: usernameController -> emailController
     required this.passwordController,
     required this.confirmPasswordController,
     required this.kunciPassword,
@@ -24,6 +24,7 @@ class DataSignUpPage extends StatelessWidget {
     required this.togglePasswordVisibility,
     required this.toggleConfirmPasswordVisibility,
     required this.signUp,
+    this.isLoading = false, // TAMBAH: default false
   });
 
   Widget _buildPasswordStrengthIndicator() {
@@ -112,7 +113,7 @@ class DataSignUpPage extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha:0.1), blurRadius: 20, offset: const Offset(0, 10)),
+                BoxShadow(color: Colors.black.withValues(alpha:0.1), blurRadius: 20, offset: const Offset(0, 10)), // PERBAIKI: withOpacity
               ],
             ),
             child: Padding(
@@ -121,16 +122,19 @@ class DataSignUpPage extends StatelessWidget {
                 key: formKey,
                 child: Column(
                   children: [
-                    // Username
+                    // Email (UBAH: dari Username ke Email)
                     TextFormField(
-                      controller: usernameController,
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress, // TAMBAH: keyboard type email
                       decoration: const InputDecoration(
-                        hintText: 'Username',
-                        prefixIcon: Icon(Icons.person_outline),
+                        hintText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined), // UBAH: icon dari person ke email
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Username wajib diisi';
-                        if (v.length < 3) return 'Username minimal 3 karakter';
+                        if (v == null || v.trim().isEmpty) return 'Email wajib diisi';
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                          return 'Format email tidak valid';
+                        }
                         return null;
                       },
                     ),
@@ -169,6 +173,7 @@ class DataSignUpPage extends StatelessWidget {
                         ),
                       ),
                       validator: (v) {
+                        if (v == null || v.isEmpty) return 'Konfirmasi password wajib diisi';
                         if (v != passwordController.text) return 'Password tidak cocok';
                         return null;
                       },
@@ -176,6 +181,67 @@ class DataSignUpPage extends StatelessWidget {
 
                     const SizedBox(height: 16),
                     _buildPasswordStrengthIndicator(),
+
+                    // TAMBAH: Loading Button atau Regular Button
+                    // const SizedBox(height: 24),
+                    // if (isLoading)
+                    //   SizedBox(
+                    //     width: double.infinity,
+                    //     height: 52,
+                    //     child: ElevatedButton(
+                    //       onPressed: null,
+                    //       style: ElevatedButton.styleFrom(
+                    //         backgroundColor: kPrimaryColor.withValues(alpha:0.7),
+                    //         shape: RoundedRectangleBorder(
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //       ),
+                    //       child: const Row(
+                    //         mainAxisAlignment: MainAxisAlignment.center,
+                    //         children: [
+                    //           SizedBox(
+                    //             height: 20,
+                    //             width: 20,
+                    //             child: CircularProgressIndicator(
+                    //               strokeWidth: 2,
+                    //               color: Colors.white,
+                    //             ),
+                    //           ),
+                    //           SizedBox(width: 12),
+                    //           Text(
+                    //             'Mendaftarkan...',
+                    //             style: TextStyle(
+                    //               color: Colors.white,
+                    //               fontWeight: FontWeight.bold,
+                    //               fontSize: 16,
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   )
+                    // else
+                    //   SizedBox(
+                    //     width: double.infinity,
+                    //     height: 52,
+                    //     child: ElevatedButton(
+                    //       onPressed: signUp,
+                    //       style: ElevatedButton.styleFrom(
+                    //         backgroundColor: kPrimaryColor,
+                    //         shape: RoundedRectangleBorder(
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //         elevation: 0,
+                    //       ),
+                    //       child: Text(
+                    //         'Daftar',
+                    //         style: whiteTextStyle.copyWith(
+                    //           fontWeight: FontWeight.bold,
+                    //           fontSize: 16,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
                   ],
                 ),
               ),

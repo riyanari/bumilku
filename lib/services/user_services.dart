@@ -9,11 +9,14 @@ class UserServices {
   Future<void> setUser(UserModel user) async {
     try {
       _userReference.doc(user.id).set({
-        'username': user.username,
+        'email': user.email,
         'name': user.name,
         'role': user.role,
         'alamat': user.alamat,
         'tglLahir': user.tglLahir,
+        'emailVerified': user.emailVerified, // TAMBAHKAN STATUS VERIFIKASI
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       rethrow;
@@ -41,11 +44,18 @@ class UserServices {
 
       return UserModel(
         id: snapshot.id,
-        username: data['username'],
+        email: data['email'],
         name: data['name'],
         role: data['role'],
         alamat: data['alamat'],
         tglLahir: (data['tglLahir'] as Timestamp).toDate(),
+        emailVerified: data['emailVerified'] ?? false,
+        createdAt: data['createdAt'] != null
+            ? (data['createdAt'] as Timestamp).toDate()
+            : null,
+        updatedAt: data['updatedAt'] != null
+            ? (data['updatedAt'] as Timestamp).toDate()
+            : null,
       );
     } catch (e) {
       throw Exception('Gagal mengupdate profile: $e');
@@ -55,15 +65,28 @@ class UserServices {
   Future<UserModel> getUserById(String id) async {
     try {
       DocumentSnapshot snapshot = await _userReference.doc(id).get();
+      if (!snapshot.exists) {
+        throw Exception('User tidak ditemukan');
+      }
+
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
       return UserModel(
         id: id,
-        username: snapshot['username'],
-        name: snapshot['name'],
-        role: snapshot['role'],
-        alamat: snapshot['alamat'],
-        tglLahir: snapshot['tglLahir'] != null
-            ? (snapshot['tglLahir'] as Timestamp).toDate()
+        email: data['email'] ?? '', // TAMBAHKAN EMAIL
+        name: data['name'],
+        role: data['role'],
+        alamat: data['alamat'],
+        tglLahir: data['tglLahir'] != null
+            ? (data['tglLahir'] as Timestamp).toDate()
             : DateTime.now(),
+        emailVerified: data['emailVerified'] ?? false,
+        createdAt: data['createdAt'] != null
+            ? (data['createdAt'] as Timestamp).toDate()
+            : null,
+        updatedAt: data['updatedAt'] != null
+            ? (data['updatedAt'] as Timestamp).toDate()
+            : null,
       );
     } catch (e) {
       rethrow;

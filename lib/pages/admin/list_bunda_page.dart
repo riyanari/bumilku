@@ -170,7 +170,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                       final data = doc.data() as Map<String, dynamic>;
                       return UserModel(
                         id: doc.id,
-                        username: data['username'] ?? '',
+                        email: data['email'] ?? '',
                         name: data['name'] ?? '',
                         role: data['role'] ?? '',
                         alamat: data['alamat'] ?? '',
@@ -328,7 +328,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                                                   children: [
                                                     _buildInfoRow(
                                                       Icons.person_outline,
-                                                      user.username,
+                                                      user.email,
                                                     ),
                                                     const SizedBox(height: 4),
                                                     _buildInfoRow(
@@ -418,7 +418,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
     final lowercaseQuery = query.toLowerCase();
     return users.where((user) {
       final nameMatch = user.name.toLowerCase().contains(lowercaseQuery);
-      final usernameMatch = user.username.toLowerCase().contains(
+      final usernameMatch = user.email.toLowerCase().contains(
         lowercaseQuery,
       );
       return nameMatch || usernameMatch;

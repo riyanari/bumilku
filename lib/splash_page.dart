@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:bumilku_app/services/medis_service.dart';
-import 'package:bumilku_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../components/half_circle_painter.dart';
+import '../cubit/auth_cubit.dart';
 import '../theme/theme.dart';
 
 class SplashPage extends StatefulWidget {
@@ -30,6 +31,7 @@ class _SplashPageState extends State<SplashPage> {
 
     print("=== [SplashPage] Start check ===");
     print("CurrentUser: ${user?.uid}");
+    print("EmailVerified: ${user?.emailVerified}");
 
     await Future.delayed(const Duration(seconds: 2)); // splash delay
 
@@ -40,11 +42,38 @@ class _SplashPageState extends State<SplashPage> {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
     } else {
       try {
-        // 🔑 Cek role user terlebih dahulu
-        print("=== [SplashPage] Cek role user: ${user.uid}");
-        final userData = await UserServices().getUserById(user.uid);
+        // 🔄 RELOAD USER UNTUK MENDAPATKAN STATUS EMAIL VERIFICATION TERBARU
+        await user.reload();
+        final refreshedUser = auth.currentUser;
 
-        if (userData != null) {
+        print("=== [SplashPage] After reload - EmailVerified: ${refreshedUser?.emailVerified}");
+
+        // 👇 CEK APAKAH EMAIL SUDAH TERVERIFIKASI
+        if (refreshedUser?.emailVerified == false) {
+          print("=== [SplashPage] Email belum terverifikasi → ke /email-verification");
+          Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/email-verification',
+                  (_) => false,
+              arguments: {
+                'userId': refreshedUser!.uid,
+                'email': refreshedUser.email ?? '',
+              }
+          );
+          return;
+        }
+
+        // 👇 LOAD USER DATA KE AUTH CUBIT DULU SEBELUM NAVIGASI
+        print("=== [SplashPage] Loading user data to AuthCubit...");
+        final authCubit = context.read<AuthCubit>();
+
+        // Tunggu sampai data user selesai dimuat
+        await _loadUserDataToCubit(authCubit, refreshedUser!.uid);
+
+        // 🔑 Cek role user terlebih dahulu
+        final authState = authCubit.state;
+        if (authState is AuthSuccess) {
+          final userData = authState.user;
           print("=== [SplashPage] Role user: ${userData.role}");
 
           // Jika role admin, langsung ke halaman list bunda
@@ -56,7 +85,7 @@ class _SplashPageState extends State<SplashPage> {
 
           // Jika bukan admin, cek data medis seperti biasa
           print("=== [SplashPage] User adalah bunda → cek data medis");
-          final medis = await MedisServices().getActiveMedis(user.uid);
+          final medis = await MedisServices().getActiveMedis(refreshedUser.uid);
 
           if (medis != null) {
             print("=== [SplashPage] User punya medis aktif ===");
@@ -69,7 +98,7 @@ class _SplashPageState extends State<SplashPage> {
             Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
           }
         } else {
-          print("!!! [SplashPage] User data tidak ditemukan → ke login");
+          print("!!! [SplashPage] AuthCubit state tidak valid → ke login");
           Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
         }
       } catch (e) {
@@ -77,6 +106,63 @@ class _SplashPageState extends State<SplashPage> {
         // Fallback ke login jika ada error
         Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
       }
+    }
+  }
+
+  // 👇 METHOD BARU: Load user data ke AuthCubit
+  Future<void> _loadUserDataToCubit(AuthCubit authCubit, String userId) async {
+    try {
+      print("=== [SplashPage] Memuat data user ke AuthCubit...");
+
+      // Panggil method getCurrentUser dari AuthCubit
+      authCubit.getCurrentUser(userId);
+
+      // Tunggu sampai state berubah menjadi AuthSuccess
+      await _waitForAuthSuccess(authCubit);
+
+      print("=== [SplashPage] Data user berhasil dimuat ke AuthCubit");
+    } catch (e) {
+      print("!!! [SplashPage] Gagal memuat data user: $e");
+      throw e;
+    }
+  }
+
+  // 👇 METHOD BARU: Tunggu sampai AuthSuccess
+  Future<void> _waitForAuthSuccess(AuthCubit authCubit) async {
+    final completer = Completer<void>();
+    StreamSubscription? subscription;
+
+    subscription = authCubit.stream.listen((state) {
+      print("=== [SplashPage] AuthCubit state: ${state.runtimeType}");
+
+      if (state is AuthSuccess) {
+        print("=== [SplashPage] AuthSuccess diterima, user: ${state.user.name}");
+        if (!completer.isCompleted) {
+          subscription?.cancel();
+          completer.complete();
+        }
+      } else if (state is AuthFailed) {
+        print("!!! [SplashPage] AuthFailed: ${state.error}");
+        if (!completer.isCompleted) {
+          subscription?.cancel();
+          completer.completeError(state.error);
+        }
+      }
+    });
+
+    // Timeout setelah 10 detik
+    final timeout = Future.delayed(Duration(seconds: 10), () {
+      if (!completer.isCompleted) {
+        subscription?.cancel();
+        completer.completeError('Timeout loading user data');
+      }
+    });
+
+    try {
+      await completer.future;
+    } finally {
+      subscription.cancel();
+      timeout.ignore();
     }
   }
 

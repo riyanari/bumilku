@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bumilku_app/pages/loading_page.dart';
 import 'package:bumilku_app/pages/signup/DataMensPage.dart';
 import 'package:bumilku_app/pages/signup/data_diri_page.dart';
 import 'package:bumilku_app/pages/signup/data_signup_page.dart';
@@ -10,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/auth_cubit.dart';
 import '../../cubit/medis_cubit.dart';
 import '../../theme/theme.dart';
+import 'email_verification_page.dart';
 
 class OnboardingSignupPage extends StatefulWidget {
   const OnboardingSignupPage({super.key});
@@ -46,7 +46,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
 
   // === Page 2 ===
   final _formKey = GlobalKey<FormState>();
-  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   bool kunciPassword = true;
@@ -60,44 +60,72 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
   }
 
   void _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authCubit = context.read<AuthCubit>();
+      final medisCubit = context.read<MedisCubit>();
+
+      // Validasi data lengkap
+      if (_selectedTanggalLahir == null) {
+        _showErrorSnackBar("Harap isi tanggal lahir dengan lengkap.");
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      if (selectedLmp == null || edd == null) {
+        _showErrorSnackBar("Harap isi data menstruasi dengan lengkap.");
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Stream subscription untuk mendengarkan state changes
+      final completer = Completer<void>();
+      StreamSubscription? authSubscription;
+
+      authSubscription = authCubit.stream.listen((state) {
+        print("[DEBUG] Auth State: $state");
+
+        if (state is AuthEmailVerificationRequired) {
+          print("[DEBUG] Email verification required for: ${state.email}");
+          if (!completer.isCompleted) {
+            completer.complete();
+          }
+        } else if (state is AuthFailed) {
+          print("[DEBUG] AuthFailed: ${state.error}");
+          if (!completer.isCompleted) {
+            completer.completeError(state.error);
+          }
+        }
+        // JANGAN handle AuthSuccess di sini karena user belum verified
+      });
 
       try {
-        final authCubit = context.read<AuthCubit>();
-        final medisCubit = context.read<MedisCubit>();
-
-        final completer = Completer<AuthSuccess>();
-        final authSubscription = authCubit.stream.listen((state) {
-          if (state is AuthSuccess) {
-            if (!completer.isCompleted) completer.complete(state);
-          } else if (state is AuthFailed) {
-            if (!completer.isCompleted) completer.completeError(state.error);
-          }
-        });
-
-        // 👉 pasang listener dulu, baru panggil signUp
+        // Panggil signUp
         await authCubit.signUp(
           name: _namaController.text.trim(),
-          username: usernameController.text.trim(),
+          email: emailController.text.trim(),
           password: passwordController.text.trim(),
           role: "bunda",
           alamat: _alamatController.text.trim(),
           tglLahir: _selectedTanggalLahir!,
         );
 
-        try {
-          final authSuccess = await completer.future;
-          await authSubscription.cancel();
+        // Tunggu sampai proses selesai (harusnya AuthEmailVerificationRequired)
+        await completer.future;
+        await authSubscription.cancel();
 
-          final userId = authSuccess.user.id;
-          print("=== [OnboardingSignupPage] SignUp berhasil, userId=$userId ===");
+        // Ambil state terbaru
+        final authState = authCubit.state;
+        if (authState is AuthEmailVerificationRequired) {
+          final userId = authState.user.id;
+          final email = authState.email;
 
-          if (selectedLmp == null || edd == null) {
-            _showErrorSnackBar("Harap isi data menstruasi dengan lengkap.");
-            return;
-          }
+          print("=== [OnboardingSignupPage] SignUp berhasil, perlu verifikasi email ===");
 
+          // Simpan data medis
           await medisCubit.addMedis(
             userId: userId,
             cycleLength: cycleLength,
@@ -106,45 +134,59 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
             babyName: babyName,
           );
 
+          print("=== [OnboardingSignupPage] Data medis berhasil disimpan ===");
+
+          // Navigasi ke halaman verifikasi email
           if (mounted) {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
-                builder: (_) => LoadingPage(userId: userId),
+                builder: (_) => EmailVerificationPage(
+                  userId: userId,
+                  email: email,
+                ),
               ),
+                  (route) => false,
             );
           }
-        } catch (e) {
-          await authSubscription.cancel();
-          _showErrorSnackBar(_getErrorMessage(e.toString()));
+        } else {
+          throw Exception("Sign up gagal: State tidak sesuai");
         }
+
       } catch (e) {
-        if (mounted) {
-          _showErrorSnackBar(_getErrorMessage(e.toString()));
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+        await authSubscription.cancel();
+        print("[ERROR] Sign up process: $e");
+        _showErrorSnackBar(_getErrorMessage(e.toString()));
+      }
+    } catch (e) {
+      print("[ERROR] Outer catch: $e");
+      if (mounted) {
+        _showErrorSnackBar(_getErrorMessage(e.toString()));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
   String _getErrorMessage(String error) {
-    if (error.contains('email address is already in use')) {
-      return 'Username sudah digunakan oleh akun lain. Silakan gunakan username yang berbeda.';
+    if (error.contains('email address is already in use') ||
+        error.contains('email-already-in-use')) {
+      return 'Email sudah digunakan oleh akun lain. Silakan gunakan email yang berbeda.';
     } else if (error.contains('weak password')) {
       return 'Password terlalu lemah. Gunakan password yang lebih kuat.';
     } else if (error.contains('invalid-email')) {
-      return 'Format username/email tidak valid.';
+      return 'Format email tidak valid.';
     } else if (error.contains('network-request-failed')) {
       return 'Koneksi internet bermasalah. Periksa koneksi Anda.';
+    } else if (error.contains('Email belum terverifikasi')) {
+      return 'Email belum terverifikasi. Silakan cek email Anda untuk verifikasi.';
     } else {
       return 'Terjadi kesalahan: $error';
     }
   }
 
-  // METHOD BARU: Show error snackbar
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -168,12 +210,11 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
     _namaController.dispose();
     _alamatController.dispose();
     _tanggalLahirController.dispose();
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +256,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                   ),
                   DataSignUpPage(
                     formKey: _formKey,
-                    usernameController: usernameController,
+                    emailController: emailController,
                     passwordController: passwordController,
                     confirmPasswordController: confirmPasswordController,
                     kunciPassword: kunciPassword,
@@ -225,6 +266,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                     toggleConfirmPasswordVisibility: () =>
                         setState(() => kunciConfirmPassword = !kunciConfirmPassword),
                     signUp: _signUp,
+                    isLoading: _isLoading,
                   ),
                 ],
               ),
@@ -238,7 +280,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                   if (_currentPage > 0)
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => _pageController.previousPage(
+                        onPressed: _isLoading ? null : () => _pageController.previousPage(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
                         ),
@@ -259,7 +301,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                   if (_currentPage > 0) const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: _isLoading ? null : () {
                         if (_currentPage == 0) {
                           if (_namaController.text.isEmpty ||
                               _alamatController.text.isEmpty ||
@@ -281,9 +323,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                         (_currentPage == 0 &&
                             _namaController.text.trim().isNotEmpty &&
                             _alamatController.text.trim().isNotEmpty &&
-                            _tanggalLahirController.text
-                                .trim()
-                                .isNotEmpty) ||
+                            _tanggalLahirController.text.trim().isNotEmpty) ||
                             (_currentPage == 1 && selectedLmp != null) ||
                             (_currentPage == 2)
                             ? kPrimaryColor
@@ -293,7 +333,16 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                         elevation: 0,
                         minimumSize: const Size(double.infinity, 52),
                       ),
-                      child: Text(
+                      child: _isLoading
+                          ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                          : Text(
                         _currentPage == 2 ? 'Daftar' : 'Lanjutkan',
                         style: whiteTextStyle.copyWith(
                             fontWeight: bold, fontSize: 16),

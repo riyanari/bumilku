@@ -35,3 +35,19 @@ class AuthFailed extends AuthState {
   List<Object> get props => [error];
 
 }
+
+class AuthEmailVerificationRequired extends AuthState {
+  final UserModel user;
+  final String email;
+  const AuthEmailVerificationRequired({required this.user, required this.email});
+
+  @override
+  List<Object> get props => [user, email];
+}
+
+// TAMBAHKAN STATE BARU UNTUK EMAIL VERIFIKASI
+class AuthEmailVerificationSent extends AuthState {}
+
+class AuthEmailNotVerified extends AuthState {}
+
+class AuthPasswordResetSent extends AuthState {}
