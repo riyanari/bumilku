@@ -33,7 +33,9 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
 
   // Controller untuk input field
   final TextEditingController _movementCountController = TextEditingController();
-  final TextEditingController _durationController = TextEditingController();
+
+  // Durasi tetap 12 jam
+  final int _fixedDurationHours = 12;
 
   @override
   void initState() {
@@ -52,25 +54,19 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     if (widget.controller.fetalActivityPattern.isEmpty) {
       widget.controller.fetalActivityPattern = 'Tidak ada pola khusus';
     }
+
+    // Set durasi tetap 12 jam
+    widget.controller.fetalMovementDuration = _fixedDurationHours;
   }
 
   void _setupControllers() {
     _movementCountController.text = widget.controller.fetalMovementCount > 0
         ? widget.controller.fetalMovementCount.toString()
         : '';
-    _durationController.text = widget.controller.fetalMovementDuration > 0
-        ? widget.controller.fetalMovementDuration.toString()
-        : '';
 
     _movementCountController.addListener(() {
       final count = int.tryParse(_movementCountController.text) ?? 0;
       widget.controller.fetalMovementCount = count;
-      setState(() {});
-    });
-
-    _durationController.addListener(() {
-      final duration = int.tryParse(_durationController.text) ?? 0;
-      widget.controller.fetalMovementDuration = duration;
       setState(() {});
     });
   }
@@ -104,40 +100,31 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
   }
 
   // PERHITUNGAN DINAMIS - Hitung gerakan per jam
-  double _getMovementsPerHour(int movementCount, int durationMinutes) {
-    if (durationMinutes == 0) return 0.0;
-    return (movementCount / durationMinutes) * 60;
+  double _getMovementsPerHour(int movementCount) {
+    return movementCount / _fixedDurationHours;
   }
 
   // Tentukan status berdasarkan gerakan per jam
-  FetalMovementStatus _calculateStatus(int movementCount, int durationMinutes) {
-    if (movementCount == 0 || durationMinutes == 0) {
+  FetalMovementStatus _calculateStatus(int movementCount) {
+    if (movementCount == 0) {
       return FetalMovementStatus.incomplete;
     }
 
-    final movementsPerHour = _getMovementsPerHour(movementCount, durationMinutes);
+    // STANDAR BARU: minimal 10 gerakan dalam 12 jam
+    const normalThreshold = 10; // Minimal 10 gerakan dalam 12 jam
+    const warningThreshold = 7; // 7-9 gerakan dalam 12 jam
+    const dangerThreshold = 4;  // 4-6 gerakan dalam 12 jam
+    // Kurang dari 4 gerakan = emergency
 
-    // Standar: 10 gerakan dalam 2 jam = 5 gerakan per jam
-    const normalThreshold = 5.0; // 5 gerakan per jam
-    const warningThreshold = 3.0; // 3 gerakan per jam
-    const dangerThreshold = 1.0;  // 1 gerakan per jam
-
-    if (movementsPerHour >= normalThreshold) {
+    if (movementCount >= normalThreshold) {
       return FetalMovementStatus.normal;
-    } else if (movementsPerHour >= warningThreshold) {
+    } else if (movementCount >= warningThreshold) {
       return FetalMovementStatus.monitoring;
-    } else if (movementsPerHour >= dangerThreshold) {
+    } else if (movementCount >= dangerThreshold) {
       return FetalMovementStatus.attention;
     } else {
       return FetalMovementStatus.emergency;
     }
-  }
-
-  // Hitung gerakan yang diharapkan untuk durasi tertentu
-  double _getExpectedMovement(int durationMinutes) {
-    // Standar: 10 gerakan dalam 120 menit = 0.0833 gerakan per menit
-    const standardRate = 10 / 120;
-    return durationMinutes * standardRate;
   }
 
   String? _validateMovementCount(String? value) {
@@ -154,24 +141,9 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     return null;
   }
 
-  String? _validateDuration(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Durasi harus diisi';
-    }
-    final duration = int.tryParse(value);
-    if (duration == null) {
-      return 'Masukkan angka yang valid';
-    }
-    if (duration <= 0) {
-      return 'Durasi harus lebih dari 0 menit';
-    }
-    return null;
-  }
-
   @override
   void dispose() {
     _movementCountController.dispose();
-    _durationController.dispose();
     super.dispose();
   }
 
@@ -208,7 +180,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
                 _buildMovementCountField(),
                 const SizedBox(height: 16),
 
-                _buildDurationField(),
+                _buildDurationInfo(),
                 const SizedBox(height: 16),
 
                 _buildActivityPatternField(),
@@ -258,8 +230,9 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            "Gerakan janin normal: minimal 5 gerakan per jam (atau 10 gerakan dalam 2 jam). "
-                "Sistem akan menyesuaikan secara otomatis berdasarkan durasi pencatatan Anda.",
+            "Pencatatan gerakan janin dilakukan selama 12 jam. "
+                "Gerakan janin normal: minimal 10 gerakan dalam 12 jam. "
+                "Catat semua gerakan yang dirasakan dalam periode 12 jam.",
             style: TextStyle(
               fontSize: 12,
               color: Colors.blue[700],
@@ -286,7 +259,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Tanggal & Waktu Pencatatan",
+          "Tanggal & Waktu Mulai Pencatatan",
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -331,7 +304,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Jumlah Gerakan yang Dirasakan",
+          "Jumlah Gerakan dalam 12 Jam",
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -357,7 +330,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Masukkan jumlah gerakan",
+                    hintText: "Masukkan total gerakan dalam 12 jam",
                     hintStyle: TextStyle(fontSize: 12),
                     errorStyle: TextStyle(height: 0),
                   ),
@@ -385,7 +358,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
         ] else ...[
           const SizedBox(height: 4),
           Text(
-            "Target: 5 gerakan per jam",
+            "Target: minimal 10 gerakan dalam 12 jam",
             style: TextStyle(
               fontSize: 10,
               color: Colors.grey[500],
@@ -396,66 +369,30 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     );
   }
 
-  Widget _buildDurationField() {
-    final hasError = _validateDuration(_durationController.text) != null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Durasi Waktu yang Dibutuhkan",
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: hasError ? Colors.red : Colors.grey[300]!,
-              width: hasError ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _durationController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Masukkan durasi dalam menit",
-                    hintStyle: TextStyle(fontSize: 12),
-                    errorStyle: TextStyle(height: 0),
-                  ),
-                ),
+  Widget _buildDurationInfo() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green[100]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.timer, color: Colors.green[700], size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              "Durasi Pencatatan: $_fixedDurationHours Jam",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.green[700],
+                fontSize: 12,
               ),
-              Text(
-                "menit",
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 4),
-          Text(
-            _validateDuration(_durationController.text)!,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.red,
             ),
           ),
         ],
-      ],
+      ),
     );
   }
 
@@ -558,13 +495,11 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
 
   Widget _buildSummarySection() {
     final movementCount = widget.controller.fetalMovementCount;
-    final duration = widget.controller.fetalMovementDuration;
-    final hasData = movementCount > 0 && duration > 0;
+    final hasData = movementCount > 0;
 
     // PERHITUNGAN DINAMIS
-    final status = _calculateStatus(movementCount, duration);
-    final movementsPerHour = _getMovementsPerHour(movementCount, duration);
-    final expectedMovement = _getExpectedMovement(duration);
+    final status = _calculateStatus(movementCount);
+    final movementsPerHour = _getMovementsPerHour(movementCount);
 
     if (!hasData) {
       return Container(
@@ -575,7 +510,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           border: Border.all(color: Colors.grey[300]!),
         ),
         child: Text(
-          "Isi data di atas untuk melihat ringkasan",
+          "Isi jumlah gerakan untuk melihat ringkasan",
           style: TextStyle(
             color: Colors.grey[500],
             fontSize: 12,
@@ -615,9 +550,9 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
           const SizedBox(height: 8),
 
-          // INFORMASI GERAKAN PER JAM
+          // INFORMASI GERAKAN
           Text(
-            "Gerakan: $movementCount kali dalam $duration menit "
+            "Gerakan: $movementCount kali dalam $_fixedDurationHours jam "
                 "(${movementsPerHour.toStringAsFixed(1)} gerakan/jam)",
             style: const TextStyle(
               fontSize: 11,
@@ -627,7 +562,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           const SizedBox(height: 6),
 
           Text(
-            status.getMessage(movementCount, duration, movementsPerHour),
+            status.getMessage(movementCount, _fixedDurationHours, movementsPerHour),
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[700],
@@ -645,7 +580,8 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
           const SizedBox(height: 4),
           Text("• Jumlah gerakan: $movementCount kali", style: const TextStyle(fontSize: 11)),
-          Text("• Durasi: $duration menit", style: const TextStyle(fontSize: 11)),
+          Text("• Durasi: $_fixedDurationHours jam", style: const TextStyle(fontSize: 11)),
+          Text("• Target minimal: 10 gerakan", style: const TextStyle(fontSize: 11)),
           Text("• Pola: ${widget.controller.fetalActivityPattern}", style: const TextStyle(fontSize: 11)),
           Text("• Perbandingan: ${widget.controller.movementComparison}", style: const TextStyle(fontSize: 11)),
           if (widget.controller.fetalAdditionalComplaints.isNotEmpty)
@@ -669,16 +605,16 @@ enum FetalMovementStatus {
   final IconData icon;
   final String title;
 
-  String getMessage(int movementCount, int duration, double movementsPerHour) {
+  String getMessage(int movementCount, int durationHours, double movementsPerHour) {
     switch (this) {
       case FetalMovementStatus.normal:
-        return "Gerakan janin dalam batas normal (${movementsPerHour.toStringAsFixed(1)} gerakan/jam).";
+        return "Gerakan janin dalam batas normal ($movementCount gerakan dalam $durationHours jam).";
       case FetalMovementStatus.monitoring:
-        return "Gerakan janin ${movementsPerHour.toStringAsFixed(1)} gerakan/jam. Tetap pantau secara rutin.";
+        return "Gerakan janin $movementCount kali dalam $durationHours jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.";
       case FetalMovementStatus.attention:
-        return "Gerakan janin ${movementsPerHour.toStringAsFixed(1)} gerakan/jam. Disarankan konsultasi dengan tenaga kesehatan.";
+        return "Gerakan janin $movementCount kali dalam $durationHours jam. Disarankan konsultasi dengan tenaga kesehatan.";
       case FetalMovementStatus.emergency:
-        return "Gerakan janin hanya ${movementsPerHour.toStringAsFixed(1)} gerakan/jam. Segera hubungi tenaga kesehatan.";
+        return "Gerakan janin hanya $movementCount kali dalam $durationHours jam. Segera hubungi tenaga kesehatan.";
       case FetalMovementStatus.incomplete:
         return "Lengkapi data pencatatan untuk analisis yang akurat.";
     }

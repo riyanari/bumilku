@@ -1,6 +1,7 @@
 import 'package:bumilku_app/cubit/self_detection_cubit.dart';
 import 'package:bumilku_app/models/self_detection_model.dart';
 import 'package:bumilku_app/pages/self_detection/detail_history_page.dart';
+import 'package:bumilku_app/pages/self_detection/self_detection_page.dart';
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -486,7 +487,9 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                 const SizedBox(height: 28),
                                 ElevatedButton(
                                   onPressed: () {
-                                    Navigator.pop(context);
+                                    Navigator.push(context, MaterialPageRoute(
+                                      builder: (_) => SelfDetectionPageView(),
+                                    ),);
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: kPrimaryColor,

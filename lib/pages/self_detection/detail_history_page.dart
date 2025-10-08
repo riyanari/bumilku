@@ -66,52 +66,52 @@ class DetailHistoryPage extends StatelessWidget {
     }
   }
 
-  // METHOD BARU: Warna untuk status gerakan janin
-  Color _getFetalMovementColor(String colorName) {
-    switch (colorName) {
-      case 'green':
-        return Colors.green;
-      case 'blue':
-        return Colors.blue;
-      case 'orange':
-        return Colors.orange;
-      case 'red':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+  // METHOD BARU: Warna untuk status gerakan janin berdasarkan jumlah gerakan
+  Color _getFetalMovementColorFromCount(int movementCount) {
+    if (movementCount == 0) return Colors.grey;
+    if (movementCount >= 10) return Colors.green;
+    if (movementCount >= 7) return Colors.blue;
+    if (movementCount >= 4) return Colors.orange;
+    return Colors.red;
   }
 
-  // METHOD BARU: Icon untuk status gerakan janin
-  IconData _getFetalMovementIcon(String colorName) {
-    switch (colorName) {
-      case 'green':
-        return Icons.check_circle;
-      case 'blue':
-        return Icons.timelapse;
-      case 'orange':
-        return Icons.info;
-      case 'red':
-        return Icons.warning;
-      default:
-        return Icons.hourglass_empty;
-    }
+  // METHOD BARU: Icon untuk status gerakan janin berdasarkan jumlah gerakan
+  IconData _getFetalMovementIconFromCount(int movementCount) {
+    if (movementCount == 0) return Icons.hourglass_empty;
+    if (movementCount >= 10) return Icons.check_circle;
+    if (movementCount >= 7) return Icons.timelapse;
+    if (movementCount >= 4) return Icons.info;
+    return Icons.warning;
   }
 
-  // METHOD BARU: Parse fetal movement status
-  Map<String, dynamic> _parseFetalMovementStatus(dynamic statusData) {
-    if (statusData is Map<String, dynamic>) {
-      return statusData;
-    } else if (statusData is Map) {
-      return Map<String, dynamic>.from(statusData);
-    } else {
-      return {
-        'status': 'incomplete',
-        'title': 'Data Tercatat',
-        'message': 'Data gerakan janin telah tercatat',
-        'color': 'grey'
-      };
+  // METHOD BARU: Title untuk status gerakan janin
+  String _getFetalMovementTitle(int movementCount) {
+    if (movementCount == 0) return "Data Belum Lengkap";
+    if (movementCount >= 10) return "Kondisi Normal";
+    if (movementCount >= 7) return "Perlu Pemantauan";
+    if (movementCount >= 4) return "Perlu Perhatian";
+    return "Perhatian Khusus";
+  }
+
+  // METHOD BARU: Message untuk status gerakan janin
+  String _getFetalMovementMessage(int movementCount, double movementsPerHour) {
+    if (movementCount == 0) {
+      return "Data gerakan janin belum lengkap. Silakan lengkapi pencatatan.";
     }
+
+    if (movementCount >= 10) {
+      return "Gerakan janin dalam batas normal ($movementCount gerakan dalam 12 jam).";
+    }
+
+    if (movementCount >= 7) {
+      return "Gerakan janin $movementCount kali dalam 12 jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.";
+    }
+
+    if (movementCount >= 4) {
+      return "Gerakan janin $movementCount kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.";
+    }
+
+    return "Gerakan janin hanya $movementCount kali dalam 12 jam. Segera hubungi tenaga kesehatan.";
   }
 
   @override
@@ -125,8 +125,6 @@ class DetailHistoryPage extends StatelessWidget {
     final fetalMovementCount = detection.fetalMovementCount ?? 0;
     final fetalMovementDuration = detection.fetalMovementDuration ?? 0;
     final movementsPerHour = detection.movementsPerHour ?? 0.0;
-    final fetalMovementStatusDynamic = detection.fetalMovementStatus;
-    final fetalMovementStatus = _parseFetalMovementStatus(fetalMovementStatusDynamic);
     final movementComparison = detection.movementComparison?.toString() ?? '';
     final fetalActivityPattern = detection.fetalActivityPattern?.toString() ?? '';
     final fetalAdditionalComplaints = detection.fetalAdditionalComplaints ?? [];
@@ -182,7 +180,6 @@ class DetailHistoryPage extends StatelessWidget {
                   fetalMovementCount,
                   fetalMovementDuration,
                   movementsPerHour,
-                  fetalMovementStatus,
                   movementComparison,
                   fetalActivityPattern,
                   fetalAdditionalComplaints,
@@ -266,13 +263,16 @@ class DetailHistoryPage extends StatelessWidget {
       int movementCount,
       int duration,
       double movementsPerHour,
-      Map<String, dynamic> status,
       String comparison,
       String pattern,
       List<dynamic> additionalComplaints,
       ) {
-    final statusColor = _getFetalMovementColor(status['color'] ?? 'grey');
-    final statusIcon = _getFetalMovementIcon(status['color'] ?? 'grey');
+
+    // HITUNG ULANG semua status berdasarkan movementCount
+    final statusColor = _getFetalMovementColorFromCount(movementCount);
+    final statusIcon = _getFetalMovementIconFromCount(movementCount);
+    final statusTitle = _getFetalMovementTitle(movementCount);
+    final statusMessage = _getFetalMovementMessage(movementCount, movementsPerHour);
 
     return Card(
       elevation: 3,
@@ -309,7 +309,7 @@ class DetailHistoryPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Status gerakan janin
+            // Status gerakan janin - PAKAI YANG DIHITUNG ULANG
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -325,7 +325,7 @@ class DetailHistoryPage extends StatelessWidget {
                       Icon(statusIcon, size: 20, color: statusColor),
                       const SizedBox(width: 8),
                       Text(
-                        (status['title'] ?? 'DATA TERCATAT').toString().toUpperCase(),
+                        statusTitle.toUpperCase(),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -336,7 +336,7 @@ class DetailHistoryPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    status['message']?.toString() ?? 'Data gerakan janin telah tercatat',
+                    statusMessage,
                     style: const TextStyle(fontSize: 14, height: 1.4),
                   ),
                 ],
@@ -362,7 +362,7 @@ class DetailHistoryPage extends StatelessWidget {
             ),
             _buildFetalMovementDetailItem(
                 "Durasi Pencatatan",
-                "$duration menit"
+                "$duration jam" // DIUBAH: dari menit ke jam
             ),
             _buildFetalMovementDetailItem(
                 "Gerakan per Jam",
@@ -388,7 +388,7 @@ class DetailHistoryPage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Informasi tambahan
+            // PERBAIKAN: Informasi tambahan sesuai standar baru
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -401,7 +401,8 @@ class DetailHistoryPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      "Standar normal: minimal 5 gerakan per jam",
+                      // DIUBAH: Standar baru minimal 10 gerakan dalam 12 jam
+                      "Standar normal: minimal 10 gerakan dalam 12 jam (${(10/12).toStringAsFixed(1)} gerakan/jam)",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.blue[700],
@@ -411,8 +412,61 @@ class DetailHistoryPage extends StatelessWidget {
                 ],
               ),
             ),
+
+            // PERBAIKAN: Tambahan informasi status berdasarkan jumlah gerakan
+            const SizedBox(height: 12),
+            _buildFetalMovementStatusInfo(movementCount),
           ],
         ),
+      ),
+    );
+  }
+
+  // WIDGET BARU: Informasi status berdasarkan jumlah gerakan
+  Widget _buildFetalMovementStatusInfo(int movementCount) {
+    String statusText;
+    Color statusColor;
+
+    if (movementCount >= 10) {
+      statusText = "✅ Normal: Gerakan janin dalam batas normal";
+      statusColor = Colors.green;
+    } else if (movementCount >= 7) {
+      statusText = "⚠️ Perlu Pemantauan: Gerakan janin mendekati batas minimal";
+      statusColor = Colors.orange;
+    } else if (movementCount >= 4) {
+      statusText = "🔶 Perlu Perhatian: Gerakan janin berkurang";
+      statusColor = Colors.orange[700]!;
+    } else {
+      statusText = "🚨 Perhatian Khusus: Gerakan janin sangat berkurang";
+      statusColor = Colors.red;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha:0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: statusColor.withValues(alpha:0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.medical_information,
+            color: statusColor,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              statusText,
+              style: TextStyle(
+                fontSize: 12,
+                color: statusColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

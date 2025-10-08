@@ -269,13 +269,15 @@ class SelfDetectionController extends ChangeNotifier {
       'fetalAdditionalComplaints': _fetalAdditionalComplaints,
       'fetalMovementDateTime': _fetalMovementDateTime?.toIso8601String(),
       'fetalMovementStatus': fetalMovementStatus, // Status dinamis
+      // PERBAIKAN: Hitung movementsPerHour yang benar untuk 12 jam
       'movementsPerHour': _fetalMovementCount > 0 && _fetalMovementDuration > 0
-          ? (_fetalMovementCount / _fetalMovementDuration * 60)
+          ? (_fetalMovementCount / _fetalMovementDuration) // Sudah dalam jam, jadi langsung bagi
           : 0.0,
     };
   }
 
   // Tambahkan method untuk menghitung status gerakan janin
+  // PERBAIKI method _calculateFetalMovementStatus di SelfDetectionController
   Map<String, dynamic> _calculateFetalMovementStatus() {
     if (_fetalMovementCount == 0 || _fetalMovementDuration == 0) {
       return {
@@ -286,34 +288,33 @@ class SelfDetectionController extends ChangeNotifier {
       };
     }
 
-    final movementsPerHour = (_fetalMovementCount / _fetalMovementDuration) * 60;
-
-    if (movementsPerHour >= 5.0) {
+    // STANDAR BARU: minimal 10 gerakan dalam 12 jam
+    if (_fetalMovementCount >= 10) {
       return {
         'status': 'normal',
         'title': 'Kondisi Normal',
-        'message': 'Gerakan janin dalam batas normal',
+        'message': 'Gerakan janin dalam batas normal ($_fetalMovementCount gerakan dalam 12 jam)',
         'color': 'green'
       };
-    } else if (movementsPerHour >= 3.0) {
+    } else if (_fetalMovementCount >= 7) {
       return {
         'status': 'monitoring',
         'title': 'Perlu Pemantauan',
-        'message': 'Perlu pemantauan gerakan janin',
+        'message': 'Gerakan janin $_fetalMovementCount kali dalam 12 jam. Tetap pantau secara rutin.',
         'color': 'blue'
       };
-    } else if (movementsPerHour >= 1.0) {
+    } else if (_fetalMovementCount >= 4) {
       return {
         'status': 'attention',
         'title': 'Perlu Perhatian',
-        'message': 'Perlu perhatian - gerakan janin berkurang',
+        'message': 'Gerakan janin $_fetalMovementCount kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.',
         'color': 'orange'
       };
     } else {
       return {
         'status': 'emergency',
         'title': 'Perhatian Khusus',
-        'message': 'Segera periksa - gerakan janin sangat berkurang',
+        'message': 'Gerakan janin hanya $_fetalMovementCount kali dalam 12 jam. Segera hubungi tenaga kesehatan.',
         'color': 'red'
       };
     }
@@ -338,21 +339,23 @@ class SelfDetectionController extends ChangeNotifier {
   }
 
   // Tambahkan method untuk menilai gerakan janin secara dinamis
+  // Dalam SelfDetectionController, ubah method _assessFetalMovement:
   int _assessFetalMovement() {
     int score = 0;
 
     // Hanya beri penilaian jika ada data gerakan janin
     if (_fetalMovementCount > 0 && _fetalMovementDuration > 0) {
-      final movementsPerHour = (_fetalMovementCount / _fetalMovementDuration) * 60;
-
-      // Beri skor berdasarkan gerakan per jam
-      if (movementsPerHour < 1.0) {
+      // STANDAR BARU: minimal 10 gerakan dalam 12 jam
+      if (_fetalMovementCount < 4) { // Kurang dari 4 gerakan dalam 12 jam
         score += 2; // Sangat berbahaya
         _hasRedFlag = true;
-        _redFlagReasons.add("Gerakan janin sangat berkurang (${movementsPerHour.toStringAsFixed(1)} gerakan/jam)");
-      } else if (movementsPerHour < 3.0) {
+        _redFlagReasons.add("Gerakan janin sangat berkurang ($_fetalMovementCount gerakan dalam 12 jam)");
+      } else if (_fetalMovementCount < 7) { // 4-6 gerakan dalam 12 jam
         score += 1; // Perlu perhatian
-        _redFlagReasons.add("Gerakan janin berkurang (${movementsPerHour.toStringAsFixed(1)} gerakan/jam)");
+        _redFlagReasons.add("Gerakan janin berkurang ($_fetalMovementCount gerakan dalam 12 jam)");
+      } else if (_fetalMovementCount < 10) { // 7-9 gerakan dalam 12 jam
+        score += 1; // Perlu pemantauan
+        _redFlagReasons.add("Gerakan janin mendekati batas minimal ($_fetalMovementCount gerakan dalam 12 jam)");
       }
 
       // Tambahkan penilaian untuk perbandingan gerakan

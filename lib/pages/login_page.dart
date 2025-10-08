@@ -322,7 +322,6 @@ class _LoginPageState extends State<LoginPage> {
                         "Lupa Password?",
                         style: whiteTextStyle.copyWith(
                           fontSize: 12,
-                          decoration: TextDecoration.underline,
                         ),
                         textAlign: TextAlign.end,
                       ),
