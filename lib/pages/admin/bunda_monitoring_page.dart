@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +9,8 @@ import 'package:bumilku_app/cubit/self_detection_cubit.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/medis_model.dart';
 import '../../models/self_detection_model.dart';
+import '../../services/medis_service.dart';
+import '../../services/self_detection_service.dart';
 
 class BundaMonitoringPage extends StatefulWidget {
   final UserModel bunda;
@@ -20,6 +23,7 @@ class BundaMonitoringPage extends StatefulWidget {
 
 class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   int _selectedTab = 0;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -31,6 +35,110 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     context.read<MedisCubit>().getUserMedis(widget.bunda.id);
     context.read<SelfDetectionCubit>().getDetectionHistory(widget.bunda.id);
   }
+
+  Future<void> _confirmDeleteBunda() async {
+    final t = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(t.deleteBundaTitle),
+        content: Text(t.deleteBundaMessage(widget.bunda.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(t.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(t.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _deleteBundaAndAllData();
+    }
+  }
+
+  Future<void> _deleteBundaAndAllData() async {
+    final t = AppLocalizations.of(context)!;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      final userId = widget.bunda.id;
+
+      // ✅ ambil semua doc yang mau dihapus
+      final medisDocs = await MedisServices().getMedisDocRefsByUserId(userId);
+      final detectionDocs = await SelfDetectionService().getDetectionDocRefsByUserId(userId);
+      final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+
+      // ✅ hapus pakai batch (limit 500 operasi per batch)
+      await _commitBatchesDelete([
+        userRef,
+        ...medisDocs,
+        ...detectionDocs,
+      ]);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.deleteSuccess)),
+      );
+
+      // balik ke ListBundaPage
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.deleteFailed(e.toString()))),
+      );
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
+  }
+
+  /// ✅ Helper: Firestore batch max 500 operasi.
+  /// Kalau data banyak, otomatis pecah jadi beberapa batch.
+  Future<void> _commitBatchesDelete(List<DocumentReference> refs) async {
+    final db = FirebaseFirestore.instance;
+
+    const limit = 450; // amanin di bawah 500
+    for (int i = 0; i < refs.length; i += limit) {
+      final chunk = refs.sublist(i, (i + limit > refs.length) ? refs.length : i + limit);
+      final batch = db.batch();
+      for (final ref in chunk) {
+        batch.delete(ref);
+      }
+      await batch.commit();
+    }
+  }
+
+  Widget _appBarIcon({
+    required IconData icon,
+    required String tooltip,
+    VoidCallback? onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Icon(icon, size: 22),
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +159,22 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 22),
-            onPressed: _loadData,
-            tooltip: t.refreshDataTooltip, // "Refresh Data"
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Row(
+              children: [
+                _appBarIcon(
+                  icon: Icons.refresh,
+                  tooltip: t.refreshDataTooltip,
+                  onTap: _loadData,
+                ),
+                _appBarIcon(
+                  icon: Icons.delete_outline,
+                  tooltip: t.deleteTooltip,
+                  onTap: _isDeleting ? null : _confirmDeleteBunda,
+                ),
+              ],
+            ),
           ),
         ],
       ),

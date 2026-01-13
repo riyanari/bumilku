@@ -2563,6 +2563,42 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Gerakan janin hanya {count} kali dalam 12 jam. Segera hubungi tenaga kesehatan.'**
   String fetalMovementMsgUrgent(Object count);
+
+  /// No description provided for @deleteTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus'**
+  String get deleteTooltip;
+
+  /// No description provided for @deleteBundaTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus Data Bunda'**
+  String get deleteBundaTitle;
+
+  /// No description provided for @deleteBundaMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Yakin ingin menghapus data {name}? Semua riwayat kehamilan & self detection akan ikut terhapus.'**
+  String deleteBundaMessage(Object name);
+
+  /// No description provided for @delete.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus'**
+  String get delete;
+
+  /// No description provided for @deleteSuccess.
+  ///
+  /// In id, this message translates to:
+  /// **'Data berhasil dihapus'**
+  String get deleteSuccess;
+
+  /// No description provided for @deleteFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal menghapus: {error}'**
+  String deleteFailed(Object error);
 }
 
 class _AppLocalizationsDelegate

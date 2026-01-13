@@ -135,6 +135,15 @@ class MedisServices {
     }
   }
 
+  Future<List<DocumentReference>> getMedisDocRefsByUserId(String userId) async {
+    try {
+      final snap = await _medisReference.where('userId', isEqualTo: userId).get();
+      return snap.docs.map((d) => d.reference).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Hapus data medis
   Future<void> deleteMedis(String medisId) async {
     try {

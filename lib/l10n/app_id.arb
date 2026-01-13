@@ -615,5 +615,16 @@
   "fetalMovementMsgAttention": "Gerakan janin {count} kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.",
   "@fetalMovementMsgAttention": { "placeholders": { "count": {} } },
   "fetalMovementMsgUrgent": "Gerakan janin hanya {count} kali dalam 12 jam. Segera hubungi tenaga kesehatan.",
-  "@fetalMovementMsgUrgent": { "placeholders": { "count": {} } }
+  "@fetalMovementMsgUrgent": { "placeholders": { "count": {} } },
+
+  "deleteTooltip": "Hapus",
+  "deleteBundaTitle": "Hapus Data Bunda",
+  "deleteBundaMessage": "Yakin ingin menghapus data {name}? Semua riwayat kehamilan & self detection akan ikut terhapus.",
+  "@deleteBundaMessage": { "placeholders": { "name": {} } },
+
+  "delete": "Hapus",
+
+  "deleteSuccess": "Data berhasil dihapus",
+  "deleteFailed": "Gagal menghapus: {error}",
+  "@deleteFailed": { "placeholders": { "error": {} } }
 }

@@ -1388,4 +1388,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String fetalMovementMsgUrgent(Object count) {
     return 'Only $count movements in 12 hours. Contact a health professional immediately.';
   }
+
+  @override
+  String get deleteTooltip => 'Delete';
+
+  @override
+  String get deleteBundaTitle => 'Delete Mother Data';
+
+  @override
+  String deleteBundaMessage(Object name) {
+    return 'Are you sure you want to delete $name\'s data? All pregnancy and self detection history will also be deleted.';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get deleteSuccess => 'Data deleted successfully';
+
+  @override
+  String deleteFailed(Object error) {
+    return 'Failed to delete: $error';
+  }
 }

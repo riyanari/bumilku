@@ -1394,4 +1394,26 @@ class AppLocalizationsId extends AppLocalizations {
   String fetalMovementMsgUrgent(Object count) {
     return 'Gerakan janin hanya $count kali dalam 12 jam. Segera hubungi tenaga kesehatan.';
   }
+
+  @override
+  String get deleteTooltip => 'Hapus';
+
+  @override
+  String get deleteBundaTitle => 'Hapus Data Bunda';
+
+  @override
+  String deleteBundaMessage(Object name) {
+    return 'Yakin ingin menghapus data $name? Semua riwayat kehamilan & self detection akan ikut terhapus.';
+  }
+
+  @override
+  String get delete => 'Hapus';
+
+  @override
+  String get deleteSuccess => 'Data berhasil dihapus';
+
+  @override
+  String deleteFailed(Object error) {
+    return 'Gagal menghapus: $error';
+  }
 }

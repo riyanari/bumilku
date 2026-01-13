@@ -92,4 +92,35 @@ class UserServices {
       rethrow;
     }
   }
+
+  Future<void> deleteUserCompletely(String userId) async {
+    final FirebaseFirestore _db = FirebaseFirestore.instance;
+    final batch = _db.batch();
+
+    // 1) delete user doc
+    final userRef = _db.collection('users').doc(userId);
+    batch.delete(userRef);
+
+    // 2) delete medis milik user
+    final medisSnap = await _db
+        .collection('medis')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    for (final doc in medisSnap.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // 3) delete self detection milik user
+    final detectionSnap = await _db
+        .collection('self_detections')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    for (final doc in detectionSnap.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+  }
 }

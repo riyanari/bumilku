@@ -612,5 +612,17 @@
   "fetalMovementMsgAttention": "{count} movements in 12 hours. It is recommended to consult a health professional.",
   "@fetalMovementMsgAttention": { "placeholders": { "count": {} } },
   "fetalMovementMsgUrgent": "Only {count} movements in 12 hours. Contact a health professional immediately.",
-  "@fetalMovementMsgUrgent": { "placeholders": { "count": {} } }
+  "@fetalMovementMsgUrgent": { "placeholders": { "count": {} } },
+
+  "deleteTooltip": "Delete",
+  "deleteBundaTitle": "Delete Mother Data",
+  "deleteBundaMessage": "Are you sure you want to delete {name}'s data? All pregnancy and self detection history will also be deleted.",
+  "@deleteBundaMessage": { "placeholders": { "name": {} } },
+
+  "cancel": "Cancel",
+  "delete": "Delete",
+
+  "deleteSuccess": "Data deleted successfully",
+  "deleteFailed": "Failed to delete: {error}",
+  "@deleteFailed": { "placeholders": { "error": {} } }
 }

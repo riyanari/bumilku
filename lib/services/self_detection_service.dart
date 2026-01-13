@@ -125,6 +125,16 @@ class SelfDetectionService {
     }
   }
 
+  Future<List<DocumentReference>> getDetectionDocRefsByUserId(String userId) async {
+    try {
+      final snap = await _detectionRef.where('userId', isEqualTo: userId).get();
+      return snap.docs.map((d) => d.reference).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
   // Method untuk get by ID (opsional)
   Future<Map<String, dynamic>?> getDetectionById(String detectionId) async {
     try {
