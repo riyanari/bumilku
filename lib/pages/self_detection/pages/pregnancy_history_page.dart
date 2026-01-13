@@ -1,5 +1,7 @@
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+
 import '../self_detection_controller.dart';
 import '../widgets/input_field.dart';
 
@@ -10,96 +12,107 @@ class PregnancyHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Riwayat Kehamilan & Persalinan",
-            style: TextStyle(
+            t.pregnancyHistoryTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
-          // Informasi tambahan untuk membantu pengguna
+
           Text(
-            "Isilah sesuai dengan riwayat kehamilan dan persalinan sebelumnya",
+            t.pregnancyHistorySubtitle,
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
+
           const SizedBox(height: 12),
+
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
                 CustomInputField(
                   controller: controller.childrenCountController,
-                  label: "Jumlah anak yang sudah lahir",
+                  label: t.pregnancyHistoryChildrenCountLabel,
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Jumlah anak harus diisi';
-                    if (int.tryParse(value) == null)
-                      return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) {
+                      return t.validationRequiredChildrenCount;
+                    }
+                    if (int.tryParse(value) == null) {
+                      return t.validationInvalidNumber;
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 10),
+
                 CustomInputField(
                   controller: controller.firstPregnancyAgeController,
-                  label: "Usia bunda saat pertama kali hamil",
+                  label: t.pregnancyHistoryFirstPregnancyAgeLabel,
                   keyboardType: TextInputType.number,
-                  suffixText: "tahun",
+                  suffixText: t.unitYears,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Usia pertama hamil harus diisi';
-                    if (int.tryParse(value) == null)
-                      return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) {
+                      return t.validationRequiredFirstPregnancyAge;
+                    }
+                    if (int.tryParse(value) == null) {
+                      return t.validationInvalidNumber;
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 10),
+
                 CustomInputField(
                   controller: controller.pregnancyGapController,
-                  label: "Jarak kehamilan dengan anak sebelumnya",
+                  label: t.pregnancyHistoryPregnancyGapLabel,
                   keyboardType: TextInputType.number,
-                  suffixText: "bulan",
+                  suffixText: t.unitMonths,
                 ),
                 const SizedBox(height: 10),
+
                 CustomInputField(
                   controller: controller.obstetricHistoryController,
-                  label:
-                      "Riwayat Obstetrik atau riwayat kehamilan dan persalinan (riwayat keguguran, riwayat caesar, riwayat kelahiran prematur, riwayat hamil ektopik atau di luar kandungan, dll)",
+                  label: t.pregnancyHistoryObstetricHistoryLabel,
                   keyboardType: TextInputType.text,
                   maxLines: 2,
                 ),
                 const SizedBox(height: 10),
+
                 CustomInputField(
                   controller: controller.deliveryComplicationController,
-                  label:
-                      "Riwayat komplikasi persalinan (perdarahan, tekanan darah tinggi saat hamil, dll.)",
+                  label: t.pregnancyHistoryDeliveryComplicationsLabel,
                   keyboardType: TextInputType.text,
                   maxLines: 2,
                 ),
                 const SizedBox(height: 10),
+
                 CustomInputField(
                   controller: controller.babyWeightHistoryController,
-                  label:
-                      "Riwayat bayi lahir (berat badan normal >=2.5 / besar >4 kg)",
+                  label: t.pregnancyHistoryBabyWeightHistoryLabel,
                   keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 10),
+
                 CustomInputField(
                   controller: controller.previousPregnancyController,
-                  label:
-                      "Riwayat kehamilan sebelumnya (normal/bermasalah/janin meninggal)",
+                  label: t.pregnancyHistoryPreviousPregnancyLabel,
                   keyboardType: TextInputType.text,
                   maxLines: 2,
                 ),
                 const SizedBox(height: 10),
-                // Informasi contoh pengisian
+
+                // contoh pengisian
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -111,36 +124,41 @@ class PregnancyHistoryPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Contoh pengisian:",
-                        style: TextStyle(
+                        t.pregnancyHistoryExamplesTitle,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: tPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
+
                       Text(
-                        "• Riwayat Obstetrik atau riwayat kehamilan dan persalinan (riwayat keguguran, riwayat caesar, riwayat kelahiran prematur, riwayat hamil ektopik atau di luar kandungan, dll)",
-                        style: TextStyle(fontSize: 12),
+                        t.pregnancyHistoryExampleObstetricLabel,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                      SizedBox(height: 8,),
+                      const SizedBox(height: 8),
+
                       Text(
-                        "• Riwayat kompilasi persalinan (perdarahan, tekanan darah tinggi saat hamil, dll.)",
-                        style: TextStyle(fontSize: 12),
+                        t.pregnancyHistoryExampleComplicationLabel,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                      SizedBox(height: 8,),
+                      const SizedBox(height: 8),
+
                       Text(
-                        "• Riwayat obstetri: Pernah keguguran 1x, SC 1x",
-                        style: TextStyle(fontSize: 12),
+                        t.pregnancyHistoryExampleObstetricValue,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                      SizedBox(height: 8,),
+                      const SizedBox(height: 8),
+
                       Text(
-                        "• Komplikasi: Perdarahan pasca persalinan",
-                        style: TextStyle(fontSize: 12),
+                        t.pregnancyHistoryExampleComplicationValue,
+                        style: const TextStyle(fontSize: 12),
                       ),
-                      SizedBox(height: 8,),
+                      const SizedBox(height: 8),
+
                       Text(
-                        "• Bayi lahir: Berart badan normal minimal 2.5 kg",
-                        style: TextStyle(fontSize: 12),
+                        t.pregnancyHistoryExampleBabyWeightValue,
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ],
                   ),

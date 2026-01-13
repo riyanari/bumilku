@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../cubit/locale_cubit.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/theme.dart';
 
 class CalendarMenstruasi extends StatefulWidget {
@@ -47,8 +50,8 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
     required DateTime date,
     required IconData icon,
     required Color color,
+    required DateFormat dateFmt,
   }) {
-    final dateFmt = DateFormat('d MMM y', 'id_ID');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
@@ -61,15 +64,14 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
           Icon(icon, size: 18, color: color),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              '$label: ${dateFmt.format(date)}',
-              style: blackTextStyle,
-            ),
+            child: Text('$label: ${dateFmt.format(date)}', style: blackTextStyle),
           ),
         ],
       ),
     );
   }
+
+
 
   Widget _badge(String text, Color color) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
@@ -105,13 +107,22 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
     );
   }
 
-  String _calculateGestationalAge() {
+  String _calculateGestationalAge(BuildContext context) {
     final difference = DateTime.now().difference(widget.lmp);
     final weeks = (difference.inDays / 7).floor();
+
+    if (_isEnglish(context)) {
+      return 'You are entering week $weeks of pregnancy';
+    }
     return 'Anda memasuki minggu ke-$weeks usia kehamilan';
   }
 
-  void _showEditLmpCycleDialog() {
+
+  void _showEditLmpCycleDialog({
+    required AppLocalizations t,
+    required Locale currentLocale,
+    required String intlLocale,
+  }) {
     DateTime tempLmp = widget.lmp;
     int tempCycleLength = widget.cycleLength;
 
@@ -136,7 +147,7 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
                 children: [
                   Center(
                     child: Text(
-                      'Atur Informasi Haid',
+                      t.setPeriodInfoTitle,
                       style: primaryTextStyle.copyWith(
                         fontSize: 18,
                         fontWeight: bold,
@@ -145,42 +156,35 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Keterangan LMP
                   Text(
-                    'Hari Pertama Haid Terakhir (LMP) adalah hari pertama menstruasi terakhir Anda. '
-                    'Data ini digunakan untuk menghitung usia kehamilan dan memperkirakan Hari Perkiraan Lahir (HPL).',
+                    t.setPeriodInfoDesc,
                     style: greyTextStyle.copyWith(fontSize: 12),
                     textAlign: TextAlign.justify,
                   ),
                   const SizedBox(height: 16),
 
-                  // Pilih tanggal LMP
                   Text(
-                    'Tanggal Hari Pertama Haid Terakhir',
+                    t.lmpDateLabel,
                     style: blackTextStyle.copyWith(
                       fontWeight: semiBold,
                       fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 8),
+
                   ListTile(
-                    leading: const Icon(
-                      Icons.calendar_today,
-                      color: kPrimaryColor,
-                    ),
+                    leading: const Icon(Icons.calendar_today, color: kPrimaryColor),
                     title: Text(
-                      DateFormat('EEEE, d MMMM y', 'id_ID').format(tempLmp),
+                      DateFormat('EEEE, d MMMM y', intlLocale).format(tempLmp),
                       style: blackTextStyle,
                     ),
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: tempLmp,
-                        firstDate: DateTime.now().subtract(
-                          const Duration(days: 365),
-                        ),
+                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
-                        locale: const Locale('id', 'ID'),
+                        locale: currentLocale, // ✅ ikut bahasa aktif
                       );
                       if (picked != null) {
                         setStateDialog(() => tempLmp = picked);
@@ -190,45 +194,36 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
 
                   const SizedBox(height: 16),
 
-                  // Pilih panjang siklus
                   Text(
-                    'Panjang Siklus Menstruasi',
+                    t.cycleLengthLabel,
                     style: blackTextStyle.copyWith(
                       fontWeight: semiBold,
                       fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 8),
+
                   DropdownButton<int>(
                     value: tempCycleLength,
                     isExpanded: true,
                     items: List.generate(26, (i) => 20 + i)
                         .map(
                           (e) => DropdownMenuItem(
-                            value: e,
-                            child: Text('$e hari'),
-                          ),
-                        )
+                        value: e,
+                        child: Text('$e ${t.daysUnit}'),
+                      ),
+                    )
                         .toList(),
-                    onChanged: (val) =>
-                        setStateDialog(() => tempCycleLength = val!),
+                    onChanged: (val) => setStateDialog(() => tempCycleLength = val!),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Tombol Simpan
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        final adjustment = tempCycleLength - 28;
-                        final newEdd = tempLmp.add(
-                          Duration(days: 280 + adjustment),
-                        );
-
-                        // callback ke parent
                         widget.onSave?.call(tempCycleLength, tempLmp);
-
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
@@ -239,7 +234,7 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
                         ),
                       ),
                       child: Text(
-                        'Simpan',
+                        t.save,
                         style: whiteTextStyle.copyWith(fontWeight: bold),
                       ),
                     ),
@@ -255,207 +250,163 @@ class _CalendarMenstruasiState extends State<CalendarMenstruasi> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Card(
-          elevation: 10,
-          shadowColor: kPrimaryColor,
-          margin: const EdgeInsets.fromLTRB(0, 12, 0, 0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                TableCalendar(
-                  locale: 'id_ID',
-                  firstDay: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDay: DateTime.now().add(const Duration(days: 365)),
-                  focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
-                  onDaySelected: _onDaySelected,
-                  calendarFormat: CalendarFormat.month,
-                  rangeSelectionMode: RangeSelectionMode.disabled,
-                  headerStyle: HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
-                    titleTextStyle: primaryTextStyle.copyWith(
-                      fontWeight: bold,
-                      fontSize: 16,
-                      color: kWhiteColor,
-                    ),
-                    leftChevronIcon: const Icon(
-                      Icons.chevron_left,
-                      color: kWhiteColor,
-                    ),
-                    rightChevronIcon: const Icon(
-                      Icons.chevron_right,
-                      color: kWhiteColor,
-                    ),
-                    headerPadding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  calendarBuilders: CalendarBuilders(
-                    markerBuilder: _markerBuilder,
-                  ),
-                ),
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, currentLocale) {
+        final t = AppLocalizations.of(context);
 
-                const Divider(color: kPrimaryColor, thickness: 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        if (t == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // locale string untuk intl & TableCalendar (contoh: id_ID / en_US)
+        final lang = currentLocale.languageCode;
+        final country = (currentLocale.countryCode?.isNotEmpty ?? false)
+            ? currentLocale.countryCode!
+            : (lang == 'id' ? 'ID' : 'US');
+        final intlLocale = '${lang}_$country';
+
+        final dateShortFmt = DateFormat('d MMM y', intlLocale);
+        final dateLongFmt = DateFormat('d MMMM y', intlLocale);
+
+        final weeks = (DateTime.now().difference(widget.lmp).inDays / 7).floor();
+
+        return Column(
+          children: [
+            Card(
+              elevation: 10,
+              shadowColor: kPrimaryColor,
+              margin: const EdgeInsets.fromLTRB(0, 12, 0, 0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
                   children: [
-                    Text(
-                      'Kalender Kehamilan',
-                      style: primaryTextStyle.copyWith(
-                        fontWeight: bold,
-                        fontSize: 16,
+                    TableCalendar(
+                      locale: intlLocale, // ✅ ikut bahasa aktif
+                      firstDay: DateTime.now().subtract(const Duration(days: 365)),
+                      lastDay: DateTime.now().add(const Duration(days: 365)),
+                      focusedDay: _focusedDay,
+                      selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+                      onDaySelected: _onDaySelected,
+                      calendarFormat: CalendarFormat.month,
+                      rangeSelectionMode: RangeSelectionMode.disabled,
+                      headerStyle: HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                        titleTextStyle: primaryTextStyle.copyWith(
+                          fontWeight: bold,
+                          fontSize: 16,
+                          color: kWhiteColor,
+                        ),
+                        leftChevronIcon: const Icon(Icons.chevron_left, color: kWhiteColor),
+                        rightChevronIcon: const Icon(Icons.chevron_right, color: kWhiteColor),
+                        headerPadding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      calendarBuilders: CalendarBuilders(
+                        markerBuilder: _markerBuilder,
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: _showEditLmpCycleDialog,
-                      icon: const Icon(Icons.edit, size: 18),
-                      label: const Text('Edit', style: TextStyle(fontSize: 12)),
+
+                    const Divider(color: kPrimaryColor, thickness: 2),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          t.pregnancyCalendarTitle, // ✅ localized
+                          style: primaryTextStyle.copyWith(
+                            fontWeight: bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => _showEditLmpCycleDialog(
+                            t: t,
+                            currentLocale: currentLocale, // ✅ dipakai showDatePicker
+                            intlLocale: intlLocale,       // ✅ dipakai DateFormat dialog
+                          ),
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: Text(t.edit, style: const TextStyle(fontSize: 12)), // ✅ localized
+                        ),
+                      ],
+                    ),
+
+                    _infoRow(
+                      label: t.lastPeriodLabel, // ✅ localized
+                      date: widget.lmp,
+                      icon: Icons.favorite,
+                      color: tSecondary10Color,
+                      dateFmt: dateShortFmt,
+                    ),
+                    const SizedBox(height: 6),
+                    _infoRow(
+                      label: t.dueDateLabel, // ✅ localized
+                      date: widget.edd,
+                      icon: Icons.cake,
+                      color: kPrimaryColor,
+                      dateFmt: dateShortFmt,
                     ),
                   ],
                 ),
-                _infoRow(
-                  label: 'Haid pertama terakhir',
-                  date: widget.lmp,
-                  icon: Icons.favorite,
-                  color: tSecondary10Color,
-                ),
-                const SizedBox(height: 6),
-                _infoRow(
-                  label: 'Prediksi melahirkan',
-                  date: widget.edd,
-                  icon: Icons.cake,
-                  color: kPrimaryColor,
-                ),
-                const SizedBox(height: 8),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.end,
-                //   children: [
-                //     GestureDetector(
-                //       onTap: () {
-                //         // ke list riwayat kehamilan
-                //       },
-                //       child: Text("Riwayat Kehamilan"),
-                //     ),
-                //   ],
-                // ),
-              ],
+              ),
             ),
-          ),
-        ),
 
-        if (widget.lmp != null) ...[
-          const SizedBox(height: 20),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 18),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: tPrimaryColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  DateFormat('d MMMM y', 'id_ID').format(DateTime.now()),
-                  style: whiteTextStyle.copyWith(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Divider(color: kWhiteColor, thickness: 1),
-                Text(
-                  _calculateGestationalAge(),
-                  style: whiteTextStyle.copyWith(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-              ],
-            ),
-          ),
-        ],
+            const SizedBox(height: 20),
 
-        // if (widget.lmp != null) ...[
-        //   const SizedBox(height: 20),
-        //   GestureDetector(
-        //     onTap: () {
-        //       AwesomeDialog(
-        //         context: context,
-        //         dialogType: DialogType.question,
-        //         animType: AnimType.bottomSlide,
-        //         title: "Konfirmasi",
-        //         desc: "Apakah bayi Anda sudah lahir?",
-        //         btnCancelOnPress: () {},
-        //         btnOkOnPress: () {
-        //           // TODO: panggil MedisCubit.markAsCompleted(userId)
-        //           context.read<MedisCubit>().markAsCompleted(
-        //             widget.medisId,
-        //             DateTime.now(), // deliveredAt = hari ini
-        //           );
-        //         },
-        //         btnOkText: "Ya, Sudah Lahir",
-        //         btnCancelText: "Batal",
-        //       ).show();
-        //     },
-        //     child: Container(
-        //       padding: const EdgeInsets.all(12),
-        //       decoration: BoxDecoration(
-        //         color: tPrimaryColor,
-        //         borderRadius: BorderRadius.circular(12),
-        //       ),
-        //       child: Column(
-        //         children: [
-        //           Text(
-        //             DateFormat('d MMMM y', 'id_ID').format(DateTime.now()),
-        //             style: whiteTextStyle.copyWith(
-        //               fontSize: 10,
-        //               fontWeight: FontWeight.bold,
-        //             ),
-        //           ),
-        //           const Divider(color: kWhiteColor, thickness: 1),
-        //           Text(
-        //             _calculateGestationalAge(),
-        //             style: whiteTextStyle.copyWith(
-        //               fontSize: 10,
-        //               fontWeight: FontWeight.bold,
-        //             ),
-        //             textAlign: TextAlign.center,
-        //           ),
-        //           const SizedBox(height: 6),
-        //           Row(
-        //             mainAxisAlignment: MainAxisAlignment.center,
-        //             children: [
-        //               const Icon(
-        //                 Icons.touch_app,
-        //                 size: 14,
-        //                 color: Colors.white,
-        //               ),
-        //               const SizedBox(width: 4),
-        //               Text(
-        //                 "Tap jika bayi sudah lahir",
-        //                 style: whiteTextStyle.copyWith(
-        //                   fontSize: 9,
-        //                   fontStyle: FontStyle.italic,
-        //                 ),
-        //               ),
-        //             ],
-        //           ),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
-        // ],
-      ],
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 18),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: tPrimaryColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    dateLongFmt.format(DateTime.now()), // ✅ ikut locale aktif
+                    style: whiteTextStyle.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Divider(color: kWhiteColor, thickness: 1),
+                  Text(
+                    t.pregnancyWeekInfo(weeks), // ✅ localized dengan placeholder
+                    style: whiteTextStyle.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
+
+
+  String _intlLocaleOf(BuildContext context) {
+    final l = context.watch<LocaleCubit>().state; // locale aktif dari cubit
+    final lang = l.languageCode;
+    final country = (l.countryCode?.isNotEmpty ?? false)
+        ? l.countryCode
+        : (lang == 'id' ? 'ID' : (lang == 'en' ? 'US' : ''));
+    return country!.isEmpty ? lang : '${lang}_$country'; // id_ID / en_US
+  }
+
+  bool _isEnglish(BuildContext context) {
+    final l = context.watch<LocaleCubit>().state;
+    return l.languageCode == 'en';
+  }
+
 }

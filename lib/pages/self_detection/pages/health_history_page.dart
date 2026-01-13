@@ -1,5 +1,7 @@
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+
 import '../self_detection_controller.dart';
 import '../widgets/input_field.dart';
 
@@ -10,58 +12,57 @@ class HealthHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Riwayat Kesehatan Bunda",
-            style: TextStyle(
+            t.healthHistoryTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
-          // Informasi tambahan
+
           Text(
-            "Informasi ini membantu tenaga kesehatan memahami kondisi Anda",
+            t.healthHistorySubtitle,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
             ),
           ),
-          
+
           Expanded(
             child: ListView(
-              padding: EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
                 CustomInputField(
                   controller: controller.diseaseHistoryController,
-                  label: "Penyakit yang pernah/sedang diderita (tekanan darah tinggi, diabetes, jantung, dll.)",
+                  label: t.healthHistoryDiseaseLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
                 CustomInputField(
                   controller: controller.allergyHistoryController,
-                  label: "Riwayat alergi (obat/makanan/bahan tertentu)",
+                  label: t.healthHistoryAllergyLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
                 CustomInputField(
                   controller: controller.surgeryHistoryController,
-                  label: "Riwayat operasi (selain SC)",
+                  label: t.healthHistorySurgeryLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
                 CustomInputField(
                   controller: controller.medicationController,
-                  label: "Konsumsi obat-obatan rutin (termasuk vitamin/herbal)",
+                  label: t.healthHistoryMedicationLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
-                // Informasi contoh pengisian
+
+                // Example info
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -73,17 +74,21 @@ class HealthHistoryPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Contoh pengisian:",
-                        style: TextStyle(
+                        t.healthHistoryExamplesTitle,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: tPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text("• Penyakit: tekanan darah tinggi sejak 2020", style: TextStyle(fontSize: 12)),
-                      Text("• Alergi: Alergi antibiotik Amoxicillin", style: TextStyle(fontSize: 12)),
-                      Text("• Operasi: Usus buntu tahun 2018", style: TextStyle(fontSize: 12)),
-                      Text("• Obat: Obat tekanan darah tinggi rutin, vitamin prenatal", style: TextStyle(fontSize: 12)),
+                      Text(t.healthHistoryExampleDisease,
+                          style: const TextStyle(fontSize: 12)),
+                      Text(t.healthHistoryExampleAllergy,
+                          style: const TextStyle(fontSize: 12)),
+                      Text(t.healthHistoryExampleSurgery,
+                          style: const TextStyle(fontSize: 12)),
+                      Text(t.healthHistoryExampleMedication,
+                          style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),

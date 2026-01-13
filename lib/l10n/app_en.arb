@@ -1,0 +1,616 @@
+{
+  "@@locale": "en",
+  "appName": "BUMILKU",
+  "selfDetection": "Self Detection",
+  "selfDetectionDesc": "Detect your pregnancy condition now",
+  "checkHistory": "Checkup History",
+  "checkHistoryDesc": "This history is generated from self detection",
+  "maternalNursingTitle": "What is Maternal Nursing?",
+  "maternalNursingDesc": "Maternal nursing focuses on maternal health",
+  "faqTitle": "Frequently Asked Questions",
+  "faqDesc": "Read common questions often asked during pregnancy",
+
+  "noPregnancyData": "No pregnancy data yet",
+  "addPregnancy": "Add Pregnancy",
+  "tryAgain": "Try Again",
+  "medicalDataNotAvailable": "Medical data is not available",
+  "addFirstPregnancy": "Add First Pregnancy",
+
+  "logoutConfirmTitle": "Logout Confirmation",
+  "logoutConfirmDesc": "Are you sure you want to log out from BUMILKU?",
+  "cancel": "Cancel",
+  "logout": "Logout",
+
+  "addPregnancyNewTitle": "Add New Pregnancy",
+  "addPregnancyNewDesc": "Do you want to add new pregnancy data?",
+  "add": "Add",
+
+  "pregnancyCalendarTitle": "Pregnancy Calendar",
+  "edit": "Edit",
+  "lastPeriodLabel": "Last period (LMP)",
+  "dueDateLabel": "Estimated due date",
+  "setPeriodInfoTitle": "Menstrual Information",
+  "setPeriodInfoDesc": "Last Menstrual Period (LMP) is the first day of your last period. This information is used to calculate gestational age and estimate your due date.",
+  "lmpDateLabel": "LMP Date",
+  "cycleLengthLabel": "Cycle Length",
+  "daysUnit": "days",
+  "save": "Save",
+  "pregnancyWeekInfo": "You are entering week {weeks} of pregnancy",
+  "@pregnancyWeekInfo": {
+    "placeholders": { "weeks": { "type": "int" } }
+  },
+
+  "selfDetectionTitle": "Self Pregnancy Check",
+  "detectionHistory": "Detection History",
+  "back": "Back",
+  "next": "Next",
+  "calculateRisk": "Calculate Risk",
+  "completeStepData": "Please complete the data on this step.",
+
+  "signUpNewAccountTitle": "Create New Account",
+  "emailHint": "Email",
+  "emailRequired": "Email is required",
+  "emailInvalid": "Invalid email format",
+  "passwordHint": "Password",
+  "confirmPasswordHint": "Confirm Password",
+  "passwordRequired": "Password is required",
+  "passwordMin6": "Password must be at least 6 characters",
+  "confirmPasswordRequired": "Confirm password is required",
+  "passwordNotMatch": "Passwords do not match",
+  "passwordStrengthLabel": "Password strength:",
+  "passwordStrengthWeak": "Weak",
+  "passwordStrengthFair": "Fair",
+  "passwordStrengthGood": "Good",
+  "passwordStrengthStrong": "Strong",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "signUpButton": "Sign up",
+  "signingUpLoading": "Signing up...",
+
+  "signupWelcomeTitle": "Welcome! 👋",
+  "signupWelcomeDesc": "Before we start, let’s get to know you first",
+
+  "signupNameLabel": "Your Name",
+  "signupNameHint": "Enter your name",
+  "signupNameEmpty": "Name cannot be empty",
+  "signupNameMin2": "Name must be at least 2 characters",
+  "signupNameMax30": "Name must be at most 30 characters",
+
+  "signupAddressLabel": "Address",
+  "signupAddressHint": "Enter your full address",
+  "signupAddressEmpty": "Address cannot be empty",
+
+  "signupDobLabel": "Date of Birth",
+  "signupDobHint": "Select date of birth",
+  "signupDobRequired": "Date of birth is required",
+
+  "vitalTitle": "Vital Signs",
+
+  "vitalSystolicLabel": "Systolic (mmHg)",
+  "vitalDiastolicLabel": "Diastolic (mmHg)",
+  "vitalTempLabel": "Body temperature (°C)",
+  "vitalPulseLabel": "Pulse (beats/min)",
+  "vitalRespLabel": "Respiratory rate (breaths/min)",
+
+  "vitalSystolicRequired": "Systolic is required",
+  "vitalDiastolicRequired": "Diastolic is required",
+  "vitalTempRequired": "Temperature is required",
+  "vitalPulseRequired": "Pulse is required",
+  "vitalRespRequired": "Respiratory rate is required",
+  "vitalValidNumber": "Please enter a valid number",
+
+  "vitalNormalTitle": "Normal Values:",
+  "vitalNormalBpMain": "• Blood pressure: 90/60 - 139/89 mmHg",
+  "vitalNormalBpSys": "   - Systolic (upper): 90-139 mmHg",
+  "vitalNormalBpDia": "   - Diastolic (lower): 60-89 mmHg",
+  "vitalNormalTemp": "• Body temperature: 36 - 37.5°C",
+  "vitalNormalPulse": "• Pulse: 60 - 100 beats/min",
+  "vitalNormalResp": "• Respiratory rate: 16 - 20 breaths/min",
+
+  "complaintsTitle": "Reported Complaints",
+  "complaintsLegendTitle": "Legend:",
+  "complaintsLegendHigh": "High-risk complaint",
+  "complaintsLegendMedium": "Needs attention",
+  "complaintsLegendNormal": "Normal complaint",
+  "complaintsPickInstruction": "Select the complaints you are experiencing:",
+  "complaintsSelectedCount": "{count} complaint(s) selected",
+  "@complaintsSelectedCount": {
+    "description": "Show number of selected complaints",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "fetalMoveTitle": "Fetal Movement Tracking",
+  "fetalMoveImportantInfoTitle": "Important Information",
+  "fetalMoveImportantInfoDesc": "Fetal movement tracking is performed for {hours} hours. Normal fetal movement: at least 10 movements within {hours} hours. Record all movements you feel during this {hours}-hour period.",
+  "@fetalMoveImportantInfoDesc": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+
+  "fetalMoveMainParams": "Main Tracking Parameters",
+  "fetalMoveMotherSubjective": "Mother’s Subjective Condition",
+
+  "fetalMoveStartDateTimeLabel": "Start Date & Time",
+  "fetalMovePickDateTime": "Select date & time",
+
+  "fetalMoveCountLabel": "Total Movements in {hours} Hours",
+  "@fetalMoveCountLabel": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveCountHint": "Enter total movements in {hours} hours",
+  "@fetalMoveCountHint": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveTimesSuffix": "times",
+  "fetalMoveTargetHint": "Target: at least 10 movements in 12 hours",
+
+  "fetalMoveDurationInfo": "Tracking Duration: {hours} Hours",
+  "@fetalMoveDurationInfo": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveActivityPatternLabel": "Fetal Activity Pattern",
+  "fetalMoveComparisonLabel": "Compared to the Previous Day",
+  "fetalMoveOtherComplaintsLabel": "Other Complaints",
+
+  "fetalPatternMorning": "More active in the morning",
+  "fetalPatternAfternoon": "More active in the afternoon",
+  "fetalPatternNight": "More active at night",
+  "fetalPatternNoPattern": "No specific pattern",
+
+  "fetalCompareMoreActive": "More active",
+  "fetalCompareSame": "About the same",
+  "fetalCompareLess": "Less active",
+
+  "fetalComplaintDizzyWeak": "Dizzy/weak",
+  "fetalComplaintAbdominalPain": "Abdominal pain",
+  "fetalComplaintNone": "None",
+
+  "fetalMoveErrorRequired": "Movement count is required",
+  "fetalMoveErrorInvalidNumber": "Enter a valid number",
+  "fetalMoveErrorNegative": "Cannot be negative",
+
+  "fetalMoveSummaryEmpty": "Enter movement count to see the summary",
+  "fetalMoveSummaryMoves": "Movements: {count} in {hours} hours ({perHour} movements/hour)",
+  "@fetalMoveSummaryMoves": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "hours": { "type": "int" },
+      "perHour": { "type": "double" }
+    }
+  },
+
+  "fetalMoveSummaryDetailTitle": "Tracking Details:",
+  "fetalMoveSummaryDetailCount": "• Total movements: {count}",
+  "@fetalMoveSummaryDetailCount": { "placeholders": { "count": { "type": "int" } } },
+
+  "fetalMoveSummaryDetailDuration": "• Duration: {hours} hours",
+  "@fetalMoveSummaryDetailDuration": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveSummaryDetailTarget": "• Minimum target: 10 movements",
+  "fetalMoveSummaryDetailPattern": "• Pattern: {pattern}",
+  "@fetalMoveSummaryDetailPattern": { "placeholders": { "pattern": { "type": "String" } } },
+
+  "fetalMoveSummaryDetailCompare": "• Comparison: {compare}",
+  "@fetalMoveSummaryDetailCompare": { "placeholders": { "compare": { "type": "String" } } },
+
+  "fetalMoveSummaryDetailComplaints": "• Complaints: {complaints}",
+  "@fetalMoveSummaryDetailComplaints": { "placeholders": { "complaints": { "type": "String" } } },
+
+  "fetalStatusIncomplete": "Incomplete Data",
+  "fetalStatusNormal": "Normal",
+  "fetalStatusMonitoring": "Needs Monitoring",
+  "fetalStatusAttention": "Needs Attention",
+  "fetalStatusEmergency": "Urgent Attention",
+
+  "fetalMsgNormal": "Fetal movement is within the normal range ({count} movements in {hours} hours).",
+  "@fetalMsgNormal": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgMonitoring": "Fetal movement is {count} in {hours} hours. Keep monitoring regularly and watch for changes.",
+  "@fetalMsgMonitoring": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgAttention": "Fetal movement is {count} in {hours} hours. Consider consulting a healthcare professional.",
+  "@fetalMsgAttention": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgEmergency": "Fetal movement is only {count} in {hours} hours. Contact a healthcare professional immediately.",
+  "@fetalMsgEmergency": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgIncomplete": "Complete the tracking data for an accurate analysis.",
+
+  "complaintNauseaVomiting": "Nausea and vomiting",
+  "complaintBloating": "Bloating",
+  "complaintHeartburn": "Heartburn",
+  "complaintHeadache": "Headache",
+  "complaintFetalMovement": "Fetal movement",
+  "complaintAbdominalCramp": "Abdominal cramps",
+  "complaintVaginalDischarge": "Vaginal discharge",
+  "complaintCravings": "Cravings",
+  "complaintBleedingSpotting": "Bleeding / spotting",
+  "complaintSwelling": "Swelling (hands/feet/face)",
+  "complaintConstipation": "Constipation",
+  "complaintExcessiveFatigue": "Excessive fatigue",
+  "complaintSleepyDizzy": "Dizziness / sleepiness",
+  "complaintMoodChanges": "Mood changes",
+  "complaintSleepProblems": "Sleep problems",
+  "complaintLossOfAppetite": "Loss of appetite",
+  "complaintFastHeartbeat": "Fast heartbeat",
+  "complaintBackPain": "Back pain",
+  "complaintShortnessOfBreath": "Shortness of breath",
+  "complaintBlurredVision": "Blurred vision",
+  "complaintEarlyContractions": "Early contractions",
+
+  "pregnancyHistoryTitle": "Pregnancy & Delivery History",
+  "pregnancyHistorySubtitle": "Fill in based on your previous pregnancy and delivery history",
+
+  "pregnancyHistoryChildrenCountLabel": "Number of children already born",
+  "pregnancyHistoryFirstPregnancyAgeLabel": "Your age at first pregnancy",
+  "pregnancyHistoryPregnancyGapLabel": "Gap from the previous pregnancy",
+  "pregnancyHistoryObstetricHistoryLabel": "Obstetric history (miscarriage, C-section, preterm birth, ectopic pregnancy, etc.)",
+  "pregnancyHistoryDeliveryComplicationsLabel": "Delivery complications history (bleeding, high blood pressure during pregnancy, etc.)",
+  "pregnancyHistoryBabyWeightHistoryLabel": "Baby birth history (normal weight ≥2.5 kg / large >4 kg)",
+  "pregnancyHistoryPreviousPregnancyLabel": "Previous pregnancy outcome (normal/complicated/stillbirth)",
+
+  "pregnancyHistoryExamplesTitle": "Example:",
+  "pregnancyHistoryExampleObstetricLabel": "• Obstetric / previous pregnancy & delivery history",
+  "pregnancyHistoryExampleComplicationLabel": "• Delivery complications history",
+  "pregnancyHistoryExampleObstetricValue": "• Obstetric history: 1 miscarriage, 1 C-section",
+  "pregnancyHistoryExampleComplicationValue": "• Complications: Postpartum hemorrhage",
+  "pregnancyHistoryExampleBabyWeightValue": "• Baby birth: Normal weight at least 2.5 kg",
+
+  "validationRequiredChildrenCount": "Number of children is required",
+  "validationRequiredFirstPregnancyAge": "Age at first pregnancy is required",
+  "validationInvalidNumber": "Please enter a valid number",
+
+  "unitYears": "years",
+  "unitMonths": "months",
+
+  "healthHistoryTitle": "Mother’s Health History",
+  "healthHistorySubtitle": "This information helps healthcare providers understand your condition",
+
+  "healthHistoryDiseaseLabel": "Past/current illnesses (high blood pressure, diabetes, heart disease, etc.)",
+  "healthHistoryAllergyLabel": "Allergy history (medications/foods/other substances)",
+  "healthHistorySurgeryLabel": "Surgery history (excluding C-section)",
+  "healthHistoryMedicationLabel": "Regular medications (including vitamins/herbal supplements)",
+
+  "healthHistoryExamplesTitle": "Example:",
+  "healthHistoryExampleDisease": "• Illness: high blood pressure since 2020",
+  "healthHistoryExampleAllergy": "• Allergy: Amoxicillin antibiotic allergy",
+  "healthHistoryExampleSurgery": "• Surgery: appendectomy in 2018",
+  "healthHistoryExampleMedication": "• Medications: regular blood pressure meds, prenatal vitamins",
+
+  "commonInvalidNumber": "Enter a valid number",
+
+  "physicalDataTitle": "Mother’s Physical Data",
+  "physicalDataSubtitle": "This data is used to calculate Body Mass Index (BMI)",
+
+  "physicalDataHeightLabel": "Height (cm)",
+  "physicalDataWeightBeforeLabel": "Pre-pregnancy weight (kg)",
+  "physicalDataCurrentWeightLabel": "Current weight (kg)",
+  "physicalDataMuacLabel": "Mid-upper arm circumference (MUAC) (cm)",
+
+  "physicalDataHeightRequired": "Height is required",
+  "physicalDataWeightBeforeRequired": "Pre-pregnancy weight is required",
+  "physicalDataCurrentWeightRequired": "Current weight is required",
+
+  "physicalDataBmiValue": "Body Mass Index (BMI): {value}",
+  "@physicalDataBmiValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "physicalDataBmiCategoryUnderweight": "Category: Underweight",
+  "physicalDataBmiCategoryNormal": "Category: Normal",
+  "physicalDataBmiCategoryOverweight": "Category: Overweight",
+  "physicalDataBmiCategoryObesity": "Category: Obesity",
+
+  "physicalDataNormalValuesTitle": "Normal values:",
+  "physicalDataNormalBmi": "• Normal BMI: 18.5 - 24.9",
+  "physicalDataNormalMuac": "• Normal MUAC: ≥ 23.5 cm",
+  "physicalDataBmiUnderweightInfo": "• BMI < 18.5: Underweight",
+  "physicalDataBmiOverweightInfo": "• BMI ≥ 25: Overweight",
+  "physicalDataBmiObesityInfo": "• BMI ≥ 30: Obesity",
+
+  "commonPickDate": "Select a date",
+
+  "menstrualTitle": "Menstrual & Pregnancy Data",
+  "menstrualSubtitle": "This information helps determine gestational age",
+
+  "menstrualLmpLabel": "First Day of Last Menstrual Period (LMP)*",
+  "menstrualLmpRequired": "Last menstrual period date is required",
+
+  "menstrualCycleLabel": "Menstrual cycle (regular/irregular, how many days)",
+  "menstrualFetalMovementLabel": "Fetal movement (felt/not yet/reduced)",
+  "menstrualUltrasoundLabel": "Ultrasound result (if available)",
+
+  "menstrualPregnancyInfoTitle": "Pregnancy Information:",
+  "menstrualEddLine": "• Estimated Due Date (EDD): {date}",
+  "@menstrualEddLine": { "placeholders": { "date": { "type": "String" } } },
+
+  "menstrualGestationalAgeLine": "• Gestational age: {weeks} weeks",
+  "@menstrualGestationalAgeLine": { "placeholders": { "weeks": { "type": "String" } } },
+
+  "menstrualImportantInfoTitle": "Important Information:",
+  "menstrualImportantBullet1": "• LMP is used to estimate gestational age",
+  "menstrualImportantBullet2": "• Fetal movement is usually felt starting around weeks 18–20",
+  "menstrualImportantBullet3": "• Ultrasound helps confirm gestational age and fetal development",
+
+  "lifestyleTitle": "Social & Lifestyle Factors",
+  "lifestyleSubtitle": "This information helps identify lifestyle-related risk factors",
+
+  "lifestyleAgeLabel": "Your current age (years)",
+  "lifestyleSmokingTitle": "Smoking status / secondhand smoke exposure",
+  "lifestyleAlcoholDrugTitle": "Alcohol / illegal drug use",
+  "lifestylePhysicalActivityLabel": "Daily physical activity (active/light/mostly resting)",
+  "lifestyleFamilySupportLabel": "Family support (good/limited/none)",
+
+  "lifestyleRiskInfoTitle": "Key Risk Factors:",
+  "lifestyleRiskBullet1": "• Age <20 or >35 increases risk",
+  "lifestyleRiskBullet2": "• Smoking/secondhand smoke can harm the baby",
+  "lifestyleRiskBullet3": "• Alcohol/illegal drugs are very dangerous in pregnancy",
+  "lifestyleRiskBullet4": "• Family support is important for mental health",
+
+  "lifestyleSmokingNone": "Non-smoker",
+  "lifestyleSmokingActive": "Smoker",
+  "lifestyleSmokingPassive": "Exposed to secondhand smoke",
+
+  "lifestyleAlcoholNone": "None",
+  "lifestyleAlcoholYes": "Uses alcohol",
+  "lifestyleDrugsYes": "Uses illegal drugs",
+
+  "errorAgeRequired": "Current age is required",
+  "errorInvalidNumber": "Please enter a valid number",
+
+  "selfDetectionLoading": "Calculating risk...",
+
+  "selfDetectionResultTitle": "Self-Detection Result",
+  "saveResultTooltip": "Save Result",
+  "totalRiskPointsLabel": "Total Risk Points:",
+  "noSpecificRecommendation": "No specific recommendation",
+
+  "riskHigh": "High Risk",
+  "riskAttention": "Needs Attention",
+  "riskMonitoring": "Needs Monitoring",
+  "riskNormal": "Normal",
+  "unknown": "Unknown",
+
+  "identifiedRiskFactorsTitle": "Identified Risk Factors",
+  "complaintEducationTitle": "Complaint Education",
+  "riskEducationTitle": "Risk Education",
+  "healthyPregnancyTipsTitle": "Healthy Pregnancy Tips",
+  "recommendationTitle": "Recommendation",
+
+  "fetalMovementRecordTitle": "Fetal Movement Recording Result",
+  "recordDetailTitle": "Recording Details:",
+  "movementCountLabel": "Movement Count",
+  "recordDurationLabel": "Recording Duration",
+  "movementsPerHourLabel": "Movements per Hour",
+  "comparisonWithYesterdayLabel": "Compared to Yesterday",
+  "activityPatternLabel": "Activity Pattern",
+  "noData": "No data",
+
+  "timesSuffix": "times",
+  "hoursSuffix": "hours",
+  "movementsPerHourSuffix": "moves/hour",
+
+  "fetalMovementNormalStandard": "Normal standard: at least 10 movements in 12 hours ({value} moves/hour)",
+  "@fetalMovementNormalStandard": { "placeholders": { "value": {} } },
+
+  "fetalMovementIncompleteTitle": "Incomplete Data",
+  "fetalMovementNormalTitle": "Normal",
+  "fetalMovementMonitoringTitle": "Needs Monitoring",
+  "fetalMovementAttentionTitle": "Needs Attention",
+  "fetalMovementCriticalTitle": "Critical",
+
+  "fetalMovementIncompleteMsg": "Fetal movement data is incomplete. Please complete the recording.",
+  "fetalMovementNormalMsg": "Fetal movements are within normal limits ({count} movements in 12 hours).",
+  "@fetalMovementNormalMsg": { "placeholders": { "count": {} } },
+  "fetalMovementMonitoringMsg": "Fetal movements are {count} in 12 hours. Monitor regularly and watch for changes.",
+  "@fetalMovementMonitoringMsg": { "placeholders": { "count": {} } },
+  "fetalMovementAttentionMsg": "Fetal movements are {count} in 12 hours. Consultation with a healthcare provider is recommended.",
+  "@fetalMovementAttentionMsg": { "placeholders": { "count": {} } },
+  "fetalMovementCriticalMsg": "Fetal movements are only {count} in 12 hours. Contact a healthcare provider immediately.",
+  "@fetalMovementCriticalMsg": { "placeholders": { "count": {} } },
+
+  "saveDetectionResultButton": "Save Detection Result",
+  "backToSelfDetectionButton": "Back to Self-Detection",
+
+  "saveResultDialogTitle": "Save Result",
+  "saveResultDialogMessage": "Do you want to save this result? It will be stored in your detection history.",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saveSuccessSnack": "Result saved successfully!",
+
+  "riskMsgHigh": "Fetal movements are very low. Contact a healthcare provider immediately.",
+  "riskMsgAttention": "Fetal movements are reduced. Consultation with a healthcare provider is recommended.",
+  "riskMsgMonitoring": "Fetal movements are close to the minimum. Monitor regularly and watch for changes.",
+  "riskMsgNormal": "Fetal movements are within normal limits. Continue regular monitoring.",
+  "riskMsgUnknown": "Data is incomplete or invalid.",
+
+  "@@locale": "en",
+
+  "historyTitle": "Detection History",
+  "historySectionTitle": "Self-Detection History",
+
+  "historyErrorTitle": "Something went wrong",
+  "historyRetry": "Try Again",
+
+  "historyEmptyTitle": "No detection history yet",
+  "historyEmptySubtitle": "Your self-detection results will appear here",
+  "historyStartDetectionNow": "Start Self Detection Now",
+
+  "historyUserDataUnavailable": "Data is not available",
+  "historyPleaseRelogin": "Please sign in again",
+
+  "historyFetalMovementLabel": "Fetal Movements",
+  "historyDetailLabel": "Details",
+  "historyStatusLabel": "Status",
+
+  "historyAgeYears": "{age} years old",
+  "@historyAgeYears": {
+    "placeholders": {
+      "age": { "type": "int" }
+    }
+  },
+
+  "historyDetailCount": "{count} factors",
+  "@historyDetailCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "riskLevelHigh": "High Risk",
+  "riskLevelNeedAttention": "Needs Attention",
+  "riskLevelNeedMonitoring": "Needs Monitoring",
+  "riskLevelNormal": "Normal",
+  "riskLevelUnknown": "Unknown",
+
+  "riskStatusNeedsTreatment": "Needs Treatment",
+  "riskStatusNeedsAttention": "Needs Attention",
+  "riskStatusNeedsMonitoring": "Needs Monitoring",
+  "riskStatusSafe": "Safe",
+  "riskStatusUnknown": "Unknown",
+
+  "mothersListTitle": "Mothers List",
+  "searchNameOrUsernameHint": "Search name or username...",
+  "noMotherData": "No mother data yet",
+  "notFoundTitle": "Not found",
+  "noResultsForQuery": "No results for '{query}'",
+  "@noResultsForQuery": {
+    "placeholders": { "query": {} }
+  },
+  "badgeMother": "Mother",
+  "yearsOldShort": "years",
+  "languageTooltip": "Language",
+  "languageIndonesia": "Indonesia",
+  "languageEnglish": "English",
+  "logoutFailed": "Logout failed",
+
+  "monitoringTitle": "Monitoring {name}",
+  "@monitoringTitle": { "placeholders": { "name": {} } },
+
+  "refreshDataTooltip": "Refresh Data",
+  "tabDevelopment": "Development",
+  "tabSelfDetection": "Self Detection",
+
+  "ageYears": "{age} years",
+  "@ageYears": { "placeholders": { "age": {} } },
+
+  "loadingPregnancyData": "Loading pregnancy data...",
+  "loadingDetectionHistory": "Loading detection history...",
+  "loadingDataGeneric": "Loading data...",
+
+  "noPregnancyDataTitle": "No Pregnancy Data",
+  "noPregnancyDataSubtitle": "Pregnancy data will appear here",
+
+  "pregnancyNumber": "Pregnancy {n}",
+  "@pregnancyNumber": { "placeholders": { "n": {} } },
+
+  "activePregnancy": "Active Pregnancy",
+  "pregnancyHistory": "Pregnancy History",
+  "activeLabel": "Active",
+
+  "babyNameLabel": "👶 Baby Name",
+  "babyNameNotSet": "Not set",
+  "lmpLabel": "📅 LMP",
+  "eddLabel": "🎯 Due Date",
+  "cycleLabel": "🔄 Cycle",
+  "cycleDaysValue": "{n} days",
+  "@cycleDaysValue": { "placeholders": { "n": {} } },
+
+  "pregnancyProgressTitle": "Pregnancy Progress",
+  "trimesterWithValue": "Trimester {value}",
+  "@trimesterWithValue": { "placeholders": { "value": {} } },
+
+  "gestationalAgeLabel": "Gestational Age",
+  "gestationalAgeValue": "{weeks} weeks {days} days",
+  "@gestationalAgeValue": { "placeholders": { "weeks": {}, "days": {} } },
+
+  "daysToBirthLabel": "Days to Due Date",
+  "daysValue": "{n} days",
+  "@daysValue": { "placeholders": { "n": {} } },
+
+  "trimesterLabel": "Trimester",
+  "timelineTitle": "Development Timeline",
+  "trimester1": "Trimester 1",
+  "trimester2": "Trimester 2",
+  "trimester3": "Trimester 3",
+  "weekRange1_13": "Weeks 1-13",
+  "weekRange14_27": "Weeks 14-27",
+  "weekRange28_40": "Weeks 28-40",
+
+  "dataCreatedAt": "Created at: {date}",
+  "@dataCreatedAt": { "placeholders": { "date": {} } },
+
+  "fetalMovementMonitoringHeader": "Fetal Movement Monitoring",
+  "selfDetectionHistoryHeader": "Self Detection History",
+  "fetalMovementHistoryHeader": "Fetal Movement History",
+
+  "noSelfDetectionDataTitle": "No Self Detection Data",
+  "noSelfDetectionDataSubtitle": "Self detection records will appear here",
+
+  "noFetalMovementDataTitle": "No Fetal Movement Data",
+  "noFetalMovementDataSubtitle": "Fetal movement records will appear here",
+
+  "fetalMovementStatsTitle": "Fetal Movement Statistics",
+  "avgMovementsLabel": "Average Movements",
+  "normalSessionsLabel": "Normal Sessions",
+  "totalSessionsLabel": "Total Sessions",
+
+  "latestRecordDetailTitle": "Latest Record Details:",
+
+  "movementCountLabel": "Movement Count",
+  "durationLabel": "Duration",
+  "movementsPerHourLabel": "Movements / Hour",
+  "comparisonLabel": "Comparison",
+  "activityPatternLabel": "Activity Pattern",
+  "complaintsLabel": "Complaints",
+
+  "activityPatternShortLabel": "Pattern",
+  "comparisonShortLabel": "Comparison",
+
+  "noData": "No data",
+  "timesValue": "{n} times",
+  "@timesValue": { "placeholders": { "n": {} } },
+  "hoursValue": "{n} hours",
+  "@hoursValue": { "placeholders": { "n": {} } },
+  "perHourValue": "{value}/hr",
+  "@perHourValue": { "placeholders": { "value": {} } },
+
+  "fetalMovementStandardTitle": "Normal standard: at least 10 movements in 12 hours",
+  "fetalMovementStandardPerHour": "({value} movements per hour)",
+  "@fetalMovementStandardPerHour": { "placeholders": { "value": {} } },
+
+  "movementsCountText": "{n} movements",
+  "@movementsCountText": { "placeholders": { "n": {} } },
+
+  "pointsValue": "{n} points",
+  "@pointsValue": { "placeholders": { "n": {} } },
+
+  "detailLabel": "Detail",
+  "statusLabel": "Status",
+  "fetalMovementLabel": "Fetal Movement",
+  "recordedLabel": "Recorded",
+  "factorsCount": "{n} factors",
+  "@factorsCount": { "placeholders": { "n": {} } },
+
+  "riskNeedTreatment": "Needs Treatment",
+  "riskNeedAttention": "Needs Attention",
+  "riskSafe": "Safe",
+  "unknown": "Unknown",
+
+  "errorOccurredTitle": "An error occurred",
+  "tryAgain": "Try Again",
+
+  "fetalMovementStatusIncomplete": "Incomplete Data",
+  "fetalMovementStatusNormal": "Normal",
+  "fetalMovementStatusMonitor": "Monitor",
+  "fetalMovementStatusAttention": "Needs Attention",
+  "fetalMovementStatusUrgent": "Urgent",
+
+  "fetalMovementMsgIncomplete": "Fetal movement data is incomplete. Please complete the record.",
+  "fetalMovementMsgNormal": "Fetal movement is within the normal range ({count} movements in 12 hours).",
+  "@fetalMovementMsgNormal": { "placeholders": { "count": {} } },
+  "fetalMovementMsgMonitor": "{count} movements in 12 hours. Keep monitoring regularly and watch for changes.",
+  "@fetalMovementMsgMonitor": { "placeholders": { "count": {} } },
+  "fetalMovementMsgAttention": "{count} movements in 12 hours. It is recommended to consult a health professional.",
+  "@fetalMovementMsgAttention": { "placeholders": { "count": {} } },
+  "fetalMovementMsgUrgent": "Only {count} movements in 12 hours. Contact a health professional immediately.",
+  "@fetalMovementMsgUrgent": { "placeholders": { "count": {} } }
+}

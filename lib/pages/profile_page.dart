@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
+
 import '../cubit/auth_cubit.dart';
+import '../cubit/locale_cubit.dart';
 import '../models/user_model.dart';
 import '../theme/theme.dart';
 
@@ -21,21 +23,25 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _tglLahirController;
   late DateTime _selectedDate;
 
+  String _fmtDate(DateTime d, bool isEn) =>
+      DateFormat('dd MMMM yyyy', isEn ? 'en_US' : 'id_ID').format(d);
+
   @override
   void initState() {
     super.initState();
-    // Initialize controllers dengan data dari state
     final authState = context.read<AuthCubit>().state;
+
     if (authState is AuthSuccess) {
       _nameController = TextEditingController(text: authState.user.name);
       _emailController = TextEditingController(text: authState.user.email);
       _alamatController = TextEditingController(text: authState.user.alamat);
+      _selectedDate = authState.user.tglLahir;
+
+      // isi awal pakai default locale device dulu; nanti akan disesuaikan di build()
       _tglLahirController = TextEditingController(
         text: DateFormat('dd MMMM yyyy').format(authState.user.tglLahir),
       );
-      _selectedDate = authState.user.tglLahir;
     } else {
-      // Default values jika state tidak tersedia
       _nameController = TextEditingController();
       _emailController = TextEditingController();
       _alamatController = TextEditingController();
@@ -53,43 +59,47 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context, bool isEn) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       initialDatePickerMode: DatePickerMode.year,
+      locale: Locale(isEn ? 'en' : 'id', isEn ? 'US' : 'ID'),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
             primaryColor: kPrimaryColor,
             colorScheme: ColorScheme.light(primary: kPrimaryColor),
-            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            buttonTheme:
+            const ButtonThemeData(textTheme: ButtonTextTheme.primary),
           ),
           child: child!,
         );
       },
     );
+
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _tglLahirController.text = DateFormat('dd MMMM yyyy').format(picked);
+        _tglLahirController.text = _fmtDate(picked, isEn);
       });
     }
   }
 
-  void _saveProfile() {
+  void _saveProfile(bool isEn) {
     if (_formKey.currentState!.validate()) {
       final authState = context.read<AuthCubit>().state;
       if (authState is AuthSuccess) {
-        // Tampilkan dialog konfirmasi
         AwesomeDialog(
           context: context,
           dialogType: DialogType.info,
           animType: AnimType.bottomSlide,
-          title: 'Simpan Perubahan',
-          desc: 'Apakah Anda yakin ingin menyimpan perubahan data profil?',
+          title: isEn ? 'Save Changes' : 'Simpan Perubahan',
+          desc: isEn
+              ? 'Are you sure you want to save the changes to your profile?'
+              : 'Apakah Anda yakin ingin menyimpan perubahan data profil?',
           btnCancel: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: tGreyColor,
@@ -97,11 +107,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             child: Text(
-              "Batal",
+              isEn ? "Cancel" : "Batal",
               style: whiteTextStyle.copyWith(
                 fontSize: 12,
                 fontWeight: bold,
@@ -117,10 +125,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             onPressed: () {
               Navigator.pop(context);
-              _performUpdate(authState.user.id);
+              _performUpdate(authState.user.id, isEn);
             },
             child: Text(
-              "Simpan",
+              isEn ? "Save" : "Simpan",
               style: whiteTextStyle.copyWith(
                 fontSize: 12,
                 fontWeight: bold,
@@ -131,17 +139,13 @@ class _ProfilePageState extends State<ProfilePage> {
             fontSize: 20,
             fontWeight: bold,
           ),
-          descTextStyle: const TextStyle(
-            fontSize: 16,
-            color: tGreyColor,
-          ),
+          descTextStyle: const TextStyle(fontSize: 16, color: tGreyColor),
         ).show();
       }
     }
   }
 
-  void _performUpdate(String userId) {
-    // Panggil method update profile dari cubit
+  void _performUpdate(String userId, bool isEn) {
     context.read<AuthCubit>().updateProfile(
       userId: userId,
       name: _nameController.text,
@@ -149,17 +153,20 @@ class _ProfilePageState extends State<ProfilePage> {
       tglLahir: _selectedDate,
     );
 
-    // Tampilkan dialog sukses
-    _showSuccessDialog();
+    // NOTE: ini menampilkan sukses langsung (sesuai kode kamu).
+    // Kalau mau lebih akurat, sukses sebaiknya ditampilkan saat state update sukses.
+    _showSuccessDialog(isEn);
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(bool isEn) {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.success,
       animType: AnimType.bottomSlide,
-      title: 'Berhasil!',
-      desc: 'Data profile berhasil diperbarui.',
+      title: isEn ? 'Success!' : 'Berhasil!',
+      desc: isEn
+          ? 'Your profile has been updated successfully.'
+          : 'Data profile berhasil diperbarui.',
       btnOk: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: kPrimaryColor,
@@ -167,9 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
+        onPressed: () => Navigator.pop(context),
         child: Text(
           "OK",
           style: whiteTextStyle.copyWith(
@@ -183,403 +188,436 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthFailed) {
-          // Tampilkan error dialog jika update gagal
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.error,
-            animType: AnimType.bottomSlide,
-            title: 'Gagal',
-            desc: state.error,
-            btnOk: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: kPrimaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                "OK",
-                style: whiteTextStyle.copyWith(
-                  fontSize: 16,
-                  fontWeight: bold,
-                ),
-              ),
-            ),
-          ).show();
-        }
-      },
-      child: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-          if (state is AuthSuccess) {
-            final UserModel user = state.user;
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, locale) {
+        final isEn = locale.languageCode == 'en';
 
-            return Scaffold(
-              backgroundColor: kBackgroundColor,
-              appBar: AppBar(
-                title: Text(
-                  'Data Pribadi Bunda',
-                  style: primaryTextStyle.copyWith(
-                    fontSize: 18,
-                    fontWeight: bold,
+        // sync text tanggal lahir biar ikut bahasa saat switch
+        // (tanpa mengubah _selectedDate)
+        final newText = _fmtDate(_selectedDate, isEn);
+        if (_tglLahirController.text != newText) {
+          // hindari setState di build, cukup assign
+          _tglLahirController.text = newText;
+        }
+
+        return BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthFailed) {
+              AwesomeDialog(
+                context: context,
+                dialogType: DialogType.error,
+                animType: AnimType.bottomSlide,
+                title: isEn ? 'Failed' : 'Gagal',
+                desc: state.error,
+                btnOk: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    "OK",
+                    style: whiteTextStyle.copyWith(
+                      fontSize: 16,
+                      fontWeight: bold,
+                    ),
                   ),
                 ),
-                backgroundColor: kBackgroundColor,
-                elevation: 0,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_rounded, color: kPrimaryColor, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                centerTitle: true,
-              ),
-              body: Stack(
-                children: [
-                  SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    padding: EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          // Profile Header dengan Avatar
-                          Container(
-                            padding: EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  kPrimaryColor.withValues(alpha:0.1),
-                                  Color(0xffFBE0EC).withValues(alpha:0.5),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kPrimaryColor.withValues(alpha:0.1),
-                                  blurRadius: 15,
-                                  offset: Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                // Avatar Circle
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        kPrimaryColor,
-                                        kPrimaryColor.withValues(alpha:0.7),
-                                      ],
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: kPrimaryColor.withValues(alpha:0.3),
-                                        blurRadius: 10,
-                                        offset: Offset(0, 5),
-                                      ),
+              ).show();
+            }
+          },
+          child: BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              if (state is AuthSuccess) {
+                final UserModel user = state.user;
+
+                return Scaffold(
+                  backgroundColor: kBackgroundColor,
+                  appBar: AppBar(
+                    title: Text(
+                      isEn ? 'Personal Data' : 'Data Pribadi Bunda',
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 18,
+                        fontWeight: bold,
+                      ),
+                    ),
+                    backgroundColor: kBackgroundColor,
+                    elevation: 0,
+                    leading: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: kPrimaryColor,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    centerTitle: true,
+                  ),
+                  body: Stack(
+                    children: [
+                      SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // Header
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      kPrimaryColor.withValues(alpha: 0.1),
+                                      const Color(0xffFBE0EC)
+                                          .withValues(alpha: 0.5),
                                     ],
                                   ),
-                                  child: Icon(
-                                    Icons.person_rounded,
-                                    size: 50,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(height: 14),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: kPrimaryColor.withValues(alpha:0.1),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        user.role.toUpperCase(),
-                                        style: primaryTextStyle.copyWith(
-                                          fontSize: 12,
-                                          fontWeight: bold,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(" - ", style: blackTextStyle.copyWith(fontSize: 18, fontWeight: bold),),
-                                    Text(
-                                      user.name,
-                                      style: primaryTextStyle.copyWith(
-                                        fontSize: 20,
-                                        fontWeight: bold,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: kPrimaryColor.withValues(alpha: 0.1),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '@${user.email}',
-                                  style: greyTextStyle.copyWith(
-                                    fontSize: 14,
-                                    fontWeight: medium,
-                                  ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            kPrimaryColor,
+                                            kPrimaryColor.withValues(alpha: 0.7),
+                                          ],
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                            kPrimaryColor.withValues(alpha: 0.3),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.person_rounded,
+                                        size: 50,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: kPrimaryColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            user.role.toUpperCase(),
+                                            style: primaryTextStyle.copyWith(
+                                              fontSize: 12,
+                                              fontWeight: bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          " - ",
+                                          style: blackTextStyle.copyWith(
+                                            fontSize: 18,
+                                            fontWeight: bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          user.name,
+                                          style: primaryTextStyle.copyWith(
+                                            fontSize: 20,
+                                            fontWeight: bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '@${user.email}',
+                                      style: greyTextStyle.copyWith(
+                                        fontSize: 14,
+                                        fontWeight: medium,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 32),
+                              ),
+                              const SizedBox(height: 32),
 
-                          // Section Title
-                          _buildSectionTitle('Informasi Pribadi'),
-                          SizedBox(height: 20),
+                              _buildSectionTitle(
+                                isEn ? 'Personal Information' : 'Informasi Pribadi',
+                              ),
+                              const SizedBox(height: 20),
 
-                          // Nama Lengkap (EDITABLE)
-                          _buildFormField(
-                            label: 'Nama Lengkap',
-                            controller: _nameController,
-                            icon: Icons.person_outline_rounded,
-                            editable: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Nama lengkap harus diisi';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 16),
-
-                          // Tanggal Lahir (EDITABLE)
-                          GestureDetector(
-                            onTap: () => _selectDate(context),
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: _buildFormField(
-                                label: 'Tanggal Lahir',
-                                controller: _tglLahirController,
-                                icon: Icons.calendar_today_rounded,
-                                editable: false,
+                              _buildFormField(
+                                label: isEn ? 'Full Name' : 'Nama Lengkap',
+                                controller: _nameController,
+                                icon: Icons.person_outline_rounded,
+                                editable: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Tanggal lahir harus diisi';
+                                    return isEn
+                                        ? 'Full name is required'
+                                        : 'Nama lengkap harus diisi';
                                   }
                                   return null;
                                 },
                               ),
-                            ),
-                          ),
-                          SizedBox(height: 16),
+                              const SizedBox(height: 16),
 
-                          // Alamat (EDITABLE)
-                          _buildFormField(
-                            label: 'Alamat',
-                            controller: _alamatController,
-                            icon: Icons.location_on_rounded,
-                            maxLines: 3,
-                            editable: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Alamat harus diisi';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 32),
-
-                          // Section Title untuk Informasi Akun
-                          _buildSectionTitle('Informasi Akun'),
-                          SizedBox(height: 20),
-
-                          // Username (READONLY)
-                          _buildInfoCard(
-                            icon: Icons.alternate_email_rounded,
-                            title: 'Email',
-                            value: user.email,
-                            color: Colors.blue,
-                          ),
-                          SizedBox(height: 12),
-
-                          // Role (READONLY)
-                          _buildInfoCard(
-                            icon: Icons.verified_user_rounded,
-                            title: 'Role',
-                            value: user.role,
-                            color: Colors.green,
-                          ),
-                          // SizedBox(height: 12),
-                          //
-                          // // User ID (READONLY)
-                          // _buildInfoCard(
-                          //   icon: Icons.fingerprint_rounded,
-                          //   title: 'User ID',
-                          //   value: user.id,
-                          //   color: Colors.purple,
-                          // ),
-                          SizedBox(height: 32),
-
-                          // Button Simpan
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  kPrimaryColor,
-                                  kPrimaryColor.withValues(alpha:0.8),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kPrimaryColor.withValues(alpha:0.3),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: state is AuthLoading ? null : _saveProfile,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                minimumSize: Size(double.infinity, 55),
-                              ),
-                              child: state is AuthLoading
-                                  ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                                  : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.save_rounded, color: Colors.white, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Simpan Perubahan',
-                                    style: whiteTextStyle.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: bold,
-                                    ),
+                              GestureDetector(
+                                onTap: () => _selectDate(context, isEn),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: _buildFormField(
+                                    label: isEn ? 'Date of Birth' : 'Tanggal Lahir',
+                                    controller: _tglLahirController,
+                                    icon: Icons.calendar_today_rounded,
+                                    editable: false,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return isEn
+                                            ? 'Date of birth is required'
+                                            : 'Tanggal lahir harus diisi';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else if (state is AuthLoading) {
-            return Scaffold(
-              backgroundColor: kBackgroundColor,
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: kPrimaryColor),
-                    SizedBox(height: 16),
-                    Text(
-                      'Memuat data...',
-                      style: primaryTextStyle,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          } else {
-            return Scaffold(
-              backgroundColor: kBackgroundColor,
-              appBar: AppBar(
-                title: Text(
-                  'Data Pribadi Bunda',
-                  style: primaryTextStyle.copyWith(
-                    fontSize: 18,
-                    fontWeight: bold,
-                  ),
-                ),
-                backgroundColor: kBackgroundColor,
-                elevation: 0,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_rounded, color: kPrimaryColor, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              body: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline_rounded,
-                        size: 64,
-                        color: tGreyColor,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'Data tidak tersedia',
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 18,
-                          fontWeight: bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Silakan coba kembali atau hubungi administrator',
-                        style: greyTextStyle.copyWith(
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                        ),
-                        child: Text(
-                          'Kembali',
-                          style: whiteTextStyle.copyWith(
-                            fontSize: 16,
-                            fontWeight: medium,
+                              const SizedBox(height: 16),
+
+                              _buildFormField(
+                                label: isEn ? 'Address' : 'Alamat',
+                                controller: _alamatController,
+                                icon: Icons.location_on_rounded,
+                                maxLines: 3,
+                                editable: true,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return isEn
+                                        ? 'Address is required'
+                                        : 'Alamat harus diisi';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 32),
+
+                              _buildSectionTitle(
+                                isEn ? 'Account Information' : 'Informasi Akun',
+                              ),
+                              const SizedBox(height: 20),
+
+                              _buildInfoCard(
+                                icon: Icons.alternate_email_rounded,
+                                title: isEn ? 'Email' : 'Email',
+                                value: user.email,
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(height: 12),
+
+                              _buildInfoCard(
+                                icon: Icons.verified_user_rounded,
+                                title: isEn ? 'Role' : 'Role',
+                                value: user.role,
+                                color: Colors.green,
+                              ),
+                              const SizedBox(height: 32),
+
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      kPrimaryColor,
+                                      kPrimaryColor.withValues(alpha: 0.8),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: kPrimaryColor.withValues(alpha: 0.3),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: state is AuthLoading
+                                      ? null
+                                      : () => _saveProfile(isEn),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    minimumSize: const Size(double.infinity, 55),
+                                  ),
+                                  child: state is AuthLoading
+                                      ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                      : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.save_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        isEn ? 'Save Changes' : 'Simpan Perubahan',
+                                        style: whiteTextStyle.copyWith(
+                                          fontSize: 16,
+                                          fontWeight: bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            );
-          }
-        },
-      ),
+                );
+              } else if (state is AuthLoading) {
+                return Scaffold(
+                  backgroundColor: kBackgroundColor,
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: kPrimaryColor),
+                        const SizedBox(height: 16),
+                        Text(
+                          isEn ? 'Loading data...' : 'Memuat data...',
+                          style: primaryTextStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return Scaffold(
+                  backgroundColor: kBackgroundColor,
+                  appBar: AppBar(
+                    title: Text(
+                      isEn ? 'Personal Data' : 'Data Pribadi Bunda',
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 18,
+                        fontWeight: bold,
+                      ),
+                    ),
+                    backgroundColor: kBackgroundColor,
+                    elevation: 0,
+                    leading: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: kPrimaryColor,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  body: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            size: 64,
+                            color: tGreyColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            isEn ? 'Data not available' : 'Data tidak tersedia',
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 18,
+                              fontWeight: bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isEn
+                                ? 'Please try again or contact the administrator'
+                                : 'Silakan coba kembali atau hubungi administrator',
+                            style: greyTextStyle.copyWith(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: Text(
+                              isEn ? 'Back' : 'Kembali',
+                              style: whiteTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: medium,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
+
+  // ====== WIDGET HELPERS (tetap) ======
 
   Widget _buildSectionTitle(String title) {
     return Row(
@@ -592,7 +630,7 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Text(
           title,
           style: primaryTextStyle.copyWith(
@@ -618,13 +656,13 @@ class _ProfilePageState extends State<ProfilePage> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
         border: Border.all(
-          color: tGreyColor.withValues(alpha:0.1),
+          color: tGreyColor.withValues(alpha: 0.1),
         ),
       ),
       child: TextFormField(
@@ -642,17 +680,21 @@ class _ProfilePageState extends State<ProfilePage> {
             fontWeight: regular,
           ),
           prefixIcon: Container(
-            margin: EdgeInsets.only(right: 12, left: 8),
-            padding: EdgeInsets.all(8),
+            margin: const EdgeInsets.only(right: 12, left: 8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: kPrimaryColor.withValues(alpha:0.1),
+              color: kPrimaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: kPrimaryColor, size: 20),
           ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          suffixIcon: !editable ? Icon(Icons.arrow_drop_down_rounded, color: tGreyColor) : null,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+          suffixIcon:
+          !editable ? const Icon(Icons.arrow_drop_down_rounded, color: tGreyColor) : null,
         ),
         validator: validator,
       ),
@@ -666,32 +708,32 @@ class _ProfilePageState extends State<ProfilePage> {
     required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
         border: Border.all(
-          color: tGreyColor.withValues(alpha:0.1),
+          color: tGreyColor.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha:0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 20),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -703,7 +745,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontWeight: regular,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   value,
                   style: primaryTextStyle.copyWith(
@@ -715,7 +757,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
-          Icon(Icons.lock_outline_rounded, color: tGreyColor, size: 16),
+          const Icon(Icons.lock_outline_rounded, color: tGreyColor, size: 16),
         ],
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../../../l10n/app_localizations.dart';
 import '../self_detection_controller.dart';
 import '../widgets/input_field.dart';
 
@@ -10,21 +12,28 @@ class MenstrualPage extends StatelessWidget {
   const MenstrualPage({super.key, required this.controller});
 
   Future<void> _selectDate(BuildContext context) async {
+    final locale = Localizations.localeOf(context);
+
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: controller.selectedLMPDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.light(
-              primary: kPrimaryColor,
-              onPrimary: Colors.white,
+      builder: (context, child) {
+        // ✅ Paksa showDatePicker ikut locale app (EN/ID) + theme
+        return Localizations.override(
+          context: context,
+          locale: locale,
+          child: Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: kPrimaryColor,
+                onPrimary: Colors.white,
+              ),
+              dialogBackgroundColor: Colors.white,
             ),
-            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );
@@ -36,14 +45,20 @@ class MenstrualPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+
+    String formatDate(DateTime d) =>
+        DateFormat('dd MMMM yyyy', locale.toLanguageTag()).format(d);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Data Haid & Kehamilan",
-            style: TextStyle(
+            t.menstrualTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
@@ -51,22 +66,22 @@ class MenstrualPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "Informasi ini membantu menentukan usia kehamilan",
+            t.menstrualSubtitle,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
             ),
           ),
-          
+
           Expanded(
             child: ListView(
               children: [
-                // Tanggal HPHT
+                // HPHT
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Tanggal Hari Pertama Haid Terakhir (HPHT)*",
+                      t.menstrualLmpLabel,
                       style: TextStyle(
                         color: Colors.grey[700],
                         fontSize: 14,
@@ -80,7 +95,7 @@ class MenstrualPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withValues(alpha:0.2),
+                            color: Colors.grey.withValues(alpha: 0.2),
                             spreadRadius: 1,
                             blurRadius: 4,
                             offset: const Offset(0, 2),
@@ -90,8 +105,8 @@ class MenstrualPage extends StatelessWidget {
                       child: ListTile(
                         title: Text(
                           controller.selectedLMPDate == null
-                              ? "Pilih tanggal"
-                              : DateFormat('dd MMMM yyyy').format(controller.selectedLMPDate!),
+                              ? t.commonPickDate
+                              : formatDate(controller.selectedLMPDate!),
                           style: TextStyle(
                             color: controller.selectedLMPDate == null
                                 ? Colors.grey[500]
@@ -113,7 +128,7 @@ class MenstrualPage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 16, top: 4, bottom: 8),
                         child: Text(
-                          'Tanggal haid terakhir harus diisi',
+                          t.menstrualLmpRequired,
                           style: TextStyle(color: Colors.red.shade700, fontSize: 12),
                         ),
                       )
@@ -121,36 +136,32 @@ class MenstrualPage extends StatelessWidget {
                       const SizedBox(height: 12),
                   ],
                 ),
-                
 
                 // Siklus haid
                 CustomInputField(
                   controller: controller.menstrualCycleController,
-                  label: "Siklus haid (teratur/tidak, berapa hari)",
+                  label: t.menstrualCycleLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
 
-                // Gerakan janin (FIELD BARU dari controller)
+                // Gerakan janin
                 CustomInputField(
                   controller: controller.fetalMovementController,
-                  label: "Gerakan janin (sudah terasa/belum/berkurang)",
+                  label: t.menstrualFetalMovementLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
 
-                // Hasil USG
+                // USG
                 CustomInputField(
                   controller: controller.ultrasoundResultController,
-                  label: "Hasil pemeriksaan USG (jika sudah ada)",
+                  label: t.menstrualUltrasoundLabel,
                   keyboardType: TextInputType.text,
                 ),
-                
 
-                // Informasi HPL jika HPHT sudah dipilih
+                // Info kehamilan (HPL & usia)
                 if (controller.selectedLMPDate != null)
                   Container(
-                    margin: EdgeInsets.only(bottom: 10),
+                    margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.green[50],
@@ -161,25 +172,28 @@ class MenstrualPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Informasi Kehamilan:",
-                          style: TextStyle(
+                          t.menstrualPregnancyInfoTitle,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: tPrimaryColor,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "• Perkiraan Hari Lahir (HPL): ${DateFormat('dd MMMM yyyy').format(controller.selectedLMPDate!.add(const Duration(days: 280)))}",
+                          t.menstrualEddLine(
+                            formatDate(controller.selectedLMPDate!.add(const Duration(days: 280))),
+                          ),
                           style: const TextStyle(fontSize: 14),
                         ),
                         Text(
-                          "• Usia kehamilan: ${_calculateGestationalAge(controller.selectedLMPDate!)} minggu",
+                          t.menstrualGestationalAgeLine(
+                            _calculateGestationalAge(controller.selectedLMPDate!).toString(),
+                          ),
                           style: const TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
                   ),
-                
 
                 // Informasi penting
                 Container(
@@ -193,16 +207,16 @@ class MenstrualPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Informasi Penting:",
-                        style: TextStyle(
+                        t.menstrualImportantInfoTitle,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: tPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text("• HPHT digunakan untuk menghitung usia kehamilan", style: TextStyle(fontSize: 12)),
-                      Text("• Gerakan janin biasanya terasa mulai minggu 18-20", style: TextStyle(fontSize: 12)),
-                      Text("• USG membantu memastikan usia kehamilan dan perkembangan janin", style: TextStyle(fontSize: 12)),
+                      Text(t.menstrualImportantBullet1, style: const TextStyle(fontSize: 12)),
+                      Text(t.menstrualImportantBullet2, style: const TextStyle(fontSize: 12)),
+                      Text(t.menstrualImportantBullet3, style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),
@@ -214,11 +228,9 @@ class MenstrualPage extends StatelessWidget {
     );
   }
 
-  // Fungsi untuk menghitung usia kehamilan
-  String _calculateGestationalAge(DateTime lmpDate) {
+  int _calculateGestationalAge(DateTime lmpDate) {
     final now = DateTime.now();
     final difference = now.difference(lmpDate);
-    final weeks = (difference.inDays / 7).floor();
-    return weeks.toString();
+    return (difference.inDays / 7).floor();
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/theme.dart';
 
 class DataSignUpPage extends StatelessWidget {
   final GlobalKey<FormState> formKey;
-  final TextEditingController emailController; // UBAH: usernameController -> emailController
+  final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController confirmPasswordController;
   final bool kunciPassword;
@@ -11,12 +12,12 @@ class DataSignUpPage extends StatelessWidget {
   final VoidCallback togglePasswordVisibility;
   final VoidCallback toggleConfirmPasswordVisibility;
   final VoidCallback signUp;
-  final bool isLoading; // TAMBAH: loading state
+  final bool isLoading;
 
   const DataSignUpPage({
     super.key,
     required this.formKey,
-    required this.emailController, // UBAH: usernameController -> emailController
+    required this.emailController,
     required this.passwordController,
     required this.confirmPasswordController,
     required this.kunciPassword,
@@ -24,45 +25,64 @@ class DataSignUpPage extends StatelessWidget {
     required this.togglePasswordVisibility,
     required this.toggleConfirmPasswordVisibility,
     required this.signUp,
-    this.isLoading = false, // TAMBAH: default false
+    this.isLoading = false,
   });
 
-  Widget _buildPasswordStrengthIndicator() {
+  Widget _buildPasswordStrengthIndicator(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: passwordController,
       builder: (context, value, child) {
         final password = value.text;
         int strength = 0;
+
         if (password.length >= 6) strength++;
         if (password.contains(RegExp(r'[A-Z]'))) strength++;
         if (password.contains(RegExp(r'[0-9]'))) strength++;
         if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) strength++;
 
-        Color _getStrengthColor(int s) {
+        Color getStrengthColor(int s) {
           switch (s) {
-            case 1: return Colors.red;
-            case 2: return Colors.orange;
-            case 3: return Colors.yellow[700]!;
-            case 4: return Colors.green;
-            default: return Colors.grey;
+            case 1:
+              return Colors.red;
+            case 2:
+              return Colors.orange;
+            case 3:
+              return Colors.yellow[700]!;
+            case 4:
+              return Colors.green;
+            default:
+              return Colors.grey;
           }
         }
 
-        String _getStrengthText(int s) {
+        String getStrengthText(int s) {
           switch (s) {
-            case 1: return 'Lemah';
-            case 2: return 'Cukup';
-            case 3: return 'Baik';
-            case 4: return 'Kuat';
-            default: return '';
+            case 1:
+              return t.passwordStrengthWeak; // "Lemah" / "Weak"
+            case 2:
+              return t.passwordStrengthFair; // "Cukup" / "Fair"
+            case 3:
+              return t.passwordStrengthGood; // "Baik" / "Good"
+            case 4:
+              return t.passwordStrengthStrong; // "Kuat" / "Strong"
+            default:
+              return '';
           }
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Kekuatan Password:',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+            Text(
+              t.passwordStrengthLabel, // "Kekuatan Password:" / "Password strength:"
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 8),
             Row(
               children: List.generate(4, (index) {
@@ -71,7 +91,9 @@ class DataSignUpPage extends StatelessWidget {
                     height: 4,
                     margin: EdgeInsets.only(right: index < 3 ? 4 : 0),
                     decoration: BoxDecoration(
-                      color: index < strength ? _getStrengthColor(strength) : Colors.grey[300],
+                      color: index < strength
+                          ? getStrengthColor(strength)
+                          : Colors.grey[300],
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -80,8 +102,12 @@ class DataSignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              _getStrengthText(strength),
-              style: TextStyle(fontSize: 11, color: _getStrengthColor(strength), fontWeight: FontWeight.w600),
+              getStrengthText(strength),
+              style: TextStyle(
+                fontSize: 11,
+                color: getStrengthColor(strength),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         );
@@ -89,31 +115,42 @@ class DataSignUpPage extends StatelessWidget {
     );
   }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       clipBehavior: Clip.none,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 30),
       child: Column(
         children: [
-          // === Logo ===
-          Image.asset('assets/lg_bumilku.png',
-              height: MediaQuery.of(context).size.height * 0.12,
-              filterQuality: FilterQuality.high),
+          Image.asset(
+            'assets/lg_bumilku.png',
+            height: MediaQuery.of(context).size.height * 0.12,
+            filterQuality: FilterQuality.high,
+          ),
           const SizedBox(height: 20),
 
-          // === Header ===
-          Text('Daftar Akun Baru',
-              style: primaryTextStyle.copyWith(fontSize: 28, fontWeight: bold)),
+          Text(
+            t.signUpNewAccountTitle, // "Daftar Akun Baru" / "Create New Account"
+            style: primaryTextStyle.copyWith(fontSize: 28, fontWeight: bold),
+          ),
           const SizedBox(height: 20),
 
-          // === Card Form ===
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha:0.1), blurRadius: 20, offset: const Offset(0, 10)), // PERBAIKI: withOpacity
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
               ],
             ),
             child: Padding(
@@ -122,19 +159,18 @@ class DataSignUpPage extends StatelessWidget {
                 key: formKey,
                 child: Column(
                   children: [
-                    // Email (UBAH: dari Username ke Email)
+                    // Email
                     TextFormField(
                       controller: emailController,
-                      keyboardType: TextInputType.emailAddress, // TAMBAH: keyboard type email
-                      decoration: const InputDecoration(
-                        hintText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined), // UBAH: icon dari person ke email
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: t.emailHint, // "Email"
+                        prefixIcon: const Icon(Icons.email_outlined),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Email wajib diisi';
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                          return 'Format email tidak valid';
-                        }
+                        final value = (v ?? '').trim();
+                        if (value.isEmpty) return t.emailRequired; // "Email wajib diisi"
+                        if (!_isValidEmail(value)) return t.emailInvalid; // "Format email tidak valid"
                         return null;
                       },
                     ),
@@ -145,16 +181,24 @@ class DataSignUpPage extends StatelessWidget {
                       controller: passwordController,
                       obscureText: kunciPassword,
                       decoration: InputDecoration(
-                        hintText: 'Password',
+                        hintText: t.passwordHint, // "Password"
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(kunciPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                          icon: Icon(
+                            kunciPassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                          ),
                           onPressed: togglePasswordVisibility,
+                          tooltip: kunciPassword
+                              ? t.showPassword // "Tampilkan password" / "Show password"
+                              : t.hidePassword, // "Sembunyikan password" / "Hide password"
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Password wajib diisi';
-                        if (v.length < 6) return 'Password minimal 6 karakter';
+                        final value = (v ?? '');
+                        if (value.isEmpty) return t.passwordRequired; // "Password wajib diisi"
+                        if (value.length < 6) return t.passwordMin6; // "Password minimal 6 karakter"
                         return null;
                       },
                     ),
@@ -165,88 +209,87 @@ class DataSignUpPage extends StatelessWidget {
                       controller: confirmPasswordController,
                       obscureText: kunciConfirmPassword,
                       decoration: InputDecoration(
-                        hintText: 'Konfirmasi Password',
+                        hintText: t.confirmPasswordHint, // "Konfirmasi Password"
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(kunciConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                          icon: Icon(
+                            kunciConfirmPassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                          ),
                           onPressed: toggleConfirmPasswordVisibility,
+                          tooltip: kunciConfirmPassword
+                              ? t.showPassword
+                              : t.hidePassword,
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Konfirmasi password wajib diisi';
-                        if (v != passwordController.text) return 'Password tidak cocok';
+                        final value = (v ?? '');
+                        if (value.isEmpty) return t.confirmPasswordRequired; // "Konfirmasi password wajib diisi"
+                        if (value != passwordController.text) return t.passwordNotMatch; // "Password tidak cocok"
                         return null;
                       },
                     ),
 
                     const SizedBox(height: 16),
-                    _buildPasswordStrengthIndicator(),
+                    _buildPasswordStrengthIndicator(context),
 
-                    // TAMBAH: Loading Button atau Regular Button
-                    // const SizedBox(height: 24),
-                    // if (isLoading)
-                    //   SizedBox(
-                    //     width: double.infinity,
-                    //     height: 52,
-                    //     child: ElevatedButton(
-                    //       onPressed: null,
-                    //       style: ElevatedButton.styleFrom(
-                    //         backgroundColor: kPrimaryColor.withValues(alpha:0.7),
-                    //         shape: RoundedRectangleBorder(
-                    //           borderRadius: BorderRadius.circular(12),
-                    //         ),
-                    //       ),
-                    //       child: const Row(
-                    //         mainAxisAlignment: MainAxisAlignment.center,
-                    //         children: [
-                    //           SizedBox(
-                    //             height: 20,
-                    //             width: 20,
-                    //             child: CircularProgressIndicator(
-                    //               strokeWidth: 2,
-                    //               color: Colors.white,
-                    //             ),
-                    //           ),
-                    //           SizedBox(width: 12),
-                    //           Text(
-                    //             'Mendaftarkan...',
-                    //             style: TextStyle(
-                    //               color: Colors.white,
-                    //               fontWeight: FontWeight.bold,
-                    //               fontSize: 16,
-                    //             ),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //     ),
-                    //   )
-                    // else
-                    //   SizedBox(
-                    //     width: double.infinity,
-                    //     height: 52,
-                    //     child: ElevatedButton(
-                    //       onPressed: signUp,
-                    //       style: ElevatedButton.styleFrom(
-                    //         backgroundColor: kPrimaryColor,
-                    //         shape: RoundedRectangleBorder(
-                    //           borderRadius: BorderRadius.circular(12),
-                    //         ),
-                    //         elevation: 0,
-                    //       ),
-                    //       child: Text(
-                    //         'Daftar',
-                    //         style: whiteTextStyle.copyWith(
-                    //           fontWeight: FontWeight.bold,
-                    //           fontSize: 16,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
+                    const SizedBox(height: 24),
+
+                    // Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : signUp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isLoading
+                              ? kPrimaryColor.withValues(alpha: 0.7)
+                              : kPrimaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: isLoading
+                            ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              t.signingUpLoading, // "Mendaftarkan..." / "Signing up..."
+                              style: whiteTextStyle.copyWith(
+                                fontWeight: bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        )
+                            : Text(
+                          t.signUpButton, // "Daftar" / "Sign up"
+                          style: whiteTextStyle.copyWith(
+                            fontWeight: bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
+
           const SizedBox(height: 20),
         ],
       ),

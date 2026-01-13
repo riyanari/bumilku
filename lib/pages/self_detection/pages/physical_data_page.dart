@@ -1,5 +1,6 @@
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../self_detection_controller.dart';
 import '../widgets/input_field.dart';
@@ -11,14 +12,16 @@ class PhysicalDataPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Data Fisik Bunda",
-            style: TextStyle(
+            t.physicalDataTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
@@ -26,54 +29,54 @@ class PhysicalDataPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "Data ini digunakan untuk menghitung Indeks Massa Tubuh (IMT)",
+            t.physicalDataSubtitle,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
             ),
           ),
-          
+
           Expanded(
             child: ListView(
-              padding: EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
                 CustomInputField(
                   controller: controller.heightController,
-                  label: "Tinggi badan (cm)",
+                  label: t.physicalDataHeightLabel,
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Tinggi badan harus diisi';
-                    if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) return t.physicalDataHeightRequired;
+                    if (double.tryParse(value) == null) return t.commonInvalidNumber;
                     return null;
                   },
                 ),
-                
+
                 CustomInputField(
                   controller: controller.weightBeforeController,
-                  label: "Berat badan sebelum hamil (kg)",
+                  label: t.physicalDataWeightBeforeLabel,
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Berat sebelum hamil harus diisi';
-                    if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) return t.physicalDataWeightBeforeRequired;
+                    if (double.tryParse(value) == null) return t.commonInvalidNumber;
                     return null;
                   },
                 ),
-                
+
                 CustomInputField(
                   controller: controller.currentWeightController,
-                  label: "Berat badan saat ini (kg)",
+                  label: t.physicalDataCurrentWeightLabel,
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Berat saat ini harus diisi';
-                    if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) return t.physicalDataCurrentWeightRequired;
+                    if (double.tryParse(value) == null) return t.commonInvalidNumber;
                     return null;
                   },
                 ),
-                
-                // Tampilkan IMT dengan informasi kategori
+
+                // BMI Card
                 if (controller.bmiValue != null)
                   Container(
-                    margin: EdgeInsets.only(bottom: 10),
+                    margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: _getBmiColor(controller.bmiValue!),
@@ -83,7 +86,7 @@ class PhysicalDataPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Indeks Massa Tubuh (IMT): ${controller.bmiValue!.toStringAsFixed(1)}",
+                          t.physicalDataBmiValue(controller.bmiValue!.toStringAsFixed(1)),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -92,7 +95,7 @@ class PhysicalDataPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _getBmiCategory(controller.bmiValue!),
+                          _getBmiCategoryText(t, controller.bmiValue!),
                           style: TextStyle(
                             fontSize: 14,
                             color: _getBmiTextColor(controller.bmiValue!),
@@ -101,14 +104,14 @@ class PhysicalDataPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                
+
                 CustomInputField(
                   controller: controller.lilaController,
-                  label: "Lingkar lengan atas (LILA) (cm)",
+                  label: t.physicalDataMuacLabel, // MUAC = LILA
                   keyboardType: TextInputType.number,
                 ),
-                
-                // Informasi nilai normal
+
+                // Normal values info
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -120,18 +123,18 @@ class PhysicalDataPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Nilai Normal:",
-                        style: TextStyle(
+                        t.physicalDataNormalValuesTitle,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: tPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text("• IMT normal: 18.5 - 24.9", style: TextStyle(fontSize: 12)),
-                      Text("• LILA normal: ≥ 23.5 cm", style: TextStyle(fontSize: 12)),
-                      Text("• IMT < 18.5: Kurus", style: TextStyle(fontSize: 12)),
-                      Text("• IMT ≥ 25: Kelebihan berat", style: TextStyle(fontSize: 12)),
-                      Text("• IMT ≥ 30: Obesitas", style: TextStyle(fontSize: 12)),
+                      Text(t.physicalDataNormalBmi, style: const TextStyle(fontSize: 12)),
+                      Text(t.physicalDataNormalMuac, style: const TextStyle(fontSize: 12)),
+                      Text(t.physicalDataBmiUnderweightInfo, style: const TextStyle(fontSize: 12)),
+                      Text(t.physicalDataBmiOverweightInfo, style: const TextStyle(fontSize: 12)),
+                      Text(t.physicalDataBmiObesityInfo, style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),
@@ -143,7 +146,7 @@ class PhysicalDataPage extends StatelessWidget {
     );
   }
 
-  // Fungsi helper untuk kategori IMT
+  // Helper warna IMT
   Color _getBmiColor(double bmi) {
     if (bmi < 18.5) return Colors.orange[100]!;
     if (bmi < 25) return Colors.green[100]!;
@@ -158,10 +161,10 @@ class PhysicalDataPage extends StatelessWidget {
     return Colors.red[800]!;
   }
 
-  String _getBmiCategory(double bmi) {
-    if (bmi < 18.5) return "Kategori: Kurus";
-    if (bmi < 25) return "Kategori: Normal";
-    if (bmi < 30) return "Kategori: Kelebihan berat";
-    return "Kategori: Obesitas";
+  String _getBmiCategoryText(AppLocalizations t, double bmi) {
+    if (bmi < 18.5) return t.physicalDataBmiCategoryUnderweight;
+    if (bmi < 25) return t.physicalDataBmiCategoryNormal;
+    if (bmi < 30) return t.physicalDataBmiCategoryOverweight;
+    return t.physicalDataBmiCategoryObesity;
   }
 }

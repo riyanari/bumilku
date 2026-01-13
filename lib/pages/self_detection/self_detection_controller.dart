@@ -231,8 +231,8 @@ class SelfDetectionController extends ChangeNotifier {
     }
   }
 
-  Map<String, dynamic> calculateRiskBasedOnFormula() {
-    int totalScore = _calculateScore();
+  Map<String, dynamic> calculateRiskBasedOnFormula(BuildContext context) {
+    int totalScore = _calculateScore(context);
     bool hasRedFlag = _hasRedFlag;
 
     String riskLevel;
@@ -245,7 +245,7 @@ class SelfDetectionController extends ChangeNotifier {
     }
 
     String recommendation = _getRecommendation(riskLevel);
-    _riskLevelEducation = RiskEducationData.getEducation(riskLevel);
+    _riskLevelEducation = RiskEducationData.getEducation(context,riskLevel);
 
     // HITUNG STATUS GERAKAN JANIN UNTUK DISERTAKAN DI HASIL
     final fetalMovementStatus = _calculateFetalMovementStatus();
@@ -320,8 +320,8 @@ class SelfDetectionController extends ChangeNotifier {
     }
   }
 
-  void calculateRisk() {
-    _score = _calculateScore();
+  void calculateRisk(BuildContext context) {
+    _score = _calculateScore(context);
 
     if (_hasRedFlag || _score >= 4) {
       result = "Risiko Tinggi";
@@ -334,7 +334,7 @@ class SelfDetectionController extends ChangeNotifier {
       recommendation = "Tetap jaga pola makan dan istirahat cukup.";
     }
 
-    _riskLevelEducation = RiskEducationData.getEducation(result);
+    _riskLevelEducation = RiskEducationData.getEducation(context, result);
     notifyListeners();
   }
 
@@ -368,14 +368,14 @@ class SelfDetectionController extends ChangeNotifier {
     return score;
   }
 
-  int _calculateScore() {
+  int _calculateScore(BuildContext context) {
     int totalScore = 0;
     _hasRedFlag = false;
     _redFlagReasons.clear();
     _selectedComplaintEducations.clear();
 
     totalScore += _assessVitalData();
-    totalScore += _assessComplaints();
+    totalScore += _assessComplaints(context);
     // TAMBAHKAN PENILAIAN GERAKAN JANIN JIKA ADA DATA
     if (shouldShowFetalMovementPage) {
       totalScore += _assessFetalMovement();
@@ -389,7 +389,7 @@ class SelfDetectionController extends ChangeNotifier {
     return totalScore;
   }
 
-  int _assessComplaints() {
+  int _assessComplaints(BuildContext context) {
     int score = 0;
     List<String> selectedComplaints = complaintSelected.entries
         .where((element) => element.value)
@@ -400,10 +400,14 @@ class SelfDetectionController extends ChangeNotifier {
       int severity = complaintSeverity[complaint] ?? 0;
       score += severity;
 
-      var education = ComplaintEducationData.getEducation(complaint);
-      if (education != null) {
-        _selectedComplaintEducations[complaint] = education;
+      final key = ComplaintEducationData.mapFromTitle(context, complaint);
+      if (key != null) {
+        final education = ComplaintEducationData.getEducationByKey(context, key);
+        if (education != null) {
+          _selectedComplaintEducations[complaint] = education;
+        }
       }
+
 
       if (severity == 2) {
         _hasRedFlag = true;
@@ -751,6 +755,7 @@ class SelfDetectionController extends ChangeNotifier {
   }
 
   List<String> getGeneralPregnancyTips() {
-    return PregnancyTipsData.getTips();
+    return PregnancyTipsData.getTipsId(); // ✅ tanpa context, default ID
   }
+
 }

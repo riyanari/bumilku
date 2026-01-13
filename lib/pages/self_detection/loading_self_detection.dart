@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:bumilku_app/theme/theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class LoadingSelfDetectionPage extends StatelessWidget {
   const LoadingSelfDetectionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -17,7 +20,7 @@ class LoadingSelfDetectionPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              "Sedang menghitung risiko...",
+              t.selfDetectionLoading,
               style: blackTextStyle.copyWith(fontSize: 16),
             ),
           ],

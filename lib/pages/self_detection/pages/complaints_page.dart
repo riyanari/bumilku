@@ -1,6 +1,7 @@
-import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:bumilku_app/theme/theme.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../self_detection_controller.dart';
 import '../widgets/complaint_chips.dart';
 
@@ -11,7 +12,8 @@ class ComplaintsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Hitung jumlah keluhan yang dipilih
+    final t = AppLocalizations.of(context)!;
+
     final selectedCount = controller.complaintSelected.values
         .where((isSelected) => isSelected)
         .length;
@@ -22,8 +24,8 @@ class ComplaintsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Keluhan yang Dirasakan",
-            style: TextStyle(
+            t.complaintsTitle,
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
@@ -31,17 +33,17 @@ class ComplaintsPage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // Informasi jumlah keluhan terpilih
+          // Selected count info
           if (selectedCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: tPrimaryColor.withValues(alpha:0.1),
+                color: tPrimaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                "$selectedCount keluhan dipilih",
-                style: TextStyle(
+                t.complaintsSelectedCount(selectedCount),
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: tPrimaryColor,
@@ -50,7 +52,7 @@ class ComplaintsPage extends StatelessWidget {
             ),
           const SizedBox(height: 4),
 
-          // Keterangan tingkat keparahan
+          // Severity legend
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -62,8 +64,8 @@ class ComplaintsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Keterangan:",
-                  style: TextStyle(
+                  t.complaintsLegendTitle,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: tPrimaryColor,
                   ),
@@ -80,7 +82,12 @@ class ComplaintsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Expanded(child: Text("Keluhan berisiko tinggi", style: TextStyle(fontSize: 10))),
+                    Expanded(
+                      child: Text(
+                        t.complaintsLegendHigh,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -95,7 +102,12 @@ class ComplaintsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Expanded(child: Text("Keluhan perlu perhatian", style: TextStyle(fontSize: 10))),
+                    Expanded(
+                      child: Text(
+                        t.complaintsLegendMedium,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -110,7 +122,12 @@ class ComplaintsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Expanded(child: Text("Keluhan normal", style: TextStyle(fontSize: 10))),
+                    Expanded(
+                      child: Text(
+                        t.complaintsLegendNormal,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -122,8 +139,8 @@ class ComplaintsPage extends StatelessWidget {
             child: ListView(
               children: [
                 Text(
-                  "Pilih keluhan yang dialami saat ini:",
-                  style: TextStyle(
+                  t.complaintsPickInstruction,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: tPrimaryColor,
@@ -133,12 +150,13 @@ class ComplaintsPage extends StatelessWidget {
                 ComplaintChips(
                   complaints: controller.complaints,
                   complaintSelected: controller.complaintSelected,
-                  complaintSeverity: controller.complaintSeverity, // DITAMBAHKAN
+                  complaintSeverity: controller.complaintSeverity,
                   onComplaintSelected: (complaint) {
                     controller.complaintSelected[complaint] =
-                    !controller.complaintSelected[complaint]!;
+                    !(controller.complaintSelected[complaint] ?? false);
                     controller.notifyListeners();
                   },
+
                 ),
               ],
             ),

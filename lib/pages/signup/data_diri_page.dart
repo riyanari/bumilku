@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../theme/theme.dart';
 
 class DataDiriPage extends StatelessWidget {
@@ -21,6 +22,11 @@ class DataDiriPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final isEn = locale.languageCode == 'en';
+    final dateLocale = isEn ? 'en_US' : 'id_ID';
+
     return Padding(
       padding: const EdgeInsets.all(18),
       child: SingleChildScrollView(
@@ -29,7 +35,7 @@ class DataDiriPage extends StatelessWidget {
           children: [
             // HEADER
             Text(
-              'Selamat datang! 👋',
+              t.signupWelcomeTitle, // "Selamat datang! 👋" / "Welcome! 👋"
               style: primaryTextStyle.copyWith(
                 fontWeight: bold,
                 fontSize: 20,
@@ -37,7 +43,7 @@ class DataDiriPage extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Sebelum mulai, mari berkenalan terlebih dahulu',
+              t.signupWelcomeDesc, // "Sebelum mulai..." / "Before we start..."
               style: blackTextStyle.copyWith(
                 fontWeight: regular,
                 fontSize: 14,
@@ -49,11 +55,14 @@ class DataDiriPage extends StatelessWidget {
             // === NAMA ===
             Row(
               children: [
-                Icon(Icons.face_rounded, size: 18, color: kPrimaryColor),
+                const Icon(Icons.face_rounded, size: 18, color: kPrimaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  'Nama Bunda',
-                  style: blackTextStyle.copyWith(fontWeight: medium, fontSize: 16),
+                  t.signupNameLabel, // "Nama Bunda" / "Your Name"
+                  style: blackTextStyle.copyWith(
+                    fontWeight: medium,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -62,38 +71,41 @@ class DataDiriPage extends StatelessWidget {
               controller: namaController,
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
-                hintText: 'Masukkan nama Bunda',
+                hintText: t.signupNameHint, // "Masukkan nama Bunda" / "Enter your name"
                 hintStyle: greyTextStyle.copyWith(fontSize: 12),
-                prefixIcon: Icon(Icons.person_rounded,
-                    color: kPrimaryColor.withValues(alpha: 0.6)),
+                prefixIcon: Icon(
+                  Icons.person_rounded,
+                  color: kPrimaryColor.withValues(alpha: 0.6),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: tGreyColor.withValues(alpha: 0.5)),
+                  borderSide: BorderSide(
+                    color: tGreyColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: tGreyColor.withValues(alpha: 0.5)),
+                  borderSide: BorderSide(
+                    color: tGreyColor.withValues(alpha: 0.5),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: kPrimaryColor, width: 2),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
                 ),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.8),
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
               ),
               style: blackTextStyle.copyWith(fontSize: 16, fontWeight: medium),
               validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Nama tidak boleh kosong';
-                }
-                if (value.trim().length < 2) {
-                  return 'Nama minimal 2 karakter';
-                }
-                if (value.trim().length > 30) {
-                  return 'Nama maksimal 30 karakter';
-                }
+                final v = (value ?? '').trim();
+                if (v.isEmpty) return t.signupNameEmpty; // "Nama tidak boleh kosong"
+                if (v.length < 2) return t.signupNameMin2; // "Nama minimal 2 karakter"
+                if (v.length > 30) return t.signupNameMax30; // "Nama maksimal 30 karakter"
                 return null;
               },
             ),
@@ -103,11 +115,14 @@ class DataDiriPage extends StatelessWidget {
             // === ALAMAT ===
             Row(
               children: [
-                Icon(Icons.home_rounded, size: 18, color: kPrimaryColor),
+                const Icon(Icons.home_rounded, size: 18, color: kPrimaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  'Alamat',
-                  style: blackTextStyle.copyWith(fontWeight: medium, fontSize: 16),
+                  t.signupAddressLabel, // "Alamat" / "Address"
+                  style: blackTextStyle.copyWith(
+                    fontWeight: medium,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -116,22 +131,37 @@ class DataDiriPage extends StatelessWidget {
               controller: alamatController,
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
-                hintText: 'Masukkan alamat lengkap',
-                prefixIcon: Icon(Icons.location_on,
-                    color: kPrimaryColor.withValues(alpha:0.6)),
+                hintText: t.signupAddressHint, // "Masukkan alamat lengkap" / "Enter your full address"
+                prefixIcon: Icon(
+                  Icons.location_on,
+                  color: kPrimaryColor.withValues(alpha: 0.6),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: tGreyColor.withValues(alpha:0.5)),
+                  borderSide: BorderSide(
+                    color: tGreyColor.withValues(alpha: 0.5),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: tGreyColor.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
                 ),
                 filled: true,
-                fillColor: Colors.white.withValues(alpha:0.8),
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                fillColor: Colors.white.withValues(alpha: 0.8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
               ),
               validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Alamat tidak boleh kosong';
-                }
+                final v = (value ?? '').trim();
+                if (v.isEmpty) return t.signupAddressEmpty; // "Alamat tidak boleh kosong"
                 return null;
               },
             ),
@@ -141,11 +171,14 @@ class DataDiriPage extends StatelessWidget {
             // === TANGGAL LAHIR ===
             Row(
               children: [
-                Icon(Icons.cake_rounded, size: 18, color: kPrimaryColor),
+                const Icon(Icons.cake_rounded, size: 18, color: kPrimaryColor),
                 const SizedBox(width: 8),
                 Text(
-                  'Tanggal Lahir',
-                  style: blackTextStyle.copyWith(fontWeight: medium, fontSize: 16),
+                  t.signupDobLabel, // "Tanggal Lahir" / "Date of Birth"
+                  style: blackTextStyle.copyWith(
+                    fontWeight: medium,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -154,17 +187,33 @@ class DataDiriPage extends StatelessWidget {
               controller: tanggalLahirController,
               readOnly: true,
               decoration: InputDecoration(
-                hintText: 'Pilih tanggal lahir',
-                prefixIcon: Icon(Icons.calendar_today,
-                    color: kPrimaryColor.withValues(alpha:0.6)),
+                hintText: t.signupDobHint, // "Pilih tanggal lahir" / "Select date of birth"
+                prefixIcon: Icon(
+                  Icons.calendar_today,
+                  color: kPrimaryColor.withValues(alpha: 0.6),
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: tGreyColor.withValues(alpha:0.5)),
+                  borderSide: BorderSide(
+                    color: tGreyColor.withValues(alpha: 0.5),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: tGreyColor.withValues(alpha: 0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
                 ),
                 filled: true,
-                fillColor: Colors.white.withValues(alpha:0.8),
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                fillColor: Colors.white.withValues(alpha: 0.8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
               ),
               onTap: () async {
                 final picked = await showDatePicker(
@@ -172,20 +221,19 @@ class DataDiriPage extends StatelessWidget {
                   initialDate: selectedTanggalLahir ?? DateTime(1990, 1, 1),
                   firstDate: DateTime(1900),
                   lastDate: DateTime.now(),
-                  locale: const Locale('id', 'ID'),
+                  // JANGAN set locale di sini.
+                  // Biar ikut MaterialApp.locale (LocaleCubit) otomatis,
+                  // dan menghindari error "named parameter locale isn't defined" di komponen lain.
                 );
+
                 if (picked != null) {
                   onTanggalPicked(picked);
-                  tanggalLahirController.text = DateFormat(
-                    'd MMMM y',
-                    'id_ID',
-                  ).format(picked);
+                  tanggalLahirController.text =
+                      DateFormat('d MMMM y', dateLocale).format(picked);
                 }
               },
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Tanggal lahir wajib diisi';
-                }
+                if (value == null || value.isEmpty) return t.signupDobRequired; // "Tanggal lahir wajib diisi"
                 return null;
               },
             ),

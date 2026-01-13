@@ -1,6 +1,7 @@
-import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:bumilku_app/theme/theme.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../self_detection_controller.dart';
 import '../widgets/input_field.dart';
 
@@ -11,14 +12,16 @@ class VitalDataPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Data Vital",
-            style: TextStyle(
+            t.vitalTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
@@ -29,17 +32,21 @@ class VitalDataPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 10),
               children: [
-                // Tekanan darah sistolik dan diastolik dalam satu baris
+                // Sistolik & Diastolik
                 Row(
                   children: [
                     Expanded(
                       child: CustomInputField(
                         controller: controller.systolicBpController,
-                        label: "Sistolik (mmHg)",
+                        label: t.vitalSystolicLabel, // "Sistolik (mmHg)"
                         keyboardType: TextInputType.number,
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Sistolik harus diisi';
-                          if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                          if (value == null || value.isEmpty) {
+                            return t.vitalSystolicRequired;
+                          }
+                          if (double.tryParse(value) == null) {
+                            return t.vitalValidNumber;
+                          }
                           return null;
                         },
                       ),
@@ -48,52 +55,68 @@ class VitalDataPage extends StatelessWidget {
                     Expanded(
                       child: CustomInputField(
                         controller: controller.diastolicBpController,
-                        label: "Diastolik (mmHg)",
+                        label: t.vitalDiastolicLabel, // "Diastolik (mmHg)"
                         keyboardType: TextInputType.number,
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Diastolik harus diisi';
-                          if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                          if (value == null || value.isEmpty) {
+                            return t.vitalDiastolicRequired;
+                          }
+                          if (double.tryParse(value) == null) {
+                            return t.vitalValidNumber;
+                          }
                           return null;
                         },
                       ),
                     ),
                   ],
                 ),
-                // const SizedBox(height: 16),
+
                 CustomInputField(
                   controller: controller.temperatureController,
-                  label: "Suhu tubuh (°C)",
+                  label: t.vitalTempLabel, // "Suhu tubuh (°C)"
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Suhu tubuh harus diisi';
-                    if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) {
+                      return t.vitalTempRequired;
+                    }
+                    if (double.tryParse(value) == null) {
+                      return t.vitalValidNumber;
+                    }
                     return null;
                   },
                 ),
-                // const SizedBox(height: 16),
+
                 CustomInputField(
                   controller: controller.pulseController,
-                  label: "Nadi (x/menit)",
+                  label: t.vitalPulseLabel, // "Nadi (x/menit)"
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Nadi harus diisi';
-                    if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) {
+                      return t.vitalPulseRequired;
+                    }
+                    if (int.tryParse(value) == null) {
+                      return t.vitalValidNumber;
+                    }
                     return null;
                   },
                 ),
-                // const SizedBox(height: 16),
+
                 CustomInputField(
                   controller: controller.respirationController,
-                  label: "Frekuensi napas (x/menit)",
+                  label: t.vitalRespLabel, // "Frekuensi napas (x/menit)"
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Frekuensi napas harus diisi';
-                    if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) {
+                      return t.vitalRespRequired;
+                    }
+                    if (int.tryParse(value) == null) {
+                      return t.vitalValidNumber;
+                    }
                     return null;
                   },
                 ),
-                // const SizedBox(height: 16),
-                // Informasi nilai normal
+
+                // Info nilai normal
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -105,19 +128,37 @@ class VitalDataPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Nilai Normal:",
-                        style: TextStyle(
+                        t.vitalNormalTitle, // "Nilai Normal:" / "Normal Values:"
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: tPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text("• Tekanan darah: 90/60 - 139/89 mmHg", style: TextStyle(fontSize: 12)),
-                      Text("   - Sistolik (atas): 90-139 mmHg", style: TextStyle(fontSize: 12)),
-                      Text("   - Diastolik (bawah): 60-89 mmHg", style: TextStyle(fontSize: 12)),
-                      Text("• Suhu tubuh: 36 - 37.5°C", style: TextStyle(fontSize: 12)),
-                      Text("• Nadi: 60 - 100 x/menit", style: TextStyle(fontSize: 12)),
-                      Text("• Frekuensi napas: 16 - 20 x/menit", style: TextStyle(fontSize: 12)),
+                      Text(
+                        t.vitalNormalBpMain,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        t.vitalNormalBpSys,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        t.vitalNormalBpDia,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        t.vitalNormalTemp,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        t.vitalNormalPulse,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        t.vitalNormalResp,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ],
                   ),
                 ),

@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../cubit/auth_cubit.dart';
+import '../../cubit/locale_cubit.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/user_model.dart';
 import '../../theme/theme.dart';
 import './bunda_monitoring_page.dart';
@@ -26,23 +28,71 @@ class _ListBundaPageState extends State<ListBundaPage> {
     super.dispose();
   }
 
+  // =========================
+  // Language Toggle (EN/ID) - sama gaya HomePage
+  // =========================
+  Widget _buildLangSwitcher(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.20),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+      ),
+      child: BlocBuilder<LocaleCubit, Locale>(
+        builder: (context, locale) {
+          final code = (locale.languageCode.toLowerCase() == 'en') ? 'EN' : 'ID';
+
+          return PopupMenuButton<String>(
+            tooltip: t.languageTooltip, // "Language"
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Text(
+                code,
+                style: whiteTextStyle.copyWith(
+                  fontSize: 12,
+                  fontWeight: bold,
+                ),
+              ),
+            ),
+            onSelected: (value) {
+              if (value == 'id') {
+                context.read<LocaleCubit>().setIndonesian();
+              } else {
+                context.read<LocaleCubit>().setEnglish();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'id',
+                child: Text(t.languageIndonesia), // "Indonesia"
+              ),
+              PopupMenuItem(
+                value: 'en',
+                child: Text(t.languageEnglish), // "English"
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        // Listen untuk state AuthInitial (setelah logout success)
         if (state is AuthInitial) {
-          // Navigate ke login page dan hapus semua route
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/login', (route) => false);
+          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
         }
 
-        // Handle logout error
         if (state is AuthFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Logout gagal: ${state.error}'),
+              content: Text('${t.logoutFailed}: ${state.error}'),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 3),
             ),
@@ -52,20 +102,19 @@ class _ListBundaPageState extends State<ListBundaPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            "Daftar Bunda",
+            t.mothersListTitle, // "Daftar Bunda" / "Mothers List"
             style: whiteTextStyle.copyWith(fontSize: 20, fontWeight: bold),
           ),
-          // centerTitle: true,
           backgroundColor: Colors.pink,
           foregroundColor: Colors.white,
           elevation: 0,
           actions: [
+            _buildLangSwitcher(context),
+            const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.logout),
-              onPressed: () {
-                _showLogoutConfirmation(context);
-              },
-              tooltip: "Logout",
+              onPressed: () => _showLogoutConfirmation(context),
+              tooltip: t.logout, // "Logout"
             ),
           ],
         ),
@@ -88,7 +137,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha:0.2),
+                        color: Colors.grey.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -97,18 +146,16 @@ class _ListBundaPageState extends State<ListBundaPage> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Cari nama atau username...',
+                      hintText: t.searchNameOrUsernameHint,
                       prefixIcon: const Icon(Icons.search, color: Colors.pink),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.grey),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchQuery = '';
-                                });
-                              },
-                            )
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
                           : null,
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
@@ -116,11 +163,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                         vertical: 14,
                       ),
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
+                    onChanged: (value) => setState(() => _searchQuery = value),
                   ),
                 ),
               ),
@@ -136,34 +179,13 @@ class _ListBundaPageState extends State<ListBundaPage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.pink,
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
                         ),
                       );
                     }
 
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.pregnant_woman_outlined,
-                              size: 80,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              "Belum ada data bunda",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                      return _buildEmptyNoData(t);
                     }
 
                     final users = snapshot.data!.docs.map((doc) {
@@ -181,38 +203,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                     final filteredUsers = _filterUsers(users, _searchQuery);
 
                     if (filteredUsers.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 80,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              "Tidak ditemukan",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _searchQuery.isEmpty
-                                  ? "Belum ada data bunda"
-                                  : "Tidak ada hasil untuk '$_searchQuery'",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade500,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
+                      return _buildEmptyNotFound(t);
                     }
 
                     return ListView.builder(
@@ -225,9 +216,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                         final avatarColor = _getAvatarColor(index);
 
                         return GestureDetector(
-                          onTap: () {
-                            _navigateToBundaMonitoring(context, user);
-                          },
+                          onTap: () => _navigateToBundaMonitoring(context, user),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             child: Material(
@@ -243,12 +232,9 @@ class _ListBundaPageState extends State<ListBundaPage> {
                                       width: 60,
                                       height: 60,
                                       decoration: BoxDecoration(
-                                        color: avatarColor.withValues(alpha:0.2),
+                                        color: avatarColor.withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: avatarColor,
-                                          width: 2,
-                                        ),
+                                        border: Border.all(color: avatarColor, width: 2),
                                       ),
                                       child: Center(
                                         child: Text(
@@ -264,12 +250,11 @@ class _ListBundaPageState extends State<ListBundaPage> {
 
                                     const SizedBox(width: 16),
 
-                                    // User Info - Expanded to take remaining space
+                                    // User Info
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          // Name and Badge row
                                           Row(
                                             children: [
                                               Expanded(
@@ -303,7 +288,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
                                                     ),
                                                     const SizedBox(width: 4),
                                                     Text(
-                                                      "Bunda",
+                                                      t.badgeMother, // "Bunda" / "Mother"
                                                       style: TextStyle(
                                                         fontSize: 10,
                                                         fontWeight: FontWeight.bold,
@@ -318,7 +303,6 @@ class _ListBundaPageState extends State<ListBundaPage> {
 
                                           const SizedBox(height: 8),
 
-                                          // User details with arrow icon
                                           Row(
                                             crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
@@ -326,19 +310,13 @@ class _ListBundaPageState extends State<ListBundaPage> {
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    _buildInfoRow(
-                                                      Icons.person_outline,
-                                                      user.email,
-                                                    ),
+                                                    _buildInfoRow(Icons.person_outline, user.email),
                                                     const SizedBox(height: 4),
-                                                    _buildInfoRow(
-                                                      Icons.location_on_outlined,
-                                                      user.alamat,
-                                                    ),
+                                                    _buildInfoRow(Icons.location_on_outlined, user.alamat),
                                                     const SizedBox(height: 4),
                                                     _buildInfoRow(
                                                       Icons.calendar_today_outlined,
-                                                      "${DateFormat('dd/MM/yyyy').format(user.tglLahir)} • $umur tahun",
+                                                      "${DateFormat('dd/MM/yyyy').format(user.tglLahir)} • $umur ${t.yearsOldShort}",
                                                     ),
                                                   ],
                                                 ),
@@ -379,19 +357,67 @@ class _ListBundaPageState extends State<ListBundaPage> {
     );
   }
 
-  // Helper Methods (tetap sama)
+  // =========================
+  // Empty States
+  // =========================
+  Widget _buildEmptyNoData(AppLocalizations t) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.pregnant_woman_outlined, size: 80, color: Colors.grey.shade400),
+          const SizedBox(height: 16),
+          Text(
+            t.noMotherData,
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyNotFound(AppLocalizations t) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 80, color: Colors.grey.shade400),
+          const SizedBox(height: 16),
+          Text(
+            t.notFoundTitle,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _searchQuery.isEmpty
+                ? t.noMotherData
+                : t.noResultsForQuery(_searchQuery),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================
+  // Helpers
+  // =========================
   int _hitungUmur(DateTime tglLahir) {
     final now = DateTime.now();
     int umur = now.year - tglLahir.year;
-    if (now.month < tglLahir.month ||
-        (now.month == tglLahir.month && now.day < tglLahir.day)) {
+    if (now.month < tglLahir.month || (now.month == tglLahir.month && now.day < tglLahir.day)) {
       umur--;
     }
     return umur;
   }
 
   String _getInitials(String name) {
-    List<String> names = name.split(' ');
+    final names = name.split(' ');
     if (names.length > 1) {
       return '${names[0][0]}${names[1][0]}'.toUpperCase();
     } else if (name.isNotEmpty) {
@@ -401,7 +427,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
   }
 
   Color _getAvatarColor(int index) {
-    final colors = [
+    const colors = [
       Colors.pink,
       Colors.purple,
       Colors.blue,
@@ -418,9 +444,7 @@ class _ListBundaPageState extends State<ListBundaPage> {
     final lowercaseQuery = query.toLowerCase();
     return users.where((user) {
       final nameMatch = user.name.toLowerCase().contains(lowercaseQuery);
-      final usernameMatch = user.email.toLowerCase().contains(
-        lowercaseQuery,
-      );
+      final usernameMatch = user.email.toLowerCase().contains(lowercaseQuery);
       return nameMatch || usernameMatch;
     }).toList();
   }
@@ -448,23 +472,26 @@ class _ListBundaPageState extends State<ListBundaPage> {
     );
   }
 
+  // =========================
+  // Logout Dialog (pakai AppLocalizations)
+  // =========================
   void _showLogoutConfirmation(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     AwesomeDialog(
       context: context,
       dialogType: DialogType.warning,
       animType: AnimType.bottomSlide,
-      title: 'Konfirmasi Logout',
-      desc: 'Apakah Anda yakin ingin logout dari aplikasi BUMILKU?',
+      title: t.logoutConfirmTitle,
+      desc: t.logoutConfirmDesc,
       btnCancel: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: tGreyColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
+        onPressed: () => Navigator.pop(context),
         child: Text(
-          "Batal",
+          t.cancel,
           style: whiteTextStyle.copyWith(fontSize: 16, fontWeight: bold),
         ),
       ),
@@ -474,11 +501,11 @@ class _ListBundaPageState extends State<ListBundaPage> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         onPressed: () {
-          Navigator.pop(context); // Tutup dialog dulu
-          context.read<AuthCubit>().signOut(); // Lalu logout
+          Navigator.pop(context);
+          context.read<AuthCubit>().signOut();
         },
         child: Text(
-          "Logout",
+          t.logout,
           style: whiteTextStyle.copyWith(fontSize: 16, fontWeight: bold),
         ),
       ),

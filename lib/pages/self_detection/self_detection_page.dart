@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubit/self_detection_cubit.dart';
+import '../../l10n/app_localizations.dart';
 import 'detection_history_page.dart';
 import 'loading_self_detection.dart';
 
@@ -220,7 +221,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
     await Future.delayed(const Duration(milliseconds: 700));
 
     // Hitung risiko berdasarkan formula yang benar
-    final Map<String, dynamic> riskResult = _controller.calculateRiskBasedOnFormula();
+    final Map<String, dynamic> riskResult = _controller.calculateRiskBasedOnFormula(context);
 
     print('🔍 Risk Result Data:');
     print('Risk Level: ${riskResult['riskLevel']}');
@@ -252,12 +253,12 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
     );
   }
 
-  String _getButtonText() {
+  String _getButtonText(AppLocalizations t) {
     final currentPage = _controller.currentPage;
     if (currentPage == _totalPages - 1) {
-      return "Hitung Risiko";
+      return t.calculateRisk;
     } else {
-      return "Lanjut";
+      return t.next;
     }
   }
 
@@ -265,11 +266,12 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
   Widget build(BuildContext context) {
     final totalPages = _totalPages;
     final currentPage = _controller.currentPage;
+    final t = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Deteksi Mandiri Ibu Hamil",
+          t.selfDetectionTitle,
           style: whiteTextStyle.copyWith(fontSize: 14, fontWeight: bold),
         ),
         backgroundColor: kPrimaryColor,
@@ -282,7 +284,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
-            tooltip: "Riwayat Deteksi",
+            tooltip: t.detectionHistory,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -352,7 +354,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
                             ),
                           ),
                           onPressed: _previousPage,
-                          child: const Text("Kembali"),
+                          child: Text(t.back),
                         ),
                       ),
                     ),
@@ -377,14 +379,14 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
                             }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Harap lengkapi data pada langkah ini."),
+                               SnackBar(
+                                content: Text(t.completeStepData),
                                 duration: Duration(seconds: 2),
                               ),
                             );
                           }
                         },
-                        child: Text(_getButtonText(), style: whiteTextStyle),
+                        child: Text(_getButtonText(t), style: whiteTextStyle),
                       ),
                     ),
                   ),

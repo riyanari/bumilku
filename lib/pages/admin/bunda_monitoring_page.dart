@@ -5,6 +5,7 @@ import 'package:bumilku_app/models/user_model.dart';
 import 'package:bumilku_app/cubit/medis_cubit.dart';
 import 'package:bumilku_app/cubit/self_detection_cubit.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/medis_model.dart';
 import '../../models/self_detection_model.dart';
 
@@ -33,14 +34,14 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
-          "Monitoring ${widget.bunda.name}",
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          t.monitoringTitle(widget.bunda.name), // "Monitoring {name}"
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.pink,
@@ -53,16 +54,13 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           IconButton(
             icon: const Icon(Icons.refresh, size: 22),
             onPressed: _loadData,
-            tooltip: "Refresh Data",
+            tooltip: t.refreshDataTooltip, // "Refresh Data"
           ),
         ],
       ),
       body: Column(
         children: [
-          // Header Info Bunda
           _buildBundaHeader(),
-
-          // Tab Bar
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             decoration: BoxDecoration(
@@ -70,7 +68,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha:0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -78,22 +76,19 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             ),
             child: Row(
               children: [
-                _buildTabButton(0, "Perkembangan", Icons.pregnant_woman),
-                _buildTabButton(1, "Self Detection", Icons.analytics_outlined),
+                _buildTabButton(0, t.tabDevelopment, Icons.pregnant_woman),
+                _buildTabButton(1, t.tabSelfDetection, Icons.analytics_outlined),
               ],
             ),
           ),
-
-          // Tab Content
-          Expanded(
-            child: _buildTabContent(),
-          ),
+          Expanded(child: _buildTabContent()),
         ],
       ),
     );
   }
 
   Widget _buildBundaHeader() {
+    final t = AppLocalizations.of(context)!;
     final age = _calculateAge(widget.bunda.tglLahir);
 
     return Container(
@@ -103,15 +98,12 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.pink.shade100,
-            Colors.purple.shade100,
-          ],
+          colors: [Colors.pink.shade100, Colors.purple.shade100],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.pink.withValues(alpha:0.2),
+            color: Colors.pink.withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -126,15 +118,12 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Colors.pink.shade200,
-                  Colors.pink.shade400,
-                ],
+                colors: [Colors.pink.shade200, Colors.pink.shade400],
               ),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.pink.withValues(alpha:0.3),
+                  color: Colors.pink.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -151,9 +140,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               ),
             ),
           ),
-
           const SizedBox(width: 16),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +169,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                   children: [
                     _buildInfoChip(
                       Icons.cake_outlined,
-                      "$age tahun",
+                      t.ageYears(age), // "{age} tahun" / "{age} years"
                     ),
                     _buildInfoChip(
                       Icons.calendar_today_outlined,
@@ -207,7 +194,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.7),
+        color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -237,11 +224,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     final isSelected = _selectedTab == tabIndex;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedTab = tabIndex;
-          });
-        },
+        onTap: () => setState(() => _selectedTab = tabIndex),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -250,10 +233,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                 ? LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.pink.shade400,
-                Colors.pink.shade600,
-              ],
+              colors: [Colors.pink.shade400, Colors.pink.shade600],
             )
                 : null,
             color: isSelected ? null : Colors.white,
@@ -294,10 +274,12 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   }
 
   Widget _buildPerkembanganTab() {
+    final t = AppLocalizations.of(context)!;
+
     return BlocBuilder<MedisCubit, MedisState>(
       builder: (context, state) {
         if (state is MedisLoading) {
-          return _buildLoadingState("Memuat data kehamilan...");
+          return _buildLoadingState(t.loadingPregnancyData);
         }
 
         if (state is MedisFailed) {
@@ -311,8 +293,8 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           if (medisHistory.isEmpty) {
             return _buildEmptyState(
               Icons.pregnant_woman_outlined,
-              "Belum Ada Data Kehamilan",
-              "Data kehamilan akan muncul di sini",
+              t.noPregnancyDataTitle,
+              t.noPregnancyDataSubtitle,
             );
           }
 
@@ -327,12 +309,14 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           );
         }
 
-        return _buildLoadingState("Memuat data...");
+        return _buildLoadingState(t.loadingDataGeneric);
       },
     );
   }
 
   Widget _buildPregnancyCard(MedisModel medis, int index, bool isActive) {
+    final t = AppLocalizations.of(context)!;
+
     final now = DateTime.now();
     final gestationalAge = _calculateGestationalAge(medis.selectedLmp, now);
     final weeks = gestationalAge ~/ 7;
@@ -347,15 +331,12 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            isActive ? Colors.pink.shade50 : Colors.grey.shade100,
-          ],
+          colors: [Colors.white, isActive ? Colors.pink.shade50 : Colors.grey.shade100],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -384,7 +365,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha:0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -399,7 +380,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Kehamilan ${index + 1}",
+                        t.pregnancyNumber(index + 1), // "Kehamilan {n}" / "Pregnancy {n}"
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -407,10 +388,10 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                         ),
                       ),
                       Text(
-                        isActive ? "Kehamilan Aktif" : "Riwayat Kehamilan",
+                        isActive ? t.activePregnancy : t.pregnancyHistory,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withValues(alpha:0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -420,16 +401,16 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha:0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.favorite, size: 14, color: Colors.white),
-                        SizedBox(width: 4),
+                        const Icon(Icons.favorite, size: 14, color: Colors.white),
+                        const SizedBox(width: 4),
                         Text(
-                          "AKTIF",
-                          style: TextStyle(
+                          t.activeLabel.toUpperCase(), // "AKTIF" / "ACTIVE"
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -441,7 +422,6 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -450,7 +430,14 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               children: [
                 _buildInfoGrid(medis),
                 const SizedBox(height: 10),
-                _buildProgressSection(gestationalAge, weeks, days, trimester, daysToEdd, progressPercentage),
+                _buildProgressSection(
+                  gestationalAge,
+                  weeks,
+                  days,
+                  trimester,
+                  daysToEdd,
+                  progressPercentage,
+                ),
                 const SizedBox(height: 10),
                 _buildTimelineSection(gestationalAge),
                 const SizedBox(height: 16),
@@ -464,6 +451,8 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   }
 
   Widget _buildInfoGrid(MedisModel medis) {
+    final t = AppLocalizations.of(context)!;
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -472,10 +461,26 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
       mainAxisSpacing: 12,
       childAspectRatio: 2,
       children: [
-        _buildInfoCard("👶 Nama Bayi", medis.babyName ?? 'Belum diberi nama', Colors.blue),
-        _buildInfoCard("📅 HPHT", DateFormat('dd/MM/yyyy').format(medis.selectedLmp), Colors.green),
-        _buildInfoCard("🎯 Perkiraan Lahir", DateFormat('dd/MM/yyyy').format(medis.edd), Colors.orange),
-        _buildInfoCard("🔄 Siklus", "${medis.cycleLength} hari", Colors.purple),
+        _buildInfoCard(
+          t.babyNameLabel, // "👶 Nama Bayi"
+          medis.babyName ?? t.babyNameNotSet, // "Belum diberi nama"
+          Colors.blue,
+        ),
+        _buildInfoCard(
+          t.lmpLabel, // "📅 HPHT"
+          DateFormat('dd/MM/yyyy').format(medis.selectedLmp),
+          Colors.green,
+        ),
+        _buildInfoCard(
+          t.eddLabel, // "🎯 Perkiraan Lahir"
+          DateFormat('dd/MM/yyyy').format(medis.edd),
+          Colors.orange,
+        ),
+        _buildInfoCard(
+          t.cycleLabel, // "🔄 Siklus"
+          t.cycleDaysValue(medis.cycleLength), // "{n} hari" / "{n} days"
+          Colors.purple,
+        ),
       ],
     );
   }
@@ -483,9 +488,9 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   Widget _buildInfoCard(String title, String value, Color color) {
     return Container(
       decoration: BoxDecoration(
-        color: color.withValues(alpha:0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha:0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -518,17 +523,23 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     );
   }
 
-  Widget _buildProgressSection(int gestationalAge, int weeks, int days, String trimester, int daysToEdd, double progressPercentage) {
+  Widget _buildProgressSection(
+      int gestationalAge,
+      int weeks,
+      int days,
+      String trimester,
+      int daysToEdd,
+      double progressPercentage,
+      ) {
+    final t = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade50,
-            Colors.purple.shade50,
-          ],
+          colors: [Colors.blue.shade50, Colors.purple.shade50],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue.shade100),
@@ -541,7 +552,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               Icon(Icons.timeline, color: Colors.blue.shade700, size: 22),
               const SizedBox(width: 8),
               Text(
-                "Perkembangan Kehamilan",
+                t.pregnancyProgressTitle,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -551,7 +562,6 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             ],
           ),
           const SizedBox(height: 16),
-
           LayoutBuilder(
             builder: (context, constraints) {
               return Stack(
@@ -570,7 +580,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                       gradient: LinearGradient(
                         colors: [
                           _getTrimesterColor(trimester),
-                          _getTrimesterColor(trimester).withValues(alpha:0.7),
+                          _getTrimesterColor(trimester).withValues(alpha: 0.7),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(7),
@@ -593,7 +603,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                 ),
               ),
               Text(
-                "Trimester $trimester",
+                t.trimesterWithValue(trimester), // "Trimester {x}" / "Trimester {x}"
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -602,15 +612,28 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem("Usia Kandungan", "$weeks minggu $days hari", Icons.calendar_today, Colors.blue),
-              _buildStatItem("Hari Menuju Lahir", "$daysToEdd hari", Icons.celebration, daysToEdd <= 30 ? Colors.red : Colors.orange),
-              _buildStatItem("Trimester", trimester, Icons.auto_awesome, _getTrimesterColor(trimester)),
+              _buildStatItem(
+                t.gestationalAgeLabel,
+                t.gestationalAgeValue(weeks, days), // "{w} minggu {d} hari" / "{w} weeks {d} days"
+                Icons.calendar_today,
+                Colors.blue,
+              ),
+              _buildStatItem(
+                t.daysToBirthLabel,
+                t.daysValue(daysToEdd), // "{n} hari" / "{n} days"
+                Icons.celebration,
+                daysToEdd <= 30 ? Colors.red : Colors.orange,
+              ),
+              _buildStatItem(
+                t.trimesterLabel,
+                trimester,
+                Icons.auto_awesome,
+                _getTrimesterColor(trimester),
+              ),
             ],
           ),
         ],
@@ -619,6 +642,8 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   }
 
   Widget _buildTimelineSection(int gestationalAge) {
+    final t = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -634,7 +659,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               Icon(Icons.timeline_outlined, color: Colors.green.shade700, size: 22),
               const SizedBox(width: 8),
               Text(
-                "Timeline Perkembangan",
+                t.timelineTitle,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -644,15 +669,17 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildTimelineItem("Trimester 1", "Minggu 1-13", gestationalAge <= 91),
-          _buildTimelineItem("Trimester 2", "Minggu 14-27", gestationalAge > 91 && gestationalAge <= 189),
-          _buildTimelineItem("Trimester 3", "Minggu 28-40", gestationalAge > 189),
+          _buildTimelineItem(t.trimester1, t.weekRange1_13, gestationalAge <= 91),
+          _buildTimelineItem(t.trimester2, t.weekRange14_27, gestationalAge > 91 && gestationalAge <= 189),
+          _buildTimelineItem(t.trimester3, t.weekRange28_40, gestationalAge > 189),
         ],
       ),
     );
   }
 
   Widget _buildCardFooter(DateTime createdAt, bool isActive) {
+    final t = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -665,15 +692,11 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              "Data dibuat: ${DateFormat('dd/MM/yyyy HH:mm').format(createdAt)}",
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade600,
-              ),
+              t.dataCreatedAt(DateFormat('dd/MM/yyyy HH:mm').format(createdAt)),
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
             ),
           ),
-          if (isActive)
-            Icon(Icons.star, size: 14, color: Colors.amber),
+          if (isActive) const Icon(Icons.star, size: 14, color: Colors.amber),
         ],
       ),
     );
@@ -685,7 +708,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withValues(alpha:0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: color),
@@ -702,10 +725,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         ),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.grey,
-          ),
+          style: const TextStyle(fontSize: 10, color: Colors.grey),
           textAlign: TextAlign.center,
         ),
       ],
@@ -738,10 +758,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           ),
           Text(
             weeks,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade500,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
           ),
         ],
       ),
@@ -749,10 +766,12 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   }
 
   Widget _buildSelfDetectionTab() {
+    final t = AppLocalizations.of(context)!;
+
     return BlocBuilder<SelfDetectionCubit, SelfDetectionState>(
       builder: (context, state) {
         if (state is SelfDetectionLoading) {
-          return _buildLoadingState("Memuat riwayat deteksi...");
+          return _buildLoadingState(t.loadingDetectionHistory);
         }
 
         if (state is SelfDetectionFailed) {
@@ -762,12 +781,10 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         if (state is SelfDetectionHistoryLoaded) {
           final history = state.detectionHistory;
 
-          // FILTER DATA YANG MEMILIKI GERAKAN JANIN
-          final fetalMovementDetections = history.where((detection) =>
-          detection.hasFetalMovementData == true
-          ).toList();
+          final fetalMovementDetections = history
+              .where((d) => d.hasFetalMovementData == true)
+              .toList();
 
-          // Urutkan dari yang terbaru
           fetalMovementDetections.sort((a, b) {
             final dateA = a.createdAt ?? a.date;
             final dateB = b.createdAt ?? b.date;
@@ -775,52 +792,53 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           });
 
           final allItems = <Widget>[
-            _buildSectionHeader("Pemantauan Gerakan Janin"),
+            _buildSectionHeader(t.fetalMovementMonitoringHeader),
             if (fetalMovementDetections.isNotEmpty)
               _buildMovementStats(fetalMovementDetections),
-            _buildSectionHeader("Riwayat Self Detection"),
+            _buildSectionHeader(t.selfDetectionHistoryHeader),
           ];
 
-          // Tambahkan riwayat self detection atau empty state
           if (history.isNotEmpty) {
-            allItems.addAll(history.map((detection) => _buildDetectionCard(detection)).toList());
+            allItems.addAll(history.map(_buildDetectionCard));
           } else {
-            allItems.add(_buildEmptyState(
-              Icons.analytics_outlined,
-              "Belum Ada Data Self Detection",
-              "Data deteksi mandiri akan muncul di sini",
-            ));
+            allItems.add(
+              _buildEmptyState(
+                Icons.analytics_outlined,
+                t.noSelfDetectionDataTitle,
+                t.noSelfDetectionDataSubtitle,
+              ),
+            );
           }
 
-          allItems.add(_buildSectionHeader("Riwayat Gerakan Janin"));
+          allItems.add(_buildSectionHeader(t.fetalMovementHistoryHeader));
 
-          // Tambahkan riwayat gerakan janin atau empty state
           if (fetalMovementDetections.isNotEmpty) {
-            allItems.addAll(fetalMovementDetections.map((detection) => _buildMovementCard(detection)).toList());
+            allItems.addAll(fetalMovementDetections.map(_buildMovementCard));
           } else {
-            allItems.add(_buildEmptyState(
-              Icons.favorite_border,
-              "Belum Ada Data Gerakan Janin",
-              "Data gerakan janin akan muncul di sini",
-            ));
+            allItems.add(
+              _buildEmptyState(
+                Icons.favorite_border,
+                t.noFetalMovementDataTitle,
+                t.noFetalMovementDataSubtitle,
+              ),
+            );
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: allItems.length,
-            itemBuilder: (context, index) {
-              return allItems[index];
-            },
+            itemBuilder: (context, index) => allItems[index],
           );
         }
 
-        return _buildLoadingState("Memuat data...");
+        return _buildLoadingState(t.loadingDataGeneric);
       },
     );
   }
 
-  // PERBAIKAN: Ambil data dari SelfDetectionModel yang sebenarnya
   Widget _buildMovementStats(List<SelfDetectionModel> fetalMovementDetections) {
+    final t = AppLocalizations.of(context)!;
+
     if (fetalMovementDetections.isEmpty) {
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -829,10 +847,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade50,
-              Colors.purple.shade50,
-            ],
+            colors: [Colors.blue.shade50, Colors.purple.shade50],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.blue.shade100),
@@ -842,7 +857,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             Icon(Icons.favorite_border, size: 40, color: Colors.grey.shade400),
             const SizedBox(height: 8),
             Text(
-              "Belum Ada Data Gerakan Janin",
+              t.noFetalMovementDataTitle,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -856,14 +871,13 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
 
     final latestDetection = fetalMovementDetections.first;
     final movementCount = latestDetection.fetalMovementCount ?? 0;
-    final duration = latestDetection.fetalMovementDuration ?? 12; // Default 12 jam
+    final duration = latestDetection.fetalMovementDuration ?? 12;
     final movementsPerHour = latestDetection.movementsPerHour ?? 0.0;
 
-    // HITUNG STATUS BERDASARKAN STANDAR BARU
     final statusColor = _getFetalMovementColorFromCount(movementCount);
     final statusIcon = _getFetalMovementIconFromCount(movementCount);
-    final statusTitle = _getFetalMovementTitle(movementCount);
-    final statusMessage = _getFetalMovementMessage(movementCount, movementsPerHour);
+    final statusTitle = _getFetalMovementTitle(movementCount, t);
+    final statusMessage = _getFetalMovementMessage(movementCount, movementsPerHour, t);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -872,10 +886,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade50,
-            Colors.purple.shade50,
-          ],
+          colors: [Colors.blue.shade50, Colors.purple.shade50],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue.shade100),
@@ -884,10 +895,10 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.favorite, color: Colors.pink, size: 24),
+              const Icon(Icons.favorite, color: Colors.pink, size: 24),
               const SizedBox(width: 12),
               Text(
-                "Statistik Gerakan Janin",
+                t.fetalMovementStatsTitle,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -902,7 +913,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             children: [
               Expanded(
                 child: _buildMovementStatCard(
-                  "Rata-rata Gerakan",
+                  t.avgMovementsLabel,
                   "${_calculateAverageMovement(fetalMovementDetections)}",
                   Icons.trending_up,
                   Colors.green,
@@ -911,7 +922,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildMovementStatCard(
-                  "Sesi Normal",
+                  t.normalSessionsLabel,
                   "${_countNormalSessions(fetalMovementDetections)}",
                   Icons.check_circle,
                   Colors.blue,
@@ -920,7 +931,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildMovementStatCard(
-                  "Total Sesi",
+                  t.totalSessionsLabel,
                   "${fetalMovementDetections.length}",
                   Icons.list_alt,
                   Colors.orange,
@@ -934,9 +945,9 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha:0.1),
+              color: statusColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: statusColor.withValues(alpha:0.3)),
+              border: Border.all(color: statusColor.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -956,10 +967,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  statusMessage,
-                  style: const TextStyle(fontSize: 14, height: 1.4),
-                ),
+                Text(statusMessage, style: const TextStyle(fontSize: 14, height: 1.4)),
               ],
             ),
           ),
@@ -969,7 +977,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha:0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade300),
             ),
@@ -977,7 +985,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Detail Pencatatan Terbaru:",
+                  t.latestRecordDetailTitle,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -985,7 +993,6 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
@@ -994,23 +1001,26 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                   mainAxisSpacing: 8,
                   childAspectRatio: 2,
                   children: [
-                    _buildDetailItem("Jumlah Gerakan", "$movementCount kali", Icons.numbers),
-                    _buildDetailItem("Durasi", "$duration jam", Icons.timer),
-                    _buildDetailItem("Gerakan per Jam", "${movementsPerHour.toStringAsFixed(1)}/jam", Icons.speed),
-                    _buildDetailItem("Perbandingan",
-                        latestDetection.movementComparison?.toString() ?? 'Tidak ada data',
-                        Icons.compare
+                    _buildDetailItem(t.movementCountLabel, t.timesValue(movementCount), Icons.numbers),
+                    _buildDetailItem(t.durationLabel, t.hoursValue(duration), Icons.timer),
+                    _buildDetailItem(t.movementsPerHourLabel, t.perHourValue(movementsPerHour), Icons.speed),
+                    _buildDetailItem(
+                      t.comparisonLabel,
+                      latestDetection.movementComparison?.toString() ?? t.noData,
+                      Icons.compare,
                     ),
-                    _buildDetailItem("Pola Aktivitas",
-                        latestDetection.fetalActivityPattern?.toString() ?? 'Tidak ada data',
-                        Icons.pattern
+                    _buildDetailItem(
+                      t.activityPatternLabel,
+                      latestDetection.fetalActivityPattern?.toString() ?? t.noData,
+                      Icons.pattern,
                     ),
                     if (latestDetection.fetalAdditionalComplaints != null &&
                         latestDetection.fetalAdditionalComplaints!.isNotEmpty &&
                         latestDetection.fetalAdditionalComplaints![0] != 'Tidak ada')
-                      _buildDetailItem("Keluhan",
-                          latestDetection.fetalAdditionalComplaints!.join(', '),
-                          Icons.medical_services
+                      _buildDetailItem(
+                        t.complaintsLabel,
+                        latestDetection.fetalAdditionalComplaints!.join(', '),
+                        Icons.medical_services,
                       ),
                   ],
                 ),
@@ -1034,7 +1044,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Standar normal: minimal 10 gerakan dalam 12 jam",
+                        t.fetalMovementStandardTitle, // "Standar normal: minimal 10 gerakan dalam 12 jam"
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -1043,7 +1053,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "(${(10/12).toStringAsFixed(1)} gerakan per jam)",
+                        t.fetalMovementStandardPerHour((10 / 12)), // "(0.8 per hour)"
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.blue[700],
@@ -1060,17 +1070,17 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     );
   }
 
-  // PERBAIKAN: Gunakan SelfDetectionModel untuk movement card
   Widget _buildMovementCard(SelfDetectionModel detection) {
+    final t = AppLocalizations.of(context)!;
+
     final movementCount = detection.fetalMovementCount ?? 0;
     final duration = detection.fetalMovementDuration ?? 12;
     final movementsPerHour = detection.movementsPerHour ?? 0.0;
     final displayDate = detection.createdAt ?? detection.date;
 
-    // HITUNG STATUS BERDASARKAN STANDAR BARU
     final statusColor = _getFetalMovementColorFromCount(movementCount);
     final statusIcon = _getFetalMovementIconFromCount(movementCount);
-    final statusTitle = _getFetalMovementTitle(movementCount);
+    final statusTitle = _getFetalMovementTitle(movementCount, t);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1079,7 +1089,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1090,7 +1100,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: statusColor.withValues(alpha:0.1),
+              color: statusColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -1100,10 +1110,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
                   child: Icon(statusIcon, size: 16, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
@@ -1121,10 +1128,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                       ),
                       Text(
                         statusTitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: statusColor.withValues(alpha:0.8),
-                        ),
+                        style: TextStyle(fontSize: 12, color: statusColor.withValues(alpha: 0.8)),
                       ),
                     ],
                   ),
@@ -1133,7 +1137,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      "$movementCount gerakan",
+                      t.movementsCountText(movementCount), // "{n} gerakan" / "{n} movements"
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1141,18 +1145,14 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                       ),
                     ),
                     Text(
-                      "${movementsPerHour.toStringAsFixed(1)}/jam",
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
-                      ),
+                      t.perHourValue(movementsPerHour), // "x.x/jam" / "x.x/hr"
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -1161,19 +1161,20 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildMovementDetailItem("Durasi", "$duration jam", Icons.timer),
-                    _buildMovementDetailItem("Pola",
-                        detection.fetalActivityPattern?.toString() ?? 'Tidak ada data',
-                        Icons.pattern
+                    _buildMovementDetailItem(t.durationLabel, t.hoursValue(duration), Icons.timer),
+                    _buildMovementDetailItem(
+                      t.activityPatternShortLabel,
+                      detection.fetalActivityPattern?.toString() ?? t.noData,
+                      Icons.pattern,
                     ),
-                    _buildMovementDetailItem("Perbandingan",
-                        detection.movementComparison?.toString() ?? 'Tidak ada data',
-                        Icons.compare
+                    _buildMovementDetailItem(
+                      t.comparisonShortLabel,
+                      detection.movementComparison?.toString() ?? t.noData,
+                      Icons.compare,
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-
                 if (detection.fetalAdditionalComplaints != null &&
                     detection.fetalAdditionalComplaints!.isNotEmpty &&
                     detection.fetalAdditionalComplaints![0] != 'Tidak ada')
@@ -1181,7 +1182,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Keluhan:",
+                        "${t.complaintsLabel}:",
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -1191,10 +1192,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                       const SizedBox(height: 4),
                       Text(
                         detection.fetalAdditionalComplaints!.join(', '),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -1206,7 +1204,31 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     );
   }
 
-  // METHOD BARU: Helper untuk status gerakan janin berdasarkan standar baru
+  // Status fetal movement -> localized
+  String _getFetalMovementTitle(int movementCount, AppLocalizations t) {
+    if (movementCount == 0) return t.fetalMovementStatusIncomplete;
+    if (movementCount >= 10) return t.fetalMovementStatusNormal;
+    if (movementCount >= 7) return t.fetalMovementStatusMonitor;
+    if (movementCount >= 4) return t.fetalMovementStatusAttention;
+    return t.fetalMovementStatusUrgent;
+  }
+
+  String _getFetalMovementMessage(int movementCount, double movementsPerHour, AppLocalizations t) {
+    if (movementCount == 0) {
+      return t.fetalMovementMsgIncomplete;
+    }
+    if (movementCount >= 10) {
+      return t.fetalMovementMsgNormal(movementCount);
+    }
+    if (movementCount >= 7) {
+      return t.fetalMovementMsgMonitor(movementCount);
+    }
+    if (movementCount >= 4) {
+      return t.fetalMovementMsgAttention(movementCount);
+    }
+    return t.fetalMovementMsgUrgent(movementCount);
+  }
+
   Color _getFetalMovementColorFromCount(int movementCount) {
     if (movementCount == 0) return Colors.grey;
     if (movementCount >= 10) return Colors.green;
@@ -1223,43 +1245,14 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     return Icons.warning;
   }
 
-  String _getFetalMovementTitle(int movementCount) {
-    if (movementCount == 0) return "Data Belum Lengkap";
-    if (movementCount >= 10) return "Kondisi Normal";
-    if (movementCount >= 7) return "Perlu Pemantauan";
-    if (movementCount >= 4) return "Perlu Perhatian";
-    return "Perhatian Khusus";
-  }
-
-  String _getFetalMovementMessage(int movementCount, double movementsPerHour) {
-    if (movementCount == 0) {
-      return "Data gerakan janin belum lengkap. Silakan lengkapi pencatatan.";
-    }
-
-    if (movementCount >= 10) {
-      return "Gerakan janin dalam batas normal ($movementCount gerakan dalam 12 jam).";
-    }
-
-    if (movementCount >= 7) {
-      return "Gerakan janin $movementCount kali dalam 12 jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.";
-    }
-
-    if (movementCount >= 4) {
-      return "Gerakan janin $movementCount kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.";
-    }
-
-    return "Gerakan janin hanya $movementCount kali dalam 12 jam. Segera hubungi tenaga kesehatan.";
-  }
-
-  // PERBAIKAN: Helper methods untuk gerakan janin dari data sebenarnya
   int _calculateAverageMovement(List<SelfDetectionModel> detections) {
     if (detections.isEmpty) return 0;
-    final total = detections.fold(0, (sum, detection) => sum + (detection.fetalMovementCount ?? 0));
+    final total = detections.fold(0, (sum, d) => sum + (d.fetalMovementCount ?? 0));
     return total ~/ detections.length;
   }
 
   int _countNormalSessions(List<SelfDetectionModel> detections) {
-    return detections.where((detection) => (detection.fetalMovementCount ?? 0) >= 10).length;
+    return detections.where((d) => (d.fetalMovementCount ?? 0) >= 10).length;
   }
 
   Widget _buildSectionHeader(String title) {
@@ -1289,7 +1282,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.pink.withValues(alpha:0.1),
+              color: Colors.pink.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 12, color: Colors.pink),
@@ -1332,16 +1325,16 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha:0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha:0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withValues(alpha:0.2),
+              color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 16, color: color),
@@ -1349,18 +1342,11 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
           ),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 10, color: Colors.grey),
             textAlign: TextAlign.center,
             maxLines: 2,
           ),
@@ -1370,6 +1356,8 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   }
 
   Widget _buildDetectionCard(SelfDetectionModel detection) {
+    final t = AppLocalizations.of(context)!;
+
     final displayDate = detection.createdAt ?? detection.date;
     final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(displayDate);
     final riskColor = _getRiskColor(detection.riskLevel);
@@ -1381,7 +1369,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1392,7 +1380,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: riskColor.withValues(alpha:0.1),
+              color: riskColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -1402,15 +1390,8 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: riskColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _getRiskIcon(detection.riskLevel),
-                    color: Colors.white,
-                    size: 18,
-                  ),
+                  decoration: BoxDecoration(color: riskColor, shape: BoxShape.circle),
+                  child: Icon(_getRiskIcon(detection.riskLevel), color: Colors.white, size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1419,50 +1400,35 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
                     children: [
                       Text(
                         detection.riskLevel.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: riskColor,
-                        ),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: riskColor),
                       ),
-                      Text(
-                        formattedDate,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
-                        ),
-                      ),
+                      Text(formattedDate, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                     ],
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: riskColor.withValues(alpha:0.2),
+                    color: riskColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    "${detection.score} poin",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: riskColor,
-                    ),
+                    t.pointsValue(detection.score), // "{n} poin" / "{n} points"
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: riskColor),
                   ),
                 ),
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildDetectionInfoItem("Detail", "${detection.details.length} faktor", Icons.list_alt),
-                _buildDetectionInfoItem("Status", _getRiskStatus(detection.riskLevel), Icons.info_outline),
+                _buildDetectionInfoItem(t.detailLabel, t.factorsCount(detection.details.length), Icons.list_alt),
+                _buildDetectionInfoItem(t.statusLabel, _getRiskStatus(detection.riskLevel, t), Icons.info_outline),
                 if (detection.hasFetalMovementData == true)
-                  _buildDetectionInfoItem("Gerakan Janin", "Tercatat", Icons.favorite),
+                  _buildDetectionInfoItem(t.fetalMovementLabel, t.recordedLabel, Icons.favorite),
               ],
             ),
           ),
@@ -1477,7 +1443,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.pink.withValues(alpha:0.1),
+            color: Colors.pink.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: Colors.pink),
@@ -1485,19 +1451,9 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 9,
-            color: Colors.grey,
-          ),
-        ),
+        Text(title, style: const TextStyle(fontSize: 9, color: Colors.grey)),
       ],
     );
   }
@@ -1507,23 +1463,13 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
       children: [
         Icon(icon, size: 14, color: Colors.pink),
         const SizedBox(height: 4),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 9,
-            color: Colors.grey,
-          ),
-        ),
+        Text(title, style: const TextStyle(fontSize: 9, color: Colors.grey)),
         const SizedBox(height: 2),
         SizedBox(
           width: 70,
           child: Text(
             value,
-            style: const TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black87),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -1542,42 +1488,31 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
             valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
           ),
           const SizedBox(height: 16),
-          Text(
-            message,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
-          ),
+          Text(message, style: const TextStyle(color: Colors.grey, fontSize: 14)),
         ],
       ),
     );
   }
 
   Widget _buildErrorState(String error, VoidCallback onRetry) {
+    final t = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline_rounded, size: 80, color: Colors.red.shade300),
           const SizedBox(height: 16),
-          const Text(
-            "Terjadi Kesalahan",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
+          Text(
+            t.errorOccurredTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Text(
               error,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ),
@@ -1588,11 +1523,9 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
               backgroundColor: Colors.pink,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text("Coba Lagi"),
+            child: Text(t.tryAgain),
           ),
         ],
       ),
@@ -1608,18 +1541,12 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
           const SizedBox(height: 16),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(
-              color: Colors.grey.shade500,
-            ),
+            style: TextStyle(color: Colors.grey.shade500),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1627,21 +1554,21 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
     );
   }
 
-  // Helper Methods
-  String _getRiskStatus(String riskLevel) {
+  // Risk Status localized
+  String _getRiskStatus(String riskLevel, AppLocalizations t) {
     switch (riskLevel.toLowerCase()) {
       case 'risiko tinggi':
       case 'tinggi':
-        return "Perlu Penanganan";
+        return t.riskNeedTreatment;
       case 'perlu perhatian':
       case 'sedang':
-        return "Perlu Perhatian";
+        return t.riskNeedAttention;
       case 'kehamilan normal':
       case 'normal':
       case 'rendah':
-        return "Aman";
+        return t.riskSafe;
       default:
-        return "Tidak Diketahui";
+        return t.unknown;
     }
   }
 
@@ -1712,7 +1639,7 @@ class _BundaMonitoringPageState extends State<BundaMonitoringPage> {
   }
 
   String _getInitials(String name) {
-    List<String> names = name.split(' ');
+    final names = name.split(' ');
     if (names.length > 1) {
       return '${names[0][0]}${names[1][0]}'.toUpperCase();
     } else if (name.isNotEmpty) {

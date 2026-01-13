@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:bumilku_app/models/user_model.dart';
 import 'package:bumilku_app/services/user_services.dart';
 
+import '../../l10n/app_localizations.dart';
+
 class DetectionHistoryPage extends StatefulWidget {
   const DetectionHistoryPage({super.key});
 
@@ -27,7 +29,6 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
     super.initState();
     _loadUserData();
     if (_currentUser != null) {
-      // Load history saat init
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<SelfDetectionCubit>().getDetectionHistory(_currentUser.uid);
       });
@@ -43,16 +44,63 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           _isLoadingUser = false;
         });
       } catch (e) {
+        // ignore: avoid_print
         print('Error loading user data: $e');
-        setState(() {
-          _isLoadingUser = false;
-        });
+        setState(() => _isLoadingUser = false);
       }
     } else {
-      setState(() {
-        _isLoadingUser = false;
-      });
+      setState(() => _isLoadingUser = false);
     }
+  }
+
+  // =========================
+  // RISK RULE (SAMA SEPERTI RESULT PAGE)
+  // =========================
+  String _riskLevelFromMovementCount(int c) {
+    if (c == 0) return 'unknown';
+    if (c < 4) return 'risiko tinggi';
+    if (c < 7) return 'perlu perhatian';
+    if (c < 10) return 'perlu pemantauan';
+    return 'normal';
+  }
+
+  /// Ambil fetalMovementCount dari model secara aman.
+  int _getFetalMovementCount(SelfDetectionModel detection) {
+    // 1) Kalau SelfDetectionModel kamu memang punya field ini:
+    // return detection.fetalMovementCount ?? 0;
+
+    // 2) Kalau datanya disimpan di map/json:
+    try {
+      final dynamic json = (detection as dynamic).toJson?.call();
+      if (json is Map && json['fetalMovementCount'] != null) {
+        final v = json['fetalMovementCount'];
+        if (v is int) return v;
+        return int.tryParse(v.toString()) ?? 0;
+      }
+    } catch (_) {}
+
+    // 3) Fallback: coba akses dynamic property langsung
+    try {
+      final v = (detection as dynamic).fetalMovementCount;
+      if (v is int) return v;
+      return int.tryParse(v.toString()) ?? 0;
+    } catch (_) {}
+
+    return 0;
+  }
+
+  /// Tentukan riskLevel yang dipakai UI:
+  /// - Kalau ada fetalMovementCount > 0 -> gunakan aturan movementCount
+  /// - Kalau tidak ada -> gunakan riskLevel lama
+  String _resolveRiskLevel(SelfDetectionModel detection) {
+    final c = _getFetalMovementCount(detection);
+    if (c > 0) return _riskLevelFromMovementCount(c);
+    return detection.riskLevel.toLowerCase();
+  }
+
+  int _resolveRiskScore(SelfDetectionModel detection) {
+    final c = _getFetalMovementCount(detection);
+    return c > 0 ? c : detection.score;
   }
 
   // Hitung umur dari tanggal lahir
@@ -74,6 +122,8 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
       case 'perlu perhatian':
       case 'sedang':
         return Colors.orange;
+      case 'perlu pemantauan':
+        return Colors.blue;
       case 'kehamilan normal':
       case 'normal':
       case 'rendah':
@@ -91,6 +141,8 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
       case 'perlu perhatian':
       case 'sedang':
         return Icons.info_rounded;
+      case 'perlu pemantauan':
+        return Icons.timelapse;
       case 'kehamilan normal':
       case 'normal':
       case 'rendah':
@@ -100,20 +152,43 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
     }
   }
 
-  String _getRiskStatus(String riskLevel) {
+  String _riskLevelLabel(BuildContext context, String riskLevel) {
+    final t = AppLocalizations.of(context)!;
     switch (riskLevel.toLowerCase()) {
       case 'risiko tinggi':
       case 'tinggi':
-        return "Perlu Penanganan";
+        return t.riskLevelHigh;
       case 'perlu perhatian':
       case 'sedang':
-        return "Perlu Perhatian";
+        return t.riskLevelNeedAttention;
+      case 'perlu pemantauan':
+        return t.riskLevelNeedMonitoring;
       case 'kehamilan normal':
       case 'normal':
       case 'rendah':
-        return "Aman";
+        return t.riskLevelNormal;
       default:
-        return "Tidak Diketahui";
+        return t.riskLevelUnknown;
+    }
+  }
+
+  String _getRiskStatusLabel(BuildContext context, String riskLevel) {
+    final t = AppLocalizations.of(context)!;
+    switch (riskLevel.toLowerCase()) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return t.riskStatusNeedsTreatment;
+      case 'perlu perhatian':
+      case 'sedang':
+        return t.riskStatusNeedsAttention;
+      case 'perlu pemantauan':
+        return t.riskStatusNeedsMonitoring;
+      case 'kehamilan normal':
+      case 'normal':
+      case 'rendah':
+        return t.riskStatusSafe;
+      default:
+        return t.riskStatusUnknown;
     }
   }
 
@@ -126,7 +201,9 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
     );
   }
 
-  Widget _buildUserProfileHeader() {
+  Widget _buildUserProfileHeader(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     if (_isLoadingUser) {
       return Container(
         padding: const EdgeInsets.all(16),
@@ -136,7 +213,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha:0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -146,7 +223,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundColor: kPrimaryColor.withValues(alpha:0.1),
+              backgroundColor: kPrimaryColor.withValues(alpha: 0.1),
               child: const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
               ),
@@ -156,17 +233,9 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 120,
-                    height: 16,
-                    color: Colors.grey[300],
-                  ),
+                  Container(width: 120, height: 16, color: Colors.grey[300]),
                   const SizedBox(height: 8),
-                  Container(
-                    width: 80,
-                    height: 12,
-                    color: Colors.grey[300],
-                  ),
+                  Container(width: 80, height: 12, color: Colors.grey[300]),
                 ],
               ),
             ),
@@ -184,7 +253,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha:0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -194,12 +263,8 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundColor: kPrimaryColor.withValues(alpha:0.1),
-              child: Icon(
-                Icons.person,
-                size: 30,
-                color: kPrimaryColor,
-              ),
+              backgroundColor: kPrimaryColor.withValues(alpha: 0.1),
+              child: Icon(Icons.person, size: 30, color: kPrimaryColor),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -207,7 +272,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Data tidak tersedia",
+                    t.historyUserDataUnavailable,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -216,11 +281,8 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "Silakan login ulang",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
+                    t.historyPleaseRelogin,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -241,7 +303,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -249,24 +311,17 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
       ),
       child: Row(
         children: [
-          // Avatar
           CircleAvatar(
             radius: 30,
-            backgroundColor: kPrimaryColor.withValues(alpha:0.1),
-            child: Icon(
-              Icons.person,
-              size: 30,
-              color: kPrimaryColor,
-            ),
+            backgroundColor: kPrimaryColor.withValues(alpha: 0.1),
+            child: Icon(Icons.person, size: 30, color: kPrimaryColor),
           ),
           const SizedBox(width: 16),
 
-          // Data User
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nama
                 Text(
                   user.name,
                   style: const TextStyle(
@@ -276,44 +331,26 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-
-                // Umur
                 Row(
                   children: [
-                    Icon(
-                      Icons.cake,
-                      size: 14,
-                      color: Colors.grey[600],
-                    ),
+                    Icon(Icons.cake, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      "$age tahun",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      t.historyAgeYears(age),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-
-                // Alamat
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 14,
-                      color: Colors.grey[600],
-                    ),
+                    Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         user.alamat,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -324,11 +361,10 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
             ),
           ),
 
-          // Role/Status
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: kPrimaryColor.withValues(alpha:0.1),
+              color: kPrimaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -347,11 +383,13 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Riwayat Deteksi",
-          style: TextStyle(
+        title: Text(
+          t.historyTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -371,29 +409,23 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              kPrimaryColor.withValues(alpha:0.05),
-              kBackgroundColor.withValues(alpha:0.2),
+              kPrimaryColor.withValues(alpha: 0.05),
+              kBackgroundColor.withValues(alpha: 0.2),
             ],
           ),
         ),
         child: Column(
           children: [
-            // Header Profil User
-            _buildUserProfileHeader(),
+            _buildUserProfileHeader(context),
 
-            // Title Riwayat
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.history,
-                    color: kPrimaryColor,
-                    size: 20,
-                  ),
+                  Icon(Icons.history, color: kPrimaryColor, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    "Riwayat Deteksi Mandiri",
+                    t.historySectionTitle,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -405,7 +437,6 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
             ),
             const SizedBox(height: 8),
 
-            // List Riwayat
             Expanded(
               child: BlocBuilder<SelfDetectionCubit, SelfDetectionState>(
                 builder: (context, state) {
@@ -425,7 +456,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                           Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                           const SizedBox(height: 16),
                           Text(
-                            "Terjadi kesalahan",
+                            t.historyErrorTitle,
                             style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 16),
@@ -438,10 +469,12 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                           ElevatedButton(
                             onPressed: () {
                               if (_currentUser != null) {
-                                context.read<SelfDetectionCubit>().getDetectionHistory(_currentUser.uid);
+                                context
+                                    .read<SelfDetectionCubit>()
+                                    .getDetectionHistory(_currentUser.uid);
                               }
                             },
-                            child: const Text("Coba Lagi"),
+                            child: Text(t.historyRetry),
                           ),
                         ],
                       ),
@@ -467,7 +500,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                 Icon(Icons.history, size: 80, color: tGreyColor),
                                 const SizedBox(height: 20),
                                 Text(
-                                  "Belum ada riwayat deteksi",
+                                  t.historyEmptyTitle,
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Colors.grey[700],
@@ -477,7 +510,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  "Hasil deteksi mandiri akan muncul di sini",
+                                  t.historyEmptySubtitle,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey[600],
@@ -487,22 +520,28 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                 const SizedBox(height: 28),
                                 ElevatedButton(
                                   onPressed: () {
-                                    Navigator.push(context, MaterialPageRoute(
-                                      builder: (_) => SelfDetectionPageView(),
-                                    ),);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => SelfDetectionPageView(),
+                                      ),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: kPrimaryColor,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 14,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     elevation: 2,
                                   ),
-                                  child: const Text(
-                                    "Lakukan Self Detection Sekarang",
-                                    style: TextStyle(
+                                  child: Text(
+                                    t.historyStartDetectionNow,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -520,14 +559,19 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                       itemCount: history.length,
                       itemBuilder: (context, index) {
                         final detection = history[index];
+
+                        // ✅ riskLevel di history pakai movementCount (kalau ada)
+                        final resolvedRiskLevel = _resolveRiskLevel(detection);
+                        final riskLabel = _riskLevelLabel(context, resolvedRiskLevel);
+
                         final displayDate = detection.createdAt ?? detection.date;
                         final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(displayDate);
-                        final riskColor = _getRiskColor(detection.riskLevel);
+
+                        final riskColor = _getRiskColor(resolvedRiskLevel);
+                        final resolvedScore = _resolveRiskScore(detection);
 
                         return GestureDetector(
-                          onTap: () {
-                            _navigateToDetail(context, detection);
-                          },
+                          onTap: () => _navigateToDetail(context, detection),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
@@ -535,7 +579,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha:0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -543,11 +587,10 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                             ),
                             child: Column(
                               children: [
-                                // Header dengan risiko dan tanggal
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: riskColor.withValues(alpha:0.1),
+                                    color: riskColor.withValues(alpha: 0.1),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
                                       topRight: Radius.circular(16),
@@ -562,7 +605,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(
-                                          _getRiskIcon(detection.riskLevel),
+                                          _getRiskIcon(resolvedRiskLevel),
                                           color: Colors.white,
                                           size: 20,
                                         ),
@@ -573,7 +616,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              detection.riskLevel.toUpperCase(),
+                                              riskLabel.toUpperCase(),
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -599,25 +642,24 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                                   ),
                                 ),
 
-                                // Info tambahan
                                 Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: [
                                       _buildInfoItem(
-                                        "Poin Risiko",
-                                        "${detection.score}",
+                                        t.historyFetalMovementLabel,
+                                        "$resolvedScore",
                                         Icons.assessment,
                                       ),
                                       _buildInfoItem(
-                                        "Detail",
-                                        "${detection.details.length} faktor",
+                                        t.historyDetailLabel,
+                                        t.historyDetailCount(detection.details.length),
                                         Icons.list,
                                       ),
                                       _buildInfoItem(
-                                        "Status",
-                                        _getRiskStatus(detection.riskLevel),
+                                        t.historyStatusLabel,
+                                        _getRiskStatusLabel(context, resolvedRiskLevel),
                                         Icons.info,
                                       ),
                                     ],
@@ -650,10 +692,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
       children: [
         Icon(icon, size: 20, color: kPrimaryColor),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        ),
+        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
         Text(title, style: const TextStyle(fontSize: 10, color: Colors.grey)),
       ],
     );

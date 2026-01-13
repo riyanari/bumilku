@@ -1,3 +1,5 @@
+import 'package:bumilku_app/pages/self_detection/data/pregnancy_tips_data.dart';
+import 'package:bumilku_app/pages/self_detection/pregnancy_education_data.dart';
 import 'package:flutter/material.dart';
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,11 +12,92 @@ import '../../models/self_detection_model.dart';
 class DetailHistoryPage extends StatelessWidget {
   final SelfDetectionModel detection;
 
-  const DetailHistoryPage({
-    super.key,
-    required this.detection,
-  });
+  const DetailHistoryPage({super.key, required this.detection});
 
+  // =========================
+  // SIMPLE I18N (EN/ID)
+  // =========================
+  bool _isEn(BuildContext context) =>
+      Localizations.localeOf(context).languageCode.toLowerCase() == 'en';
+
+  String t(BuildContext context, {required String id, required String en}) =>
+      _isEn(context) ? en : id;
+
+  // =========================
+  // RULE RISK dari GERAKAN JANIN (INTERNAL KEY: ID)
+  // =========================
+  String _riskLevelFromMovementCount(int c) {
+    if (c == 0) return 'unknown';
+    if (c < 4) return 'risiko tinggi';
+    if (c < 7) return 'perlu perhatian';
+    if (c < 10) return 'perlu pemantauan';
+    return 'normal';
+  }
+
+  String _resolveRiskLevel({
+    required bool hasFetalMovementData,
+    required int fetalMovementCount,
+  }) {
+    if (hasFetalMovementData && fetalMovementCount > 0) {
+      return _riskLevelFromMovementCount(fetalMovementCount);
+    }
+    return detection.riskLevel.toLowerCase();
+  }
+
+  int _resolveScore({
+    required bool hasFetalMovementData,
+    required int fetalMovementCount,
+  }) {
+    if (hasFetalMovementData && fetalMovementCount > 0)
+      return fetalMovementCount;
+    return detection.score;
+  }
+
+  // =========================
+  // RISK TEXT (DISPLAY) EN/ID
+  // internal riskLevel tetap ID untuk mapping
+  // =========================
+  String riskLevelText(BuildContext context, String riskLevel) {
+    switch (riskLevel.toLowerCase()) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return t(context, id: 'Risiko Tinggi', en: 'High Risk');
+      case 'perlu perhatian':
+      case 'sedang':
+        return t(context, id: 'Perlu Perhatian', en: 'Needs Attention');
+      case 'perlu pemantauan':
+        return t(context, id: 'Perlu Pemantauan', en: 'Needs Monitoring');
+      case 'normal':
+      case 'rendah':
+      case 'kehamilan normal':
+        return t(context, id: 'Normal', en: 'Normal');
+      default:
+        return t(context, id: 'Tidak Diketahui', en: 'Unknown');
+    }
+  }
+
+  String riskStatusText(BuildContext context, String riskLevel) {
+    switch (riskLevel.toLowerCase()) {
+      case 'risiko tinggi':
+      case 'tinggi':
+        return t(context, id: 'Perlu Penanganan', en: 'Needs Immediate Care');
+      case 'perlu perhatian':
+      case 'sedang':
+        return t(context, id: 'Perlu Perhatian', en: 'Needs Attention');
+      case 'perlu pemantauan':
+        return t(context, id: 'Perlu Pemantauan', en: 'Needs Monitoring');
+      case 'kehamilan normal':
+      case 'normal':
+      case 'rendah':
+        return t(context, id: 'Aman', en: 'Safe');
+      default:
+        return t(context, id: 'Tidak Diketahui', en: 'Unknown');
+    }
+  }
+
+  // =========================
+  // COLOR/ICON berdasarkan riskLevel internal (ID)
+  // =========================
   Color _getRiskColor(String riskLevel) {
     switch (riskLevel.toLowerCase()) {
       case 'risiko tinggi':
@@ -23,6 +106,8 @@ class DetailHistoryPage extends StatelessWidget {
       case 'perlu perhatian':
       case 'sedang':
         return Colors.orange;
+      case 'perlu pemantauan':
+        return Colors.blue;
       case 'kehamilan normal':
       case 'normal':
       case 'rendah':
@@ -40,6 +125,8 @@ class DetailHistoryPage extends StatelessWidget {
       case 'perlu perhatian':
       case 'sedang':
         return Icons.info_rounded;
+      case 'perlu pemantauan':
+        return Icons.timelapse;
       case 'kehamilan normal':
       case 'normal':
       case 'rendah':
@@ -49,24 +136,9 @@ class DetailHistoryPage extends StatelessWidget {
     }
   }
 
-  String _getRiskStatus(String riskLevel) {
-    switch (riskLevel.toLowerCase()) {
-      case 'risiko tinggi':
-      case 'tinggi':
-        return "Perlu Penanganan";
-      case 'perlu perhatian':
-      case 'sedang':
-        return "Perlu Perhatian";
-      case 'kehamilan normal':
-      case 'normal':
-      case 'rendah':
-        return "Aman";
-      default:
-        return "Tidak Diketahui";
-    }
-  }
-
-  // METHOD BARU: Warna untuk status gerakan janin berdasarkan jumlah gerakan
+  // =========================
+  // FETAL MOVEMENT HELPERS (DISPLAY EN/ID)
+  // =========================
   Color _getFetalMovementColorFromCount(int movementCount) {
     if (movementCount == 0) return Colors.grey;
     if (movementCount >= 10) return Colors.green;
@@ -75,7 +147,6 @@ class DetailHistoryPage extends StatelessWidget {
     return Colors.red;
   }
 
-  // METHOD BARU: Icon untuk status gerakan janin berdasarkan jumlah gerakan
   IconData _getFetalMovementIconFromCount(int movementCount) {
     if (movementCount == 0) return Icons.hourglass_empty;
     if (movementCount >= 10) return Icons.check_circle;
@@ -84,41 +155,71 @@ class DetailHistoryPage extends StatelessWidget {
     return Icons.warning;
   }
 
-  // METHOD BARU: Title untuk status gerakan janin
-  String _getFetalMovementTitle(int movementCount) {
-    if (movementCount == 0) return "Data Belum Lengkap";
-    if (movementCount >= 10) return "Kondisi Normal";
-    if (movementCount >= 7) return "Perlu Pemantauan";
-    if (movementCount >= 4) return "Perlu Perhatian";
-    return "Perhatian Khusus";
+  String _getFetalMovementTitle(BuildContext context, int movementCount) {
+    if (movementCount == 0)
+      return t(context, id: "Data Belum Lengkap", en: "Incomplete Data");
+    if (movementCount >= 10)
+      return t(context, id: "Kondisi Normal", en: "Normal Condition");
+    if (movementCount >= 7)
+      return t(context, id: "Perlu Pemantauan", en: "Needs Monitoring");
+    if (movementCount >= 4)
+      return t(context, id: "Perlu Perhatian", en: "Needs Attention");
+    return t(context, id: "Perhatian Khusus", en: "Urgent Attention");
   }
 
-  // METHOD BARU: Message untuk status gerakan janin
-  String _getFetalMovementMessage(int movementCount, double movementsPerHour) {
+  String _getFetalMovementMessage(
+    BuildContext context,
+    int movementCount,
+    double movementsPerHour,
+  ) {
     if (movementCount == 0) {
-      return "Data gerakan janin belum lengkap. Silakan lengkapi pencatatan.";
+      return t(
+        context,
+        id: "Data gerakan janin belum lengkap. Silakan lengkapi pencatatan.",
+        en: "Fetal movement data is incomplete. Please complete the record.",
+      );
     }
 
     if (movementCount >= 10) {
-      return "Gerakan janin dalam batas normal ($movementCount gerakan dalam 12 jam).";
+      return t(
+        context,
+        id: "Gerakan janin dalam batas normal ($movementCount gerakan dalam 12 jam).",
+        en: "Fetal movement is within normal range ($movementCount movements in 12 hours).",
+      );
     }
 
     if (movementCount >= 7) {
-      return "Gerakan janin $movementCount kali dalam 12 jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.";
+      return t(
+        context,
+        id: "Gerakan janin $movementCount kali dalam 12 jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.",
+        en: "Fetal movement is $movementCount times in 12 hours. Keep monitoring and watch for changes.",
+      );
     }
 
     if (movementCount >= 4) {
-      return "Gerakan janin $movementCount kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.";
+      return t(
+        context,
+        id: "Gerakan janin $movementCount kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.",
+        en: "Fetal movement is $movementCount times in 12 hours. Consider consulting a healthcare provider.",
+      );
     }
 
-    return "Gerakan janin hanya $movementCount kali dalam 12 jam. Segera hubungi tenaga kesehatan.";
+    return t(
+      context,
+      id: "Gerakan janin hanya $movementCount kali dalam 12 jam. Segera hubungi tenaga kesehatan.",
+      en: "Fetal movement is only $movementCount times in 12 hours. Contact a healthcare provider immediately.",
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Locale untuk format tanggal
+    final locale = Localizations.localeOf(context).toString(); // id_ID / en_US
     final displayDate = detection.createdAt ?? detection.date;
-    final formattedDate = DateFormat('EEEE, dd MMMM yyyy HH:mm', 'id_ID').format(displayDate);
-    final riskColor = _getRiskColor(detection.riskLevel);
+    final formattedDate = DateFormat(
+      'EEEE, dd MMMM yyyy HH:mm',
+      locale,
+    ).format(displayDate);
 
     // DATA GERAKAN JANIN
     final hasFetalMovementData = detection.hasFetalMovementData == true;
@@ -126,14 +227,41 @@ class DetailHistoryPage extends StatelessWidget {
     final fetalMovementDuration = detection.fetalMovementDuration ?? 0;
     final movementsPerHour = detection.movementsPerHour ?? 0.0;
     final movementComparison = detection.movementComparison?.toString() ?? '';
-    final fetalActivityPattern = detection.fetalActivityPattern?.toString() ?? '';
+    final fetalActivityPattern =
+        detection.fetalActivityPattern?.toString() ?? '';
     final fetalAdditionalComplaints = detection.fetalAdditionalComplaints ?? [];
+
+    // RESOLVED (internal key)
+    final resolvedRiskLevel = _resolveRiskLevel(
+      hasFetalMovementData: hasFetalMovementData,
+      fetalMovementCount: fetalMovementCount,
+    );
+    final resolvedScore = _resolveScore(
+      hasFetalMovementData: hasFetalMovementData,
+      fetalMovementCount: fetalMovementCount,
+    );
+
+    final riskColor = _getRiskColor(resolvedRiskLevel);
+
+    // ambil edu risk (EN/ID) berdasarkan resolvedRiskLevel
+    final riskEdu = PregnancyEducationData.getRiskEducation(
+      context,
+      resolvedRiskLevel,
+    );
+
+    final tips = PregnancyEducationData.getGeneralTips(context);
+
+    // kalau EN, pakai recommendation dari PregnancyEducationData
+    // kalau ID, pakai dari detection (biar sesuai output deteksi lokal kamu)
+    final recommendationText = _isEn(context)
+        ? (riskEdu["recommendations"] ?? detection.recommendation)
+        : detection.recommendation;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Detail Deteksi",
-          style: TextStyle(
+        title: Text(
+          t(context, id: "Detail Deteksi", en: "Detection Detail"),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -150,7 +278,7 @@ class DetailHistoryPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _showDeleteConfirmation(context),
-            tooltip: "Hapus Riwayat",
+            tooltip: t(context, id: "Hapus Riwayat", en: "Delete History"),
           ),
         ],
       ),
@@ -160,8 +288,8 @@ class DetailHistoryPage extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              riskColor.withValues(alpha:0.05),
-              kBackgroundColor.withValues(alpha:0.1),
+              riskColor.withValues(alpha: 0.05),
+              kBackgroundColor.withValues(alpha: 0.1),
             ],
           ),
         ),
@@ -169,87 +297,133 @@ class DetailHistoryPage extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Header Info
-              _buildHeaderCard(riskColor, formattedDate),
+              _buildHeaderCard(
+                context: context,
+                riskColor: riskColor,
+                formattedDate: formattedDate,
+                resolvedRiskLevel: resolvedRiskLevel,
+                resolvedScore: resolvedScore,
+              ),
 
               const SizedBox(height: 20),
 
-              // HASIL GERAKAN JANIN (jika ada data)
               if (hasFetalMovementData) ...[
                 _buildFetalMovementSection(
-                  fetalMovementCount,
-                  fetalMovementDuration,
-                  movementsPerHour,
-                  movementComparison,
-                  fetalActivityPattern,
-                  fetalAdditionalComplaints,
+                  context: context,
+                  movementCount: fetalMovementCount,
+                  duration: fetalMovementDuration,
+                  movementsPerHour: movementsPerHour,
+                  comparison: movementComparison,
+                  pattern: fetalActivityPattern,
+                  additionalComplaints: fetalAdditionalComplaints,
                 ),
                 const SizedBox(height: 16),
               ],
 
-              // Informasi Risiko
               _buildSectionCard(
-                "Informasi Risiko",
-                Icons.assessment,
-                kPrimaryColor,
-                [
-                  _buildDetailItem("Tingkat Risiko", detection.riskLevel.toUpperCase(),
-                      color: riskColor),
-                  _buildDetailItem("Skor", "${detection.score}"),
-                  _buildDetailItem("Status", _getRiskStatus(detection.riskLevel)),
+                title: t(
+                  context,
+                  id: "Informasi Risiko",
+                  en: "Risk Information",
+                ),
+                icon: Icons.assessment,
+                color: kPrimaryColor,
+                children: [
+                  _buildDetailItem(
+                    label: t(context, id: "Tingkat Risiko", en: "Risk Level"),
+                    value: riskLevelText(
+                      context,
+                      resolvedRiskLevel,
+                    ).toUpperCase(),
+                    valueColor: riskColor,
+                  ),
+                  _buildDetailItem(
+                    label: hasFetalMovementData
+                        ? t(context, id: "Gerakan Janin", en: "Fetal Movements")
+                        : t(context, id: "Skor", en: "Score"),
+                    value: "$resolvedScore",
+                  ),
+                  _buildDetailItem(
+                    label: t(context, id: "Status", en: "Status"),
+                    value: riskStatusText(context, resolvedRiskLevel),
+                  ),
                 ],
               ),
 
               const SizedBox(height: 16),
 
-              // Rekomendasi
               _buildSectionCard(
-                "Rekomendasi",
-                Icons.recommend,
-                Colors.green,
-                [
-                  _buildDetailItem("", detection.recommendation),
+                title: t(context, id: "Rekomendasi", en: "Recommendation"),
+                icon: Icons.recommend,
+                color: Colors.green,
+                children: [
+                  ..._buildMultilineBullets(
+                    context,
+                    recommendationText,
+                    // kalau string sudah pakai "•", kita render jadi bullet UI
+                  ),
                 ],
               ),
 
-              // Detail Temuan
               if (detection.details.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _buildSectionCard(
-                  "Detail Temuan",
-                  Icons.list,
-                  Colors.orange,
-                  detection.details.map((detail) => _buildDetailItem("•", detail)).toList(),
+                  title: t(context, id: "Detail Temuan", en: "Findings Detail"),
+                  icon: Icons.list,
+                  color: Colors.orange,
+                  children: detection.details.map((detail) {
+                    final key = detail.toString().trim();
+
+                    // coba ambil edukasi bilingual berdasarkan key Indonesia
+                    final edu = PregnancyEducationData.getEducationByComplaint(
+                      context,
+                      key,
+                    );
+
+                    // kalau ketemu, tampilkan title sesuai bahasa
+                    // kalau tidak, fallback tampilkan as-is
+                    final display = edu != null ? (edu["title"] ?? key) : key;
+
+                    return _buildBulletItem(display);
+                  }).toList(),
                 ),
               ],
 
-              // Edukasi Risiko
-              if (detection.riskEducation != null && detection.riskEducation!['description'] != null) ...[
+              if (detection.riskEducation != null &&
+                  detection.riskEducation!['description'] != null) ...[
                 const SizedBox(height: 16),
                 _buildSectionCard(
-                  "Edukasi Risiko",
-                  Icons.school,
-                  Colors.blue,
-                  [
-                    _buildDetailItem("", detection.riskEducation!['description']!),
+                  title: t(context, id: "Edukasi Risiko", en: "Risk Education"),
+                  icon: Icons.school,
+                  color: Colors.blue,
+                  children: [
+                    _buildDetailItem(label: "", value: riskEdu["title"] ?? ""),
+                    const SizedBox(height: 8),
+                    _buildDetailItem(
+                      label: "",
+                      value: riskEdu["description"] ?? "",
+                    ),
                   ],
                 ),
               ],
 
-              // Tips Umum
-              if (detection.generalTips != null && detection.generalTips!.isNotEmpty) ...[
+              if (tips.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _buildSectionCard(
-                  "Tips Kehamilan Sehat",
-                  Icons.lightbulb_outline,
-                  Colors.amber,
-                  detection.generalTips!.map((tip) => _buildDetailItem("❤️", tip.toString())).toList(),
+                  title: t(
+                    context,
+                    id: "Tips Kehamilan Sehat",
+                    en: "Healthy Pregnancy Tips",
+                  ),
+                  icon: Icons.lightbulb_outline,
+                  color: Colors.amber,
+                  children: PregnancyTipsData.getTips(context)
+                      .map((tip) => _buildBulletItem("❤️ $tip"))
+                      .toList(),
                 ),
               ],
 
               const SizedBox(height: 30),
-
-              // Tombol Delete
               _buildDeleteButton(context),
             ],
           ),
@@ -258,21 +432,26 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  // WIDGET BARU: Section untuk menampilkan hasil gerakan janin
-  Widget _buildFetalMovementSection(
-      int movementCount,
-      int duration,
-      double movementsPerHour,
-      String comparison,
-      String pattern,
-      List<dynamic> additionalComplaints,
-      ) {
-
-    // HITUNG ULANG semua status berdasarkan movementCount
+  // =========================
+  // FETAL MOVEMENT UI
+  // =========================
+  Widget _buildFetalMovementSection({
+    required BuildContext context,
+    required int movementCount,
+    required int duration,
+    required double movementsPerHour,
+    required String comparison,
+    required String pattern,
+    required List<dynamic> additionalComplaints,
+  }) {
     final statusColor = _getFetalMovementColorFromCount(movementCount);
     final statusIcon = _getFetalMovementIconFromCount(movementCount);
-    final statusTitle = _getFetalMovementTitle(movementCount);
-    final statusMessage = _getFetalMovementMessage(movementCount, movementsPerHour);
+    final statusTitle = _getFetalMovementTitle(context, movementCount);
+    final statusMessage = _getFetalMovementMessage(
+      context,
+      movementCount,
+      movementsPerHour,
+    );
 
     return Card(
       elevation: 3,
@@ -282,13 +461,12 @@ class DetailHistoryPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha:0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.favorite, size: 20, color: statusColor),
@@ -296,7 +474,11 @@ class DetailHistoryPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    "Hasil Pencatatan Gerakan Janin",
+                    t(
+                      context,
+                      id: "Hasil Pencatatan Gerakan Janin",
+                      en: "Fetal Movement Record Result",
+                    ),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -306,16 +488,14 @@ class DetailHistoryPage extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
 
-            // Status gerakan janin - PAKAI YANG DIHITUNG ULANG
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: statusColor.withValues(alpha:0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: statusColor.withValues(alpha:0.3)),
+                border: Border.all(color: statusColor.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,9 +525,8 @@ class DetailHistoryPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Detail pencatatan
             Text(
-              "Detail Pencatatan:",
+              t(context, id: "Detail Pencatatan:", en: "Record Details:"),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -357,38 +536,54 @@ class DetailHistoryPage extends StatelessWidget {
             const SizedBox(height: 12),
 
             _buildFetalMovementDetailItem(
-                "Jumlah Gerakan",
-                "$movementCount kali"
+              context,
+              t(context, id: "Jumlah Gerakan", en: "Total Movements"),
+              t(context, id: "$movementCount kali", en: "$movementCount times"),
             ),
             _buildFetalMovementDetailItem(
-                "Durasi Pencatatan",
-                "$duration jam" // DIUBAH: dari menit ke jam
+              context,
+              t(context, id: "Durasi Pencatatan", en: "Recording Duration"),
+              t(context, id: "$duration jam", en: "$duration hours"),
             ),
             _buildFetalMovementDetailItem(
-                "Gerakan per Jam",
-                "${movementsPerHour.toStringAsFixed(1)} gerakan/jam"
+              context,
+              t(context, id: "Gerakan per Jam", en: "Movements per Hour"),
+              t(
+                context,
+                id: "${movementsPerHour.toStringAsFixed(1)} gerakan/jam",
+                en: "${movementsPerHour.toStringAsFixed(1)} movements/hour",
+              ),
             ),
             _buildFetalMovementDetailItem(
-                "Perbandingan dengan Kemarin",
-                comparison.isNotEmpty ? comparison : 'Tidak ada data'
+              context,
+              t(
+                context,
+                id: "Perbandingan dengan Kemarin",
+                en: "Compared to Yesterday",
+              ),
+              comparison.isNotEmpty
+                  ? comparison
+                  : t(context, id: "Tidak ada data", en: "No data"),
             ),
             _buildFetalMovementDetailItem(
-                "Pola Aktivitas",
-                pattern.isNotEmpty ? pattern : 'Tidak ada data'
+              context,
+              t(context, id: "Pola Aktivitas", en: "Activity Pattern"),
+              pattern.isNotEmpty
+                  ? pattern
+                  : t(context, id: "Tidak ada data", en: "No data"),
             ),
 
-            // Keluhan tambahan
             if (additionalComplaints.isNotEmpty) ...[
               const SizedBox(height: 8),
               _buildFetalMovementDetailItem(
-                  "Keluhan Tambahan",
-                  additionalComplaints.join(', ')
+                context,
+                t(context, id: "Keluhan Tambahan", en: "Additional Complaints"),
+                additionalComplaints.join(', '),
               ),
             ],
 
             const SizedBox(height: 12),
 
-            // PERBAIKAN: Informasi tambahan sesuai standar baru
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -401,60 +596,73 @@ class DetailHistoryPage extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      // DIUBAH: Standar baru minimal 10 gerakan dalam 12 jam
-                      "Standar normal: minimal 10 gerakan dalam 12 jam (${(10/12).toStringAsFixed(1)} gerakan/jam)",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue[700],
+                      t(
+                        context,
+                        id: "Standar normal: minimal 10 gerakan dalam 12 jam (${(10 / 12).toStringAsFixed(1)} gerakan/jam)",
+                        en: "Normal standard: at least 10 movements in 12 hours (${(10 / 12).toStringAsFixed(1)} movements/hour)",
                       ),
+                      style: TextStyle(fontSize: 12, color: Colors.blue[700]),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // PERBAIKAN: Tambahan informasi status berdasarkan jumlah gerakan
             const SizedBox(height: 12),
-            _buildFetalMovementStatusInfo(movementCount),
+            _buildFetalMovementStatusInfo(context, movementCount),
           ],
         ),
       ),
     );
   }
 
-  // WIDGET BARU: Informasi status berdasarkan jumlah gerakan
-  Widget _buildFetalMovementStatusInfo(int movementCount) {
+  Widget _buildFetalMovementStatusInfo(
+    BuildContext context,
+    int movementCount,
+  ) {
     String statusText;
     Color statusColor;
 
     if (movementCount >= 10) {
-      statusText = "✅ Normal: Gerakan janin dalam batas normal";
+      statusText = t(
+        context,
+        id: "✅ Normal: Gerakan janin dalam batas normal",
+        en: "✅ Normal: Fetal movements are within normal range",
+      );
       statusColor = Colors.green;
     } else if (movementCount >= 7) {
-      statusText = "⚠️ Perlu Pemantauan: Gerakan janin mendekati batas minimal";
+      statusText = t(
+        context,
+        id: "⚠️ Perlu Pemantauan: Gerakan janin mendekati batas minimal",
+        en: "⚠️ Needs Monitoring: Movements are close to the minimum threshold",
+      );
       statusColor = Colors.orange;
     } else if (movementCount >= 4) {
-      statusText = "🔶 Perlu Perhatian: Gerakan janin berkurang";
+      statusText = t(
+        context,
+        id: "🔶 Perlu Perhatian: Gerakan janin berkurang",
+        en: "🔶 Needs Attention: Fetal movements are reduced",
+      );
       statusColor = Colors.orange[700]!;
     } else {
-      statusText = "🚨 Perhatian Khusus: Gerakan janin sangat berkurang";
+      statusText = t(
+        context,
+        id: "🚨 Perhatian Khusus: Gerakan janin sangat berkurang",
+        en: "🚨 Urgent Attention: Fetal movements are very low",
+      );
       statusColor = Colors.red;
     }
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: statusColor.withValues(alpha:0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: statusColor.withValues(alpha:0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.medical_information,
-            color: statusColor,
-            size: 16,
-          ),
+          Icon(Icons.medical_information, color: statusColor, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -471,8 +679,11 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  // Helper untuk item detail gerakan janin
-  Widget _buildFetalMovementDetailItem(String label, String value) {
+  Widget _buildFetalMovementDetailItem(
+    BuildContext context,
+    String label,
+    String value,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -481,25 +692,28 @@ class DetailHistoryPage extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
           Text(
-              value,
-              style: blackTextStyle.copyWith(
-                  fontSize: 12,
-                  fontWeight: semiBold
-              )
+            value,
+            style: blackTextStyle.copyWith(fontSize: 12, fontWeight: semiBold),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderCard(Color riskColor, String formattedDate) {
+  // =========================
+  // HEADER CARD (resolved + EN/ID)
+  // =========================
+  Widget _buildHeaderCard({
+    required BuildContext context,
+    required Color riskColor,
+    required String formattedDate,
+    required String resolvedRiskLevel,
+    required int resolvedScore,
+  }) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -509,8 +723,8 @@ class DetailHistoryPage extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              riskColor.withValues(alpha:0.1),
-              riskColor.withValues(alpha:0.05),
+              riskColor.withValues(alpha: 0.1),
+              riskColor.withValues(alpha: 0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
@@ -519,52 +733,54 @@ class DetailHistoryPage extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Icon dan Status
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: riskColor.withValues(alpha:0.1),
+                  color: riskColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  _getRiskIcon(detection.riskLevel),
+                  _getRiskIcon(resolvedRiskLevel),
                   size: 40,
                   color: riskColor,
                 ),
               ),
-
               const SizedBox(height: 16),
 
-              // Risk Level
               Text(
-                detection.riskLevel.toUpperCase(),
+                riskLevelText(context, resolvedRiskLevel).toUpperCase(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: riskColor,
                 ),
               ),
-
               const SizedBox(height: 8),
 
-              // Date
               Text(
                 formattedDate,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 16),
 
-              // Score dan Status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildInfoItem("Poin Risiko", "${detection.score}", Icons.assessment),
-                  _buildInfoItem("Status", _getRiskStatus(detection.riskLevel), Icons.info),
+                  _buildInfoItem(
+                    title: t(
+                      context,
+                      id: "Gerakan Janin",
+                      en: "Fetal Movements",
+                    ),
+                    value: "$resolvedScore",
+                    icon: Icons.assessment,
+                  ),
+                  _buildInfoItem(
+                    title: t(context, id: "Status", en: "Status"),
+                    value: riskStatusText(context, resolvedRiskLevel),
+                    icon: Icons.info,
+                  ),
                 ],
               ),
             ],
@@ -574,7 +790,15 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionCard(String title, IconData icon, Color color, List<Widget> children) {
+  // =========================
+  // SECTION HELPERS
+  // =========================
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<Widget> children,
+  }) {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -583,13 +807,12 @@ class DetailHistoryPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha:0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, size: 20, color: color),
@@ -605,10 +828,7 @@ class DetailHistoryPage extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 12),
-
-            // Content
             ...children,
           ],
         ),
@@ -616,28 +836,42 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailItem(String prefix, String text, {Color? color}) {
+  Widget _buildDetailItem({
+    required String label,
+    required String value,
+    Color? valueColor,
+  }) {
+    if (label.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Text(value, style: const TextStyle(fontSize: 14, height: 1.4)),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            prefix,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
+            flex: 6,
             child: Text(
-              text,
+              value,
               style: TextStyle(
                 fontSize: 14,
                 height: 1.4,
-                color: color,
+                color: valueColor,
+                fontWeight: valueColor != null
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
             ),
           ),
@@ -646,29 +880,49 @@ class DetailHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem(String title, String value, IconData icon) {
+  Widget _buildBulletItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "•",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 14, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
     return Column(
       children: [
         Icon(icon, size: 24, color: kPrimaryColor),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-          ),
-        ),
+        Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );
   }
 
+  // =========================
+  // DELETE UI (EN/ID)
+  // =========================
   Widget _buildDeleteButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -682,12 +936,12 @@ class DetailHistoryPage extends StatelessWidget {
           ),
         ),
         onPressed: () => _showDeleteConfirmation(context),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.delete_outline),
-            SizedBox(width: 8),
-            Text("Hapus Riwayat Ini"),
+            const Icon(Icons.delete_outline),
+            const SizedBox(width: 8),
+            Text(t(context, id: "Hapus Riwayat Ini", en: "Delete This Record")),
           ],
         ),
       ),
@@ -699,34 +953,38 @@ class DetailHistoryPage extends StatelessWidget {
       context: context,
       dialogType: DialogType.warning,
       animType: AnimType.bottomSlide,
-      title: 'Hapus Riwayat',
-      desc: 'Apakah Anda yakin ingin menghapus riwayat deteksi ini?\nTindakan ini tidak dapat dibatalkan.',
-      btnCancelText: "Batal",
-      btnOkText: "Hapus",
+      title: t(context, id: "Hapus Riwayat", en: "Delete Record"),
+      desc: t(
+        context,
+        id: "Apakah Anda yakin ingin menghapus riwayat deteksi ini?\nTindakan ini tidak dapat dibatalkan.",
+        en: "Are you sure you want to delete this detection record?\nThis action cannot be undone.",
+      ),
+      btnCancelText: t(context, id: "Batal", en: "Cancel"),
+      btnOkText: t(context, id: "Hapus", en: "Delete"),
       btnCancelOnPress: () {},
-      btnOkOnPress: () {
-        _deleteDetection(context);
-      },
+      btnOkOnPress: () => _deleteDetection(context),
       btnCancelColor: kPrimaryColor,
       btnOkColor: Colors.red,
     ).show();
   }
 
   void _deleteDetection(BuildContext context) {
-    // Hapus dari Firebase via Cubit
     context.read<SelfDetectionCubit>().deleteDetection(detection.id);
-
-    // Kembali ke halaman riwayat
     Navigator.pop(context);
 
-    // Tampilkan snackbar sukses
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 8),
-            Text("Riwayat berhasil dihapus!"),
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              t(
+                context,
+                id: "Riwayat berhasil dihapus!",
+                en: "Record deleted successfully!",
+              ),
+            ),
           ],
         ),
         backgroundColor: Colors.green,
@@ -735,5 +993,27 @@ class DetailHistoryPage extends StatelessWidget {
         duration: const Duration(seconds: 2),
       ),
     );
+  }
+
+  List<Widget> _buildMultilineBullets(BuildContext context, String text) {
+    final lines = text
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    // kalau bukan bullet text, tampilkan biasa
+    final hasBullets = lines.any((l) => l.startsWith('•') || l.startsWith('-'));
+
+    if (!hasBullets) {
+      return [_buildDetailItem(label: "", value: text)];
+    }
+
+    return lines.map((line) {
+      var clean = line;
+      if (clean.startsWith('•')) clean = clean.substring(1).trim();
+      if (clean.startsWith('-')) clean = clean.substring(1).trim();
+      return _buildBulletItem(clean);
+    }).toList();
   }
 }

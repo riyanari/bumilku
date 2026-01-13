@@ -1,6 +1,7 @@
 import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../self_detection_controller.dart';
 import '../widgets/input_field.dart';
 
@@ -9,17 +10,44 @@ class LifestylePage extends StatelessWidget {
 
   const LifestylePage({super.key, required this.controller});
 
+  // ✅ label opsi chip mengikuti locale, tapi key tetap string lama (ID) di controller
+  String _optionLabel(BuildContext context, String key) {
+    final t = AppLocalizations.of(context)!;
+
+    switch (key) {
+    // Smoking
+      case "Tidak merokok":
+        return t.lifestyleSmokingNone;
+      case "Merokok":
+        return t.lifestyleSmokingActive;
+      case "Terpapar asap rokok":
+        return t.lifestyleSmokingPassive;
+
+    // Alcohol/Drugs
+      case "Tidak mengonsumsi":
+        return t.lifestyleAlcoholNone;
+      case "Mengonsumsi alkohol":
+        return t.lifestyleAlcoholYes;
+      case "Mengonsumsi obat terlarang":
+        return t.lifestyleDrugsYes;
+
+      default:
+        return key; // fallback
+    }
+  }
+
   Widget _buildRadioGroup(
-      String title,
-      Map<String, bool> options,
-      Function(String) onChanged,
-      ) {
+      BuildContext context, {
+        required String title,
+        required Map<String, bool> options,
+        required Function(String) onChanged,
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: tPrimaryColor,
@@ -30,21 +58,25 @@ class LifestylePage extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: options.entries.map((entry) {
+            final key = entry.key;
+            final selected = entry.value;
+
             return ChoiceChip(
-              label: Text(entry.key),
-              selected: entry.value,
-              onSelected: (selected) {
+              label: Text(_optionLabel(context, key)),
+              selected: selected,
+              onSelected: (isSelected) {
                 // Deselect all other options
-                for (var key in options.keys) {
-                  options[key] = false;
+                for (final k in options.keys) {
+                  options[k] = false;
                 }
-                options[entry.key] = selected;
-                onChanged(entry.key);
+                options[key] = isSelected;
+
+                onChanged(key); // ✅ kirim key lama (ID) agar scoring tetap konsisten
                 controller.notifyListeners();
               },
               selectedColor: kSecondaryColor,
               labelStyle: TextStyle(
-                color: entry.value ? tPrimaryColor : Colors.grey.shade700,
+                color: selected ? tPrimaryColor : Colors.grey.shade700,
               ),
             );
           }).toList(),
@@ -56,14 +88,16 @@ class LifestylePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Faktor Sosial & Gaya Hidup",
-            style: TextStyle(
+            t.lifestyleTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
@@ -71,7 +105,7 @@ class LifestylePage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "Informasi ini membantu memahami faktor risiko dari gaya hidup",
+            t.lifestyleSubtitle,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
@@ -84,39 +118,46 @@ class LifestylePage extends StatelessWidget {
               children: [
                 CustomInputField(
                   controller: controller.currentAgeController,
-                  label: "Usia bunda sekarang (tahun)",
+                  label: t.lifestyleAgeLabel,
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Usia saat ini harus diisi';
-                    if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
+                    if (value == null || value.isEmpty) return t.errorAgeRequired;
+                    if (int.tryParse(value) == null) return t.errorInvalidNumber;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
+
                 _buildRadioGroup(
-                  "Status merokok / paparan asap rokok",
-                  controller.smokingStatus,
-                      (value) {},
+                  context,
+                  title: t.lifestyleSmokingTitle,
+                  options: controller.smokingStatus,
+                  onChanged: (_) {},
                 ),
+
                 _buildRadioGroup(
-                  "Konsumsi alkohol / obat-obatan terlarang",
-                  controller.alcoholDrugStatus,
-                      (value) {},
+                  context,
+                  title: t.lifestyleAlcoholDrugTitle,
+                  options: controller.alcoholDrugStatus,
+                  onChanged: (_) {},
                 ),
+
                 const SizedBox(height: 16),
+
                 CustomInputField(
                   controller: controller.physicalActivityController,
-                  label: "Aktivitas fisik harian (aktif/ringan/banyak istirahat)",
+                  label: t.lifestylePhysicalActivityLabel,
                   keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 16),
+
                 CustomInputField(
                   controller: controller.familySupportController,
-                  label: "Dukungan keluarga (ada/minim/tidak ada)",
+                  label: t.lifestyleFamilySupportLabel,
                   keyboardType: TextInputType.text,
                 ),
                 const SizedBox(height: 20),
-                // Informasi penting tentang faktor risiko
+
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -128,27 +169,21 @@ class LifestylePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Faktor Risiko Penting:",
-                        style: TextStyle(
+                        t.lifestyleRiskInfoTitle,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: tPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text("• Usia <20 atau >35 tahun meningkatkan risiko", style: TextStyle(fontSize: 12)),
-                      Text("• Merokok/paparan asap rokok berisiko untuk janin", style: TextStyle(fontSize: 12)),
-                      Text("• Alkohol/obat terlarang sangat berbahaya untuk kehamilan", style: TextStyle(fontSize: 12)),
-                      Text("• Dukungan keluarga penting untuk kesehatan mental", style: TextStyle(fontSize: 12)),
+                      Text(t.lifestyleRiskBullet1, style: const TextStyle(fontSize: 12)),
+                      Text(t.lifestyleRiskBullet2, style: const TextStyle(fontSize: 12)),
+                      Text(t.lifestyleRiskBullet3, style: const TextStyle(fontSize: 12)),
+                      Text(t.lifestyleRiskBullet4, style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Hapus ResultDisplay dari sini karena sudah dipindah ke ResultPage
-                // if (controller.result.isNotEmpty)
-                //   ResultDisplay(
-                //     result: controller.result,
-                //     recommendation: controller.recommendation,
-                //   ),
               ],
             ),
           ),

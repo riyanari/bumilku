@@ -1,0 +1,619 @@
+{
+  "@@locale": "id",
+  "appName": "BUMILKU",
+  "selfDetection": "Self Detection",
+  "selfDetectionDesc": "Mari deteksi kondisi kehamilan Anda sekarang",
+  "checkHistory": "Riwayat Pemeriksaan",
+  "checkHistoryDesc": "Riwayat pemeriksaan ini adalah riwayat yang dihasilkan dari self detection",
+  "maternalNursingTitle": "Apa itu Keperawatan Maternitas?",
+  "maternalNursingDesc": "Keperawatan maternitas adalah cabang keperawatan yang fokus pada kesehatan",
+  "faqTitle": "Pertanyaan Umum",
+  "faqDesc": "Mari baca pertanyaan yang sering kali ditanyakan saat hamil",
+
+  "noPregnancyData": "Belum ada data kehamilan",
+  "addPregnancy": "Tambah Kehamilan",
+  "tryAgain": "Coba Lagi",
+  "medicalDataNotAvailable": "Data medis belum tersedia",
+  "addFirstPregnancy": "Tambah Kehamilan Pertama",
+
+  "logoutConfirmTitle": "Konfirmasi Logout",
+  "logoutConfirmDesc": "Apakah Anda yakin ingin logout dari aplikasi BUMILKU?",
+  "cancel": "Batal",
+  "logout": "Logout",
+
+  "addPregnancyNewTitle": "Tambah Kehamilan Baru",
+  "addPregnancyNewDesc": "Apakah Anda ingin menambah data kehamilan baru?",
+  "add": "Tambah",
+
+  "pregnancyCalendarTitle": "Kalender Kehamilan",
+  "edit": "Edit",
+  "lastPeriodLabel": "Haid pertama terakhir",
+  "dueDateLabel": "Prediksi melahirkan",
+  "setPeriodInfoTitle": "Atur Informasi Haid",
+  "setPeriodInfoDesc": "Hari Pertama Haid Terakhir (LMP) adalah hari pertama menstruasi terakhir Anda. Data ini digunakan untuk menghitung usia kehamilan dan memperkirakan Hari Perkiraan Lahir (HPL).",
+  "lmpDateLabel": "Tanggal Hari Pertama Haid Terakhir",
+  "cycleLengthLabel": "Panjang Siklus Menstruasi",
+  "daysUnit": "hari",
+  "save": "Simpan",
+  "pregnancyWeekInfo": "Anda memasuki minggu ke-{weeks} usia kehamilan",
+  "@pregnancyWeekInfo": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+
+  "selfDetectionTitle": "Deteksi Mandiri Ibu Hamil",
+  "detectionHistory": "Riwayat Deteksi",
+  "back": "Kembali",
+  "next": "Lanjut",
+  "calculateRisk": "Hitung Risiko",
+  "completeStepData": "Harap lengkapi data pada langkah ini.",
+
+  "signUpNewAccountTitle": "Daftar Akun Baru",
+  "emailHint": "Email",
+  "emailRequired": "Email wajib diisi",
+  "emailInvalid": "Format email tidak valid",
+  "passwordHint": "Password",
+  "confirmPasswordHint": "Konfirmasi Password",
+  "passwordRequired": "Password wajib diisi",
+  "passwordMin6": "Password minimal 6 karakter",
+  "confirmPasswordRequired": "Konfirmasi password wajib diisi",
+  "passwordNotMatch": "Password tidak cocok",
+  "passwordStrengthLabel": "Kekuatan Password:",
+  "passwordStrengthWeak": "Lemah",
+  "passwordStrengthFair": "Cukup",
+  "passwordStrengthGood": "Baik",
+  "passwordStrengthStrong": "Kuat",
+  "showPassword": "Tampilkan password",
+  "hidePassword": "Sembunyikan password",
+  "signUpButton": "Daftar",
+  "signingUpLoading": "Mendaftarkan...",
+
+  "signupWelcomeTitle": "Selamat datang! 👋",
+  "signupWelcomeDesc": "Sebelum mulai, mari berkenalan terlebih dahulu",
+
+  "signupNameLabel": "Nama Bunda",
+  "signupNameHint": "Masukkan nama Bunda",
+  "signupNameEmpty": "Nama tidak boleh kosong",
+  "signupNameMin2": "Nama minimal 2 karakter",
+  "signupNameMax30": "Nama maksimal 30 karakter",
+
+  "signupAddressLabel": "Alamat",
+  "signupAddressHint": "Masukkan alamat lengkap",
+  "signupAddressEmpty": "Alamat tidak boleh kosong",
+
+  "signupDobLabel": "Tanggal Lahir",
+  "signupDobHint": "Pilih tanggal lahir",
+  "signupDobRequired": "Tanggal lahir wajib diisi",
+
+  "vitalTitle": "Data Vital",
+
+  "vitalSystolicLabel": "Sistolik (mmHg)",
+  "vitalDiastolicLabel": "Diastolik (mmHg)",
+  "vitalTempLabel": "Suhu tubuh (°C)",
+  "vitalPulseLabel": "Nadi (x/menit)",
+  "vitalRespLabel": "Frekuensi napas (x/menit)",
+
+  "vitalSystolicRequired": "Sistolik harus diisi",
+  "vitalDiastolicRequired": "Diastolik harus diisi",
+  "vitalTempRequired": "Suhu tubuh harus diisi",
+  "vitalPulseRequired": "Nadi harus diisi",
+  "vitalRespRequired": "Frekuensi napas harus diisi",
+  "vitalValidNumber": "Masukkan angka yang valid",
+
+  "vitalNormalTitle": "Nilai Normal:",
+  "vitalNormalBpMain": "• Tekanan darah: 90/60 - 139/89 mmHg",
+  "vitalNormalBpSys": "   - Sistolik (atas): 90-139 mmHg",
+  "vitalNormalBpDia": "   - Diastolik (bawah): 60-89 mmHg",
+  "vitalNormalTemp": "• Suhu tubuh: 36 - 37.5°C",
+  "vitalNormalPulse": "• Nadi: 60 - 100 x/menit",
+  "vitalNormalResp": "• Frekuensi napas: 16 - 20 x/menit",
+
+  "complaintsTitle": "Keluhan yang Dirasakan",
+  "complaintsLegendTitle": "Keterangan:",
+  "complaintsLegendHigh": "Keluhan berisiko tinggi",
+  "complaintsLegendMedium": "Keluhan perlu perhatian",
+  "complaintsLegendNormal": "Keluhan normal",
+  "complaintsPickInstruction": "Pilih keluhan yang dialami saat ini:",
+  "complaintsSelectedCount": "{count} keluhan dipilih",
+  "@complaintsSelectedCount": {
+    "description": "Show number of selected complaints",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "fetalMoveTitle": "Pencatatan Gerakan Janin",
+  "fetalMoveImportantInfoTitle": "Informasi Penting",
+  "fetalMoveImportantInfoDesc": "Pencatatan gerakan janin dilakukan selama {hours} jam. Gerakan janin normal: minimal 10 gerakan dalam {hours} jam. Catat semua gerakan yang dirasakan dalam periode {hours} jam.",
+  "@fetalMoveImportantInfoDesc": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+
+  "fetalMoveMainParams": "Parameter Utama Pencatatan",
+  "fetalMoveMotherSubjective": "Kondisi Subjektif Ibu",
+
+  "fetalMoveStartDateTimeLabel": "Tanggal & Waktu Mulai Pencatatan",
+  "fetalMovePickDateTime": "Pilih tanggal & waktu",
+
+  "fetalMoveCountLabel": "Jumlah Gerakan dalam {hours} Jam",
+  "@fetalMoveCountLabel": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveCountHint": "Masukkan total gerakan dalam {hours} jam",
+  "@fetalMoveCountHint": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveTimesSuffix": "kali",
+  "fetalMoveTargetHint": "Target: minimal 10 gerakan dalam 12 jam",
+  "fetalMoveDurationInfo": "Durasi Pencatatan: {hours} Jam",
+  "@fetalMoveDurationInfo": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveActivityPatternLabel": "Pola Aktivitas Janin",
+  "fetalMoveComparisonLabel": "Perbandingan Gerakan dengan Hari Sebelumnya",
+  "fetalMoveOtherComplaintsLabel": "Keluhan Lain yang Dirasakan",
+
+  "fetalPatternMorning": "Lebih aktif pagi hari",
+  "fetalPatternAfternoon": "Lebih aktif siang hari",
+  "fetalPatternNight": "Lebih aktif malam hari",
+  "fetalPatternNoPattern": "Tidak ada pola khusus",
+
+  "fetalCompareMoreActive": "Lebih aktif",
+  "fetalCompareSame": "Sama saja",
+  "fetalCompareLess": "Lebih sedikit",
+
+  "fetalComplaintDizzyWeak": "Pusing/lemas",
+  "fetalComplaintAbdominalPain": "Nyeri perut",
+  "fetalComplaintNone": "Tidak ada",
+
+  "fetalMoveErrorRequired": "Jumlah gerakan harus diisi",
+  "fetalMoveErrorInvalidNumber": "Masukkan angka yang valid",
+  "fetalMoveErrorNegative": "Tidak boleh negatif",
+
+  "fetalMoveSummaryEmpty": "Isi jumlah gerakan untuk melihat ringkasan",
+  "fetalMoveSummaryMoves": "Gerakan: {count} kali dalam {hours} jam ({perHour} gerakan/jam)",
+  "@fetalMoveSummaryMoves": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "hours": { "type": "int" },
+      "perHour": { "type": "double" }
+    }
+  },
+
+  "fetalMoveSummaryDetailTitle": "Detail Pencatatan:",
+  "fetalMoveSummaryDetailCount": "• Jumlah gerakan: {count} kali",
+  "@fetalMoveSummaryDetailCount": { "placeholders": { "count": { "type": "int" } } },
+
+  "fetalMoveSummaryDetailDuration": "• Durasi: {hours} jam",
+  "@fetalMoveSummaryDetailDuration": { "placeholders": { "hours": { "type": "int" } } },
+
+  "fetalMoveSummaryDetailTarget": "• Target minimal: 10 gerakan",
+  "fetalMoveSummaryDetailPattern": "• Pola: {pattern}",
+  "@fetalMoveSummaryDetailPattern": { "placeholders": { "pattern": { "type": "String" } } },
+
+  "fetalMoveSummaryDetailCompare": "• Perbandingan: {compare}",
+  "@fetalMoveSummaryDetailCompare": { "placeholders": { "compare": { "type": "String" } } },
+
+  "fetalMoveSummaryDetailComplaints": "• Keluhan: {complaints}",
+  "@fetalMoveSummaryDetailComplaints": { "placeholders": { "complaints": { "type": "String" } } },
+
+  "fetalStatusIncomplete": "Data Belum Lengkap",
+  "fetalStatusNormal": "Kondisi Normal",
+  "fetalStatusMonitoring": "Perlu Pemantauan",
+  "fetalStatusAttention": "Perlu Perhatian",
+  "fetalStatusEmergency": "Perhatian Khusus",
+
+  "fetalMsgNormal": "Gerakan janin dalam batas normal ({count} gerakan dalam {hours} jam).",
+  "@fetalMsgNormal": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgMonitoring": "Gerakan janin {count} kali dalam {hours} jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.",
+  "@fetalMsgMonitoring": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgAttention": "Gerakan janin {count} kali dalam {hours} jam. Disarankan konsultasi dengan tenaga kesehatan.",
+  "@fetalMsgAttention": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgEmergency": "Gerakan janin hanya {count} kali dalam {hours} jam. Segera hubungi tenaga kesehatan.",
+  "@fetalMsgEmergency": { "placeholders": { "count": { "type": "int" }, "hours": { "type": "int" } } },
+
+  "fetalMsgIncomplete": "Lengkapi data pencatatan untuk analisis yang akurat.",
+
+  "complaintNauseaVomiting": "Mual dan muntah",
+  "complaintBloating": "Kembung",
+  "complaintHeartburn": "Maag / nyeri ulu hati",
+  "complaintHeadache": "Sakit kepala",
+  "complaintFetalMovement": "Gerakan Janin",
+  "complaintAbdominalCramp": "Kram perut",
+  "complaintVaginalDischarge": "Keputihan",
+  "complaintCravings": "Ngidam",
+  "complaintBleedingSpotting": "Pendarahan / bercak dari jalan lahir",
+  "complaintSwelling": "Bengkak pada kaki / tangan / wajah",
+  "complaintConstipation": "Sembelit",
+  "complaintExcessiveFatigue": "Kelelahan berlebihan",
+  "complaintSleepyDizzy": "Ngantuk dan pusing",
+  "complaintMoodChanges": "Perubahan mood",
+  "complaintSleepProblems": "Masalah tidur",
+  "complaintLossOfAppetite": "Hilang nafsu makan",
+  "complaintFastHeartbeat": "Detak jantung cepat",
+  "complaintBackPain": "Nyeri pinggang / punggung",
+  "complaintShortnessOfBreath": "Sesak napas",
+  "complaintBlurredVision": "Pandangan kabur / berkunang-kunang",
+  "complaintEarlyContractions": "Kontraksi dini (perut sering kencang sebelum waktunya)",
+
+  "pregnancyHistoryTitle": "Riwayat Kehamilan & Persalinan",
+  "pregnancyHistorySubtitle": "Isilah sesuai dengan riwayat kehamilan dan persalinan sebelumnya",
+
+  "pregnancyHistoryChildrenCountLabel": "Jumlah anak yang sudah lahir",
+  "pregnancyHistoryFirstPregnancyAgeLabel": "Usia bunda saat pertama kali hamil",
+  "pregnancyHistoryPregnancyGapLabel": "Jarak kehamilan dengan anak sebelumnya",
+  "pregnancyHistoryObstetricHistoryLabel": "Riwayat Obstetrik atau riwayat kehamilan dan persalinan (riwayat keguguran, riwayat caesar, riwayat kelahiran prematur, riwayat hamil ektopik atau di luar kandungan, dll)",
+  "pregnancyHistoryDeliveryComplicationsLabel": "Riwayat komplikasi persalinan (perdarahan, tekanan darah tinggi saat hamil, dll.)",
+  "pregnancyHistoryBabyWeightHistoryLabel": "Riwayat bayi lahir (berat badan normal >=2.5 / besar >4 kg)",
+  "pregnancyHistoryPreviousPregnancyLabel": "Riwayat kehamilan sebelumnya (normal/bermasalah/janin meninggal)",
+
+  "pregnancyHistoryExamplesTitle": "Contoh pengisian:",
+  "pregnancyHistoryExampleObstetricLabel": "• Riwayat obstetrik / kehamilan & persalinan sebelumnya",
+  "pregnancyHistoryExampleComplicationLabel": "• Riwayat komplikasi persalinan",
+  "pregnancyHistoryExampleObstetricValue": "• Riwayat obstetri: Pernah keguguran 1x, SC 1x",
+  "pregnancyHistoryExampleComplicationValue": "• Komplikasi: Perdarahan pasca persalinan",
+  "pregnancyHistoryExampleBabyWeightValue": "• Bayi lahir: Berat badan normal minimal 2.5 kg",
+
+  "validationRequiredChildrenCount": "Jumlah anak harus diisi",
+  "validationRequiredFirstPregnancyAge": "Usia pertama hamil harus diisi",
+  "validationInvalidNumber": "Masukkan angka yang valid",
+
+  "unitYears": "tahun",
+  "unitMonths": "bulan",
+
+  "healthHistoryTitle": "Riwayat Kesehatan Bunda",
+  "healthHistorySubtitle": "Informasi ini membantu tenaga kesehatan memahami kondisi Anda",
+
+  "healthHistoryDiseaseLabel": "Penyakit yang pernah/sedang diderita (tekanan darah tinggi, diabetes, jantung, dll.)",
+  "healthHistoryAllergyLabel": "Riwayat alergi (obat/makanan/bahan tertentu)",
+  "healthHistorySurgeryLabel": "Riwayat operasi (selain SC)",
+  "healthHistoryMedicationLabel": "Konsumsi obat-obatan rutin (termasuk vitamin/herbal)",
+
+  "healthHistoryExamplesTitle": "Contoh pengisian:",
+  "healthHistoryExampleDisease": "• Penyakit: tekanan darah tinggi sejak 2020",
+  "healthHistoryExampleAllergy": "• Alergi: Alergi antibiotik Amoxicillin",
+  "healthHistoryExampleSurgery": "• Operasi: Usus buntu tahun 2018",
+  "healthHistoryExampleMedication": "• Obat: Obat tekanan darah tinggi rutin, vitamin prenatal",
+
+  "commonInvalidNumber": "Masukkan angka yang valid",
+
+  "physicalDataTitle": "Data Fisik Bunda",
+  "physicalDataSubtitle": "Data ini digunakan untuk menghitung Indeks Massa Tubuh (IMT)",
+
+  "physicalDataHeightLabel": "Tinggi badan (cm)",
+  "physicalDataWeightBeforeLabel": "Berat badan sebelum hamil (kg)",
+  "physicalDataCurrentWeightLabel": "Berat badan saat ini (kg)",
+  "physicalDataMuacLabel": "Lingkar lengan atas (LILA) (cm)",
+
+  "physicalDataHeightRequired": "Tinggi badan harus diisi",
+  "physicalDataWeightBeforeRequired": "Berat sebelum hamil harus diisi",
+  "physicalDataCurrentWeightRequired": "Berat saat ini harus diisi",
+
+  "physicalDataBmiValue": "Indeks Massa Tubuh (IMT): {value}",
+  "@physicalDataBmiValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+
+  "physicalDataBmiCategoryUnderweight": "Kategori: Kurus",
+  "physicalDataBmiCategoryNormal": "Kategori: Normal",
+  "physicalDataBmiCategoryOverweight": "Kategori: Kelebihan berat",
+  "physicalDataBmiCategoryObesity": "Kategori: Obesitas",
+
+  "physicalDataNormalValuesTitle": "Nilai Normal:",
+  "physicalDataNormalBmi": "• IMT normal: 18.5 - 24.9",
+  "physicalDataNormalMuac": "• LILA normal: ≥ 23.5 cm",
+  "physicalDataBmiUnderweightInfo": "• IMT < 18.5: Kurus",
+  "physicalDataBmiOverweightInfo": "• IMT ≥ 25: Kelebihan berat",
+  "physicalDataBmiObesityInfo": "• IMT ≥ 30: Obesitas",
+
+  "commonPickDate": "Pilih tanggal",
+
+  "menstrualTitle": "Data Haid & Kehamilan",
+  "menstrualSubtitle": "Informasi ini membantu menentukan usia kehamilan",
+
+  "menstrualLmpLabel": "Tanggal Hari Pertama Haid Terakhir (HPHT)*",
+  "menstrualLmpRequired": "Tanggal haid terakhir harus diisi",
+
+  "menstrualCycleLabel": "Siklus haid (teratur/tidak, berapa hari)",
+  "menstrualFetalMovementLabel": "Gerakan janin (sudah terasa/belum/berkurang)",
+  "menstrualUltrasoundLabel": "Hasil pemeriksaan USG (jika sudah ada)",
+
+  "menstrualPregnancyInfoTitle": "Informasi Kehamilan:",
+  "menstrualEddLine": "• Perkiraan Hari Lahir (HPL): {date}",
+  "@menstrualEddLine": { "placeholders": { "date": { "type": "String" } } },
+
+  "menstrualGestationalAgeLine": "• Usia kehamilan: {weeks} minggu",
+  "@menstrualGestationalAgeLine": { "placeholders": { "weeks": { "type": "String" } } },
+
+  "menstrualImportantInfoTitle": "Informasi Penting:",
+  "menstrualImportantBullet1": "• HPHT digunakan untuk menghitung usia kehamilan",
+  "menstrualImportantBullet2": "• Gerakan janin biasanya terasa mulai minggu 18-20",
+  "menstrualImportantBullet3": "• USG membantu memastikan usia kehamilan dan perkembangan janin",
+
+  "lifestyleTitle": "Faktor Sosial & Gaya Hidup",
+  "lifestyleSubtitle": "Informasi ini membantu memahami faktor risiko dari gaya hidup",
+
+  "lifestyleAgeLabel": "Usia bunda sekarang (tahun)",
+  "lifestyleSmokingTitle": "Status merokok / paparan asap rokok",
+  "lifestyleAlcoholDrugTitle": "Konsumsi alkohol / obat-obatan terlarang",
+  "lifestylePhysicalActivityLabel": "Aktivitas fisik harian (aktif/ringan/banyak istirahat)",
+  "lifestyleFamilySupportLabel": "Dukungan keluarga (ada/minim/tidak ada)",
+
+  "lifestyleRiskInfoTitle": "Faktor Risiko Penting:",
+  "lifestyleRiskBullet1": "• Usia <20 atau >35 tahun meningkatkan risiko",
+  "lifestyleRiskBullet2": "• Merokok/paparan asap rokok berisiko untuk janin",
+  "lifestyleRiskBullet3": "• Alkohol/obat terlarang sangat berbahaya untuk kehamilan",
+  "lifestyleRiskBullet4": "• Dukungan keluarga penting untuk kesehatan mental",
+
+  "lifestyleSmokingNone": "Tidak merokok",
+  "lifestyleSmokingActive": "Merokok",
+  "lifestyleSmokingPassive": "Terpapar asap rokok",
+
+  "lifestyleAlcoholNone": "Tidak mengonsumsi",
+  "lifestyleAlcoholYes": "Mengonsumsi alkohol",
+  "lifestyleDrugsYes": "Mengonsumsi obat terlarang",
+
+  "errorAgeRequired": "Usia saat ini harus diisi",
+  "errorInvalidNumber": "Masukkan angka yang valid",
+
+  "selfDetectionLoading": "Sedang menghitung risiko...",
+
+  "selfDetectionResultTitle": "Hasil Deteksi Mandiri",
+  "saveResultTooltip": "Simpan Hasil",
+  "totalRiskPointsLabel": "Total Poin Risiko:",
+  "noSpecificRecommendation": "Tidak ada rekomendasi spesifik",
+
+  "riskHigh": "Risiko Tinggi",
+  "riskAttention": "Perlu Perhatian",
+  "riskMonitoring": "Perlu Pemantauan",
+  "riskNormal": "Normal",
+  "unknown": "Tidak Diketahui",
+
+  "identifiedRiskFactorsTitle": "Faktor Risiko yang Teridentifikasi",
+  "complaintEducationTitle": "Edukasi Keluhan",
+  "riskEducationTitle": "Edukasi Risiko",
+  "healthyPregnancyTipsTitle": "Tips Kehamilan Sehat",
+  "recommendationTitle": "Rekomendasi",
+
+  "fetalMovementRecordTitle": "Hasil Pencatatan Gerakan Janin",
+  "recordDetailTitle": "Detail Pencatatan:",
+  "movementCountLabel": "Jumlah Gerakan",
+  "recordDurationLabel": "Durasi Pencatatan",
+  "movementsPerHourLabel": "Gerakan per Jam",
+  "comparisonWithYesterdayLabel": "Perbandingan dengan Kemarin",
+  "activityPatternLabel": "Pola Aktivitas",
+  "noData": "Tidak ada data",
+
+  "timesSuffix": "kali",
+  "hoursSuffix": "jam",
+  "movementsPerHourSuffix": "gerakan/jam",
+
+  "fetalMovementNormalStandard": "Standar normal: minimal 10 gerakan dalam 12 jam ({value} gerakan/jam)",
+  "@fetalMovementNormalStandard": { "placeholders": { "value": {} } },
+
+  "fetalMovementIncompleteTitle": "Data Belum Lengkap",
+  "fetalMovementNormalTitle": "Kondisi Normal",
+  "fetalMovementMonitoringTitle": "Perlu Pemantauan",
+  "fetalMovementAttentionTitle": "Perlu Perhatian",
+  "fetalMovementCriticalTitle": "Perhatian Khusus",
+
+  "fetalMovementIncompleteMsg": "Data gerakan janin belum lengkap. Silakan lengkapi pencatatan.",
+  "fetalMovementNormalMsg": "Gerakan janin dalam batas normal ({count} gerakan dalam 12 jam).",
+  "@fetalMovementNormalMsg": { "placeholders": { "count": {} } },
+  "fetalMovementMonitoringMsg": "Gerakan janin {count} kali dalam 12 jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.",
+  "@fetalMovementMonitoringMsg": { "placeholders": { "count": {} } },
+  "fetalMovementAttentionMsg": "Gerakan janin {count} kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.",
+  "@fetalMovementAttentionMsg": { "placeholders": { "count": {} } },
+  "fetalMovementCriticalMsg": "Gerakan janin hanya {count} kali dalam 12 jam. Segera hubungi tenaga kesehatan.",
+  "@fetalMovementCriticalMsg": { "placeholders": { "count": {} } },
+
+  "saveDetectionResultButton": "Simpan Hasil Deteksi",
+  "backToSelfDetectionButton": "Kembali ke Deteksi Mandiri",
+
+  "saveResultDialogTitle": "Simpan Hasil Deteksi",
+  "saveResultDialogMessage": "Apakah Anda ingin menyimpan hasil deteksi ini? Hasil akan disimpan dalam riwayat deteksi.",
+  "cancel": "Batal",
+  "save": "Simpan",
+  "saveSuccessSnack": "Hasil deteksi berhasil disimpan!",
+
+  "riskMsgHigh": "Gerakan janin sangat berkurang. Segera hubungi tenaga kesehatan.",
+  "riskMsgAttention": "Gerakan janin berkurang. Disarankan konsultasi dengan tenaga kesehatan.",
+  "riskMsgMonitoring": "Gerakan janin mendekati batas minimal. Pantau rutin dan perhatikan perubahan.",
+  "riskMsgNormal": "Gerakan janin dalam batas normal. Lanjutkan pemantauan rutin.",
+  "riskMsgUnknown": "Data belum lengkap atau tidak valid.",
+
+  "@@locale": "id",
+
+  "historyTitle": "Riwayat Deteksi",
+  "historySectionTitle": "Riwayat Deteksi Mandiri",
+
+  "historyErrorTitle": "Terjadi kesalahan",
+  "historyRetry": "Coba Lagi",
+
+  "historyEmptyTitle": "Belum ada riwayat deteksi",
+  "historyEmptySubtitle": "Hasil deteksi mandiri akan muncul di sini",
+  "historyStartDetectionNow": "Lakukan Self Detection Sekarang",
+
+  "historyUserDataUnavailable": "Data tidak tersedia",
+  "historyPleaseRelogin": "Silakan login ulang",
+
+  "historyFetalMovementLabel": "Gerakan Janin",
+  "historyDetailLabel": "Detail",
+  "historyStatusLabel": "Status",
+
+  "historyAgeYears": "{age} tahun",
+  "@historyAgeYears": {
+    "placeholders": {
+      "age": { "type": "int" }
+    }
+  },
+
+  "historyDetailCount": "{count} faktor",
+  "@historyDetailCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "riskLevelHigh": "Risiko Tinggi",
+  "riskLevelNeedAttention": "Perlu Perhatian",
+  "riskLevelNeedMonitoring": "Perlu Pemantauan",
+  "riskLevelNormal": "Normal",
+  "riskLevelUnknown": "Tidak Diketahui",
+
+  "riskStatusNeedsTreatment": "Perlu Penanganan",
+  "riskStatusNeedsAttention": "Perlu Perhatian",
+  "riskStatusNeedsMonitoring": "Perlu Pemantauan",
+  "riskStatusSafe": "Aman",
+  "riskStatusUnknown": "Tidak Diketahui",
+
+  "mothersListTitle": "Daftar Bunda",
+  "searchNameOrUsernameHint": "Cari nama atau username...",
+  "noMotherData": "Belum ada data bunda",
+  "notFoundTitle": "Tidak ditemukan",
+  "noResultsForQuery": "Tidak ada hasil untuk '{query}'",
+  "@noResultsForQuery": {
+    "placeholders": { "query": {} }
+  },
+  "badgeMother": "Bunda",
+  "yearsOldShort": "tahun",
+  "languageTooltip": "Bahasa",
+  "languageIndonesia": "Indonesia",
+  "languageEnglish": "English",
+  "logoutFailed": "Logout gagal",
+
+  "monitoringTitle": "Monitoring {name}",
+  "@monitoringTitle": { "placeholders": { "name": {} } },
+
+  "refreshDataTooltip": "Refresh Data",
+  "tabDevelopment": "Perkembangan",
+  "tabSelfDetection": "Self Detection",
+
+  "ageYears": "{age} tahun",
+  "@ageYears": { "placeholders": { "age": {} } },
+
+  "loadingPregnancyData": "Memuat data kehamilan...",
+  "loadingDetectionHistory": "Memuat riwayat deteksi...",
+  "loadingDataGeneric": "Memuat data...",
+
+  "noPregnancyDataTitle": "Belum Ada Data Kehamilan",
+  "noPregnancyDataSubtitle": "Data kehamilan akan muncul di sini",
+
+  "pregnancyNumber": "Kehamilan {n}",
+  "@pregnancyNumber": { "placeholders": { "n": {} } },
+
+  "activePregnancy": "Kehamilan Aktif",
+  "pregnancyHistory": "Riwayat Kehamilan",
+  "activeLabel": "Aktif",
+
+  "babyNameLabel": "👶 Nama Bayi",
+  "babyNameNotSet": "Belum diberi nama",
+  "lmpLabel": "📅 HPHT",
+  "eddLabel": "🎯 Perkiraan Lahir",
+  "cycleLabel": "🔄 Siklus",
+  "cycleDaysValue": "{n} hari",
+  "@cycleDaysValue": { "placeholders": { "n": {} } },
+
+  "pregnancyProgressTitle": "Perkembangan Kehamilan",
+  "trimesterWithValue": "Trimester {value}",
+  "@trimesterWithValue": { "placeholders": { "value": {} } },
+
+  "gestationalAgeLabel": "Usia Kandungan",
+  "gestationalAgeValue": "{weeks} minggu {days} hari",
+  "@gestationalAgeValue": { "placeholders": { "weeks": {}, "days": {} } },
+
+  "daysToBirthLabel": "Hari Menuju Lahir",
+  "daysValue": "{n} hari",
+  "@daysValue": { "placeholders": { "n": {} } },
+
+  "trimesterLabel": "Trimester",
+  "timelineTitle": "Timeline Perkembangan",
+  "trimester1": "Trimester 1",
+  "trimester2": "Trimester 2",
+  "trimester3": "Trimester 3",
+  "weekRange1_13": "Minggu 1-13",
+  "weekRange14_27": "Minggu 14-27",
+  "weekRange28_40": "Minggu 28-40",
+
+  "dataCreatedAt": "Data dibuat: {date}",
+  "@dataCreatedAt": { "placeholders": { "date": {} } },
+
+  "fetalMovementMonitoringHeader": "Pemantauan Gerakan Janin",
+  "selfDetectionHistoryHeader": "Riwayat Self Detection",
+  "fetalMovementHistoryHeader": "Riwayat Gerakan Janin",
+
+  "noSelfDetectionDataTitle": "Belum Ada Data Self Detection",
+  "noSelfDetectionDataSubtitle": "Data deteksi mandiri akan muncul di sini",
+
+  "noFetalMovementDataTitle": "Belum Ada Data Gerakan Janin",
+  "noFetalMovementDataSubtitle": "Data gerakan janin akan muncul di sini",
+
+  "fetalMovementStatsTitle": "Statistik Gerakan Janin",
+  "avgMovementsLabel": "Rata-rata Gerakan",
+  "normalSessionsLabel": "Sesi Normal",
+  "totalSessionsLabel": "Total Sesi",
+
+  "latestRecordDetailTitle": "Detail Pencatatan Terbaru:",
+
+  "movementCountLabel": "Jumlah Gerakan",
+  "durationLabel": "Durasi",
+  "movementsPerHourLabel": "Gerakan per Jam",
+  "comparisonLabel": "Perbandingan",
+  "activityPatternLabel": "Pola Aktivitas",
+  "complaintsLabel": "Keluhan",
+
+  "activityPatternShortLabel": "Pola",
+  "comparisonShortLabel": "Perbandingan",
+
+  "noData": "Tidak ada data",
+  "timesValue": "{n} kali",
+  "@timesValue": { "placeholders": { "n": {} } },
+  "hoursValue": "{n} jam",
+  "@hoursValue": { "placeholders": { "n": {} } },
+  "perHourValue": "{value}/jam",
+  "@perHourValue": { "placeholders": { "value": {} } },
+
+  "fetalMovementStandardTitle": "Standar normal: minimal 10 gerakan dalam 12 jam",
+  "fetalMovementStandardPerHour": "({value} gerakan per jam)",
+  "@fetalMovementStandardPerHour": { "placeholders": { "value": {} } },
+
+  "movementsCountText": "{n} gerakan",
+  "@movementsCountText": { "placeholders": { "n": {} } },
+
+  "pointsValue": "{n} poin",
+  "@pointsValue": { "placeholders": { "n": {} } },
+
+  "detailLabel": "Detail",
+  "statusLabel": "Status",
+  "fetalMovementLabel": "Gerakan Janin",
+  "recordedLabel": "Tercatat",
+  "factorsCount": "{n} faktor",
+  "@factorsCount": { "placeholders": { "n": {} } },
+
+  "riskNeedTreatment": "Perlu Penanganan",
+  "riskNeedAttention": "Perlu Perhatian",
+  "riskSafe": "Aman",
+  "unknown": "Tidak Diketahui",
+
+  "errorOccurredTitle": "Terjadi Kesalahan",
+  "tryAgain": "Coba Lagi",
+
+  "fetalMovementStatusIncomplete": "Data Belum Lengkap",
+  "fetalMovementStatusNormal": "Kondisi Normal",
+  "fetalMovementStatusMonitor": "Perlu Pemantauan",
+  "fetalMovementStatusAttention": "Perlu Perhatian",
+  "fetalMovementStatusUrgent": "Perhatian Khusus",
+
+  "fetalMovementMsgIncomplete": "Data gerakan janin belum lengkap. Silakan lengkapi pencatatan.",
+  "fetalMovementMsgNormal": "Gerakan janin dalam batas normal ({count} gerakan dalam 12 jam).",
+  "@fetalMovementMsgNormal": { "placeholders": { "count": {} } },
+  "fetalMovementMsgMonitor": "Gerakan janin {count} kali dalam 12 jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.",
+  "@fetalMovementMsgMonitor": { "placeholders": { "count": {} } },
+  "fetalMovementMsgAttention": "Gerakan janin {count} kali dalam 12 jam. Disarankan konsultasi dengan tenaga kesehatan.",
+  "@fetalMovementMsgAttention": { "placeholders": { "count": {} } },
+  "fetalMovementMsgUrgent": "Gerakan janin hanya {count} kali dalam 12 jam. Segera hubungi tenaga kesehatan.",
+  "@fetalMovementMsgUrgent": { "placeholders": { "count": {} } }
+}

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../components/info_container_custom.dart';
+import '../cubit/locale_cubit.dart';
 import '../theme/theme.dart';
 
 class PertanyaanUmumPage extends StatefulWidget {
@@ -12,7 +15,9 @@ class PertanyaanUmumPage extends StatefulWidget {
 class _PertanyaanUmumPageState extends State<PertanyaanUmumPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  final Map<String, List<Map<String, String>>> _categorizedQuestions = {
+
+  // ===== DATA INDONESIA (punyamu) =====
+  late final Map<String, List<Map<String, String>>> _categorizedQuestionsId = {
     'Kalkulasi & Perencanaan': [
       {
         'title': 'Bagaimana HPL Dikalkulasikan?',
@@ -134,209 +139,348 @@ class _PertanyaanUmumPageState extends State<PertanyaanUmumPage> {
     ],
   };
 
+  // ===== DATA ENGLISH (lengkap) =====
+  late final Map<String, List<Map<String, String>>> _categorizedQuestionsEn = {
+    'Calculation & Planning': [
+      {
+        'title': 'How is the due date (EDD) calculated?',
+        'desc':
+        'The estimated due date (EDD) is often calculated assuming a regular 28-day cycle by counting 40 weeks (280 days) from the first day of the last menstrual period (LMP). '
+            'However, every pregnancy is different and the due date is only an estimate—especially if your menstrual cycle is irregular.',
+      },
+      {
+        'title': 'When should I take maternity leave?',
+        'desc':
+        'Maternity leave during pregnancy usually follows workplace policy and labor regulations. In Indonesia, maternity leave is commonly 3 months, often taken as 1.5 months before the estimated delivery date and 1.5 months after birth.'
+            '\n\nThat said, the best time to start leave can vary. If the pregnancy is healthy and your healthcare provider says it is safe, you may continue working longer and start leave closer to the due date. '
+            'On the other hand, if you have complaints or a high-risk pregnancy, you may need to start leave earlier based on medical advice.'
+            '\n\nIn short, when to take maternity leave depends on your pregnancy condition and your workplace rules, but many people start around 1.5 months before delivery.',
+      },
+    ],
+    'Health & Nutrition': [
+      {
+        'title': 'How much weight will I gain during pregnancy?',
+        'desc':
+        'Pregnancy weight gain depends on your nutritional status (BMI) before pregnancy. Generally, a person with a normal pre-pregnancy weight is recommended to gain about 11.5–16 kg in total. '
+            'In the first trimester, weight gain is often only 0.5–2 kg. In the second and third trimesters, weight gain tends to be faster—about 0.4–0.5 kg per week.'
+            '\n\nIf you were underweight before pregnancy, the recommended gain is higher; if you were overweight or obese, the recommended gain is lower. '
+            'Appropriate weight gain supports both maternal health and fetal growth.',
+      },
+      {
+        'title': 'What nutrients are important during pregnancy?',
+        'desc':
+        'Important pregnancy nutrients include folic acid for the baby’s neural development, iron to prevent anemia, calcium for bones and teeth, protein for fetal cell growth, and DHA for brain and eye development. '
+            'Try to eat a balanced diet and follow your doctor’s advice regarding any needed supplements.',
+      },
+      {
+        'title': 'Is it safe to take hot baths or use a sauna?',
+        'desc':
+        'Very hot baths and saunas are best avoided during pregnancy. A significant rise in body temperature may not be good for the baby, especially early in pregnancy. '
+            'Warm baths for relaxation are usually fine, but avoid water that is so hot it causes dizziness, heavy sweating, or discomfort.'
+            '\n\nSaunas are not recommended because they can cause overheating, dehydration, and low blood pressure. For safer relaxation, use comfortably warm (lukewarm) water.',
+      },
+      {
+        'title': 'Is it safe to go to the dentist while pregnant?',
+        'desc':
+        'Dental care during pregnancy is generally safe and is actually recommended to maintain oral health. Routine check-ups, cleanings, and fillings can usually be done. '
+            'Tell your dentist that you are pregnant so medications and procedures can be adjusted appropriately.'
+            '\n\nThis is important because gum or tooth infections can affect both your health and your pregnancy.',
+      },
+    ],
+    'Symptoms & Body Changes': [
+      {
+        'title': 'How can I know if I am pregnant?',
+        'desc':
+        'Presumptive (not certain) signs: a missed period, nausea/vomiting, tender or enlarged breasts, frequent urination, fatigue, dizziness/sleepiness, and appetite changes. These signs are not definite because they can be caused by other factors.'
+            '\n\nProbable signs: an enlarged uterus, cervical changes, and a positive pregnancy test. These strongly suggest pregnancy but are still not 100% certain.'
+            '\n\nPositive (certain) signs: the fetus is seen on ultrasound, fetal heartbeat is heard, or fetal parts are felt/identified by a clinician. These confirm pregnancy.',
+      },
+      {
+        'title': 'Spotting during pregnancy—should I worry?',
+        'desc':
+        'Spotting can happen during pregnancy and is not always dangerous. In early pregnancy, light spotting may be normal (for example, implantation). '
+            'However, you should still be cautious.'
+            '\n\nSeek medical care promptly if you have bright red bleeding, heavy bleeding, strong or persistent abdominal pain, dizziness, passing blood clots, or any other concerning symptoms. '
+            'These can be signs of a pregnancy complication. Don’t panic, but monitor the amount, color, and accompanying symptoms—and get checked to make sure you and the baby are safe.',
+      },
+      {
+        'title': 'When do cravings start and end?',
+        'desc':
+        'Cravings often begin in the first trimester, around 4–8 weeks of pregnancy. During this time, you may strongly want certain foods or suddenly dislike foods you previously enjoyed.'
+            '\n\nCravings often decrease or disappear in the second trimester, around 14–16 weeks. However, for some people, cravings can continue until late pregnancy, though usually not as intense as in the beginning.'
+            '\n\nCravings are normal. The key is to keep your diet balanced and avoid overeating.',
+      },
+      {
+        'title': 'When will I start feeling the baby move?',
+        'desc':
+        'Most people feel the first fetal movements around 18–20 weeks of pregnancy. If you have been pregnant before, you may feel movement earlier—around 16 weeks.'
+            '\n\nAt first, movements can feel subtle, like bubbles or small flutters, and become stronger as pregnancy progresses. '
+            'If you have not felt any movement by 24 weeks, it is best to consult a healthcare facility for evaluation.',
+      },
+    ],
+    'Activities & Lifestyle': [
+      {
+        'title': 'What exercises are safe during pregnancy?',
+        'desc':
+        'Safe exercises during pregnancy often include walking, swimming, prenatal yoga, and pregnancy exercise classes. Avoid activities with a high risk of falls or abdominal impact.'
+            '\n\nAlways consult your doctor before starting a new exercise program—especially if you have medical conditions or a high-risk pregnancy. Listen to your body and stop if you feel pain, dizziness, or severe fatigue.',
+      },
+      {
+        'title': 'Is air travel safe during pregnancy?',
+        'desc':
+        'Air travel is generally safe if the pregnancy is healthy and there are no complications. Airlines often allow travel up to around 36 weeks of pregnancy, but after 28 weeks they may require a doctor’s note.'
+            '\n\nWhen traveling, drink plenty of water, move or stretch periodically to keep blood flow healthy, and choose a comfortable seat. '
+            'If you have symptoms or a high-risk pregnancy, consult your healthcare provider before flying.',
+      },
+    ],
+    'Health & Complications': [
+      {
+        'title': 'When should I contact a doctor during pregnancy?',
+        'desc':
+        'Contact a doctor immediately if you experience: vaginal bleeding, severe or persistent abdominal pain, a severe headache that does not improve, blurred vision, sudden swelling in the hands or face, high fever, persistent vomiting, or a noticeable decrease in fetal movement—especially after 28 weeks.',
+      },
+      {
+        'title': 'What should I do if the baby is breech?',
+        'desc':
+        'A breech position means the baby’s head is up instead of down. This is fairly common earlier in pregnancy and the baby may still turn on their own.'
+            '\n\nIf the baby remains breech close to delivery, you should have regular check-ups with an obstetrician. Your healthcare provider will monitor the baby’s position, may suggest specific exercises or positioning techniques, and will decide the safest delivery method.'
+            '\n\nTry not to panic—focus on staying healthy and follow your scheduled prenatal care.',
+      },
+      {
+        'title': 'Is pregnancy after age 35 safe?',
+        'desc':
+        'Pregnancy after age 35 can still be safe, and many people have healthy pregnancies and normal deliveries at this age. '
+            'However, some risks can be slightly higher compared to younger pregnancies—such as high blood pressure, gestational diabetes, miscarriage, or chromosomal abnormalities. The likelihood of a C-section may also be higher.'
+            '\n\nEven so, risks can be reduced with good preconception planning, regular prenatal check-ups, nutritious food, adequate rest, and a healthy lifestyle. With proper medical monitoring, pregnancy after 35 can still be safe for both mother and baby.',
+      },
+    ],
+  };
+
+  Map<String, List<Map<String, String>>> get _categorizedQuestions {
+    final isEn = context.read<LocaleCubit>().state.languageCode == 'en';
+    return isEn ? _categorizedQuestionsEn : _categorizedQuestionsId;
+  }
 
   final Map<String, bool> _categoryExpansionState = {};
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize all categories as expanded
-    for (var category in _categorizedQuestions.keys) {
-      _categoryExpansionState[category] = true;
+  void _ensureExpansionKeys(Map<String, List<Map<String, String>>> data) {
+    // tambahkan key yang belum ada, jangan reset agar user state tidak hilang saat switch
+    for (final k in data.keys) {
+      _categoryExpansionState.putIfAbsent(k, () => true);
+    }
+    // bersihkan key lama yang tidak dipakai di locale sekarang
+    final keysToRemove = _categoryExpansionState.keys
+        .where((k) => !data.keys.contains(k))
+        .toList();
+    for (final k in keysToRemove) {
+      _categoryExpansionState.remove(k);
     }
   }
 
   List<Map<String, String>> _filterQuestions(List<Map<String, String>> questions) {
     if (_searchQuery.isEmpty) return questions;
 
+    final q = _searchQuery.toLowerCase();
     return questions.where((question) {
-      return question['title']!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          question['desc']!.toLowerCase().contains(_searchQuery.toLowerCase());
+      return question['title']!.toLowerCase().contains(q) ||
+          question['desc']!.toLowerCase().contains(q);
     }).toList();
+  }
+
+  List<Map<String, String>> _getAllQuestions(
+      Map<String, List<Map<String, String>>> data,
+      ) {
+    final all = <Map<String, String>>[];
+    data.forEach((_, value) => all.addAll(value));
+    return _filterQuestions(all);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Pertanyaan Umum Kehamilan",
-          style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
-        ),
-        backgroundColor: kPrimaryColor,
-        elevation: 0,
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha:0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, locale) {
+        final isEn = locale.languageCode == 'en';
+        final data = _categorizedQuestions;
+        _ensureExpansionKeys(data);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              isEn ? "Pregnancy FAQs" : "Pertanyaan Umum Kehamilan",
+              style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
+            ),
+            backgroundColor: kPrimaryColor,
+            elevation: 0,
+            centerTitle: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Cari pertanyaan...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.grey),
-                    onPressed: () {
-                      setState(() {
-                        _searchController.clear();
-                        _searchQuery = '';
-                      });
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() => _searchQuery = value);
                     },
-                  )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: InputDecoration(
+                      hintText: isEn ? 'Search questions...' : 'Cari pertanyaan...',
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          // Bagian body: Expanded -> SingleChildScrollView
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  // Mode Search
-                  if (_searchQuery.isNotEmpty)
-                    _getAllQuestions().isNotEmpty
-                        ? Column(
-                      children: _getAllQuestions()
-                          .map(
-                            (pertanyaan) => Column(
-                          children: [
-                            InfoContainerCustom(
-                              title: pertanyaan['title']!,
-                              desc: pertanyaan['desc']!,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      )
-                          .toList(),
-                    )
-                        : Padding(
-                      padding: const EdgeInsets.only(top: 32),
-                      child: Text(
-                        "Tidak ditemukan pertanyaan.\nCoba dengan keyword lain.",
-                        textAlign: TextAlign.center,
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    )
-                  else
-                  // Mode Normal (Kategori)
-                    Column(
-                      children: _categorizedQuestions.entries.map((entry) {
-                        final category = entry.key;
-                        final questions = _filterQuestions(entry.value);
 
-                        if (questions.isEmpty) return const SizedBox.shrink();
-
-                        return Column(
-                          children: [
-                            // Header Kategori
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _categoryExpansionState[category] =
-                                  !_categoryExpansionState[category]!;
-                                });
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor.withValues(alpha:0.1),
-                                  borderRadius: BorderRadius.circular(12),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      // Mode Search
+                      if (_searchQuery.isNotEmpty)
+                        _getAllQuestions(data).isNotEmpty
+                            ? Column(
+                          children: _getAllQuestions(data)
+                              .map(
+                                (pertanyaan) => Column(
+                              children: [
+                                InfoContainerCustom(
+                                  title: pertanyaan['title']!,
+                                  desc: pertanyaan['desc']!,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      category,
-                                      style: primaryTextStyle.copyWith(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Icon(
-                                      _categoryExpansionState[category]!
-                                          ? Icons.expand_less
-                                          : Icons.expand_more,
-                                      color: kPrimaryColor,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                const SizedBox(height: 16),
+                              ],
                             ),
-                            const SizedBox(height: 8),
-                            if (_categoryExpansionState[category]!)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 18.0),
-                                child: Column(
-                                  children: questions
-                                      .map(
-                                        (pertanyaan) => Column(
+                          )
+                              .toList(),
+                        )
+                            : Padding(
+                          padding: const EdgeInsets.only(top: 32),
+                          child: Text(
+                            isEn
+                                ? "No questions found.\nTry another keyword."
+                                : "Tidak ditemukan pertanyaan.\nCoba dengan keyword lain.",
+                            textAlign: TextAlign.center,
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        )
+                      else
+                      // Mode Normal (Kategori)
+                        Column(
+                          children: data.entries.map((entry) {
+                            final category = entry.key;
+                            final questions = _filterQuestions(entry.value);
+
+                            if (questions.isEmpty) return const SizedBox.shrink();
+
+                            return Column(
+                              children: [
+                                // Header Kategori
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _categoryExpansionState[category] =
+                                      !_categoryExpansionState[category]!;
+                                    });
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: kPrimaryColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        InfoContainerCustom(
-                                          title: pertanyaan['title']!,
-                                          desc: pertanyaan['desc']!,
+                                        Text(
+                                          category,
+                                          style: primaryTextStyle.copyWith(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        const SizedBox(height: 12),
+                                        Icon(
+                                          _categoryExpansionState[category]!
+                                              ? Icons.expand_less
+                                              : Icons.expand_more,
+                                          color: kPrimaryColor,
+                                        ),
                                       ],
                                     ),
-                                  )
-                                      .toList(),
+                                  ),
                                 ),
-                              ),
-                            const SizedBox(height: 16),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                ],
+                                const SizedBox(height: 8),
+
+                                if (_categoryExpansionState[category]!)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 18.0),
+                                    child: Column(
+                                      children: questions
+                                          .map(
+                                            (pertanyaan) => Column(
+                                          children: [
+                                            InfoContainerCustom(
+                                              title: pertanyaan['title']!,
+                                              desc: pertanyaan['desc']!,
+                                            ),
+                                            const SizedBox(height: 12),
+                                          ],
+                                        ),
+                                      )
+                                          .toList(),
+                                    ),
+                                  ),
+
+                                const SizedBox(height: 16),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-
-        ],
-      ),
+        );
+      },
     );
-  }
-
-  List<Map<String, String>> _getAllQuestions() {
-    List<Map<String, String>> allQuestions = [];
-    _categorizedQuestions.forEach((key, value) {
-      allQuestions.addAll(value);
-    });
-    return _filterQuestions(allQuestions);
   }
 }

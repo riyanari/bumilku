@@ -2,7 +2,9 @@ import 'package:bumilku_app/pages/signup/email_verification_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../cubit/auth_cubit.dart';
+import '../cubit/locale_cubit.dart';
 import '../components/loading_button.dart';
 import '../theme/theme.dart';
 
@@ -17,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final FocusNode passwordFocusNode = FocusNode();
+
   bool kunciPassword = true;
   bool isEmailError = false;
   bool isPasswordError = false;
@@ -34,7 +37,6 @@ class _LoginPageState extends State<LoginPage> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    // Reset error state
     setState(() {
       isEmailError = email.isEmpty;
       isPasswordError = password.isEmpty;
@@ -49,7 +51,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // 👇 METHOD BARU: Navigate ke Email Verification Page
   void _navigateToEmailVerification(String userId, String email) {
     Navigator.pushAndRemoveUntil(
       context,
@@ -63,19 +64,24 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // METHOD UNTUK LUPA PASSWORD
-  void _showForgotPasswordDialog() {
-    final TextEditingController forgotPasswordController = TextEditingController();
+  void _showForgotPasswordDialog(bool isEn) {
+    final TextEditingController forgotPasswordController =
+    TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Lupa Password", style: primaryTextStyle),
+        title: Text(
+          isEn ? "Forgot Password" : "Lupa Password",
+          style: primaryTextStyle,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "Masukkan email Anda untuk mengatur ulang password",
+              isEn
+                  ? "Enter your email to reset your password"
+                  : "Masukkan email Anda untuk mengatur ulang password",
               style: secondaryTextStyle,
             ),
             const SizedBox(height: 16),
@@ -83,8 +89,8 @@ class _LoginPageState extends State<LoginPage> {
               controller: forgotPasswordController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                labelText: "Email",
-                border: OutlineInputBorder(),
+                labelText: isEn ? "Email" : "Email",
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
@@ -92,7 +98,10 @@ class _LoginPageState extends State<LoginPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Batal", style: secondaryTextStyle),
+            child: Text(
+              isEn ? "Cancel" : "Batal",
+              style: secondaryTextStyle,
+            ),
           ),
           BlocListener<AuthCubit, AuthState>(
             listener: (context, state) {
@@ -100,7 +109,11 @@ class _LoginPageState extends State<LoginPage> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("Email reset password telah dikirim!"),
+                    content: Text(
+                      isEn
+                          ? "Password reset email has been sent!"
+                          : "Email reset password telah dikirim!",
+                    ),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -118,9 +131,23 @@ class _LoginPageState extends State<LoginPage> {
                 final email = forgotPasswordController.text.trim();
                 if (email.isNotEmpty) {
                   context.read<AuthCubit>().resetPassword(email);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isEn
+                            ? "Please enter your email."
+                            : "Silakan isi email terlebih dahulu.",
+                      ),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
                 }
               },
-              child: Text("Kirim", style: primaryTextStyle),
+              child: Text(
+                isEn ? "Send" : "Kirim",
+                style: primaryTextStyle,
+              ),
             ),
           ),
         ],
@@ -128,43 +155,55 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      kunciPassword = !kunciPassword;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthFailed) {
-          // 👇 CEK APAKAH ERRORNYA EMAIL BELUM TERVERIFIKASI
-          if (state.error.contains('EMAIL_NOT_VERIFIED')) {
-            final parts = state.error.split(':');
-            if (parts.length >= 3) {
-              final userId = parts[1];
-              final userEmail = parts[2];
-              print("=== [LoginPage] Email belum terverifikasi, navigasi ke verification page ===");
-              _navigateToEmailVerification(userId, userEmail);
-              return;
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, locale) {
+        final isEn = locale.languageCode == 'en';
+
+        return BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthFailed) {
+              if (state.error.contains('EMAIL_NOT_VERIFIED')) {
+                final parts = state.error.split(':');
+                if (parts.length >= 3) {
+                  final userId = parts[1];
+                  final userEmail = parts[2];
+                  debugPrint(
+                    "=== [LoginPage] Email belum terverifikasi, navigasi ke verification page ===",
+                  );
+                  _navigateToEmailVerification(userId, userEmail);
+                  return;
+                }
+              }
+
+              setState(() {
+                _loginError = state.error;
+              });
+            } else if (state is AuthSuccess) {
+              final user = state.user;
+              if (user.role.toLowerCase() == 'admin') {
+                Navigator.of(context).pushReplacementNamed('/list-bunda');
+              } else {
+                Navigator.of(context).pushReplacementNamed('/home');
+              }
             }
-          }
-
-          setState(() {
-            _loginError = state.error;
-          });
-        } else if (state is AuthSuccess) {
-          final user = state.user;
-
-          if (user.role.toLowerCase() == 'admin') {
-            Navigator.of(context).pushReplacementNamed('/list-bunda');
-          } else {
-            Navigator.of(context).pushReplacementNamed('/home');
-          }
-        }
+          },
+          child: Scaffold(
+            body: _buildBody(context, isEn),
+          ),
+        );
       },
-      child: Scaffold(
-        body: _buildBody(context),
-      ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, bool isEn) {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
@@ -172,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
         return Stack(
           children: [
             _imageLogin(),
-            _formLogin(context, isLoading),
+            _formLogin(context, isLoading, isEn),
           ],
         );
       },
@@ -201,7 +240,18 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _formLogin(BuildContext context, bool isLoading) {
+  Widget _formLogin(BuildContext context, bool isLoading, bool isEn) {
+    final hintEmail = isEn ? 'Enter Email' : 'Masukkan Email';
+    final hintPass = isEn ? 'Enter Password' : 'Masukkan Password';
+    final errEmail = isEn ? 'Email is required' : 'Email harus diisi';
+    final errPass = isEn ? 'Password is required' : 'Password harus diisi';
+
+    final forgot = isEn ? 'Forgot Password?' : 'Lupa Password?';
+    final loginTxt = isEn ? 'Login' : 'Login';
+
+    final dontHave = isEn ? "Don't have an account? " : "Belum punya akun? ";
+    final signUp = isEn ? "Sign Up" : "Sign Up";
+
     return Semantics(
       label: 'Login form',
       child: Column(
@@ -211,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
             decoration: BoxDecoration(
               color: tPrimaryColor,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(40.0),
                 topRight: Radius.circular(40.0),
               ),
@@ -219,12 +269,12 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 Semantics(
-                  label: 'Email Input Field. Masukkan email',
+                  label: isEn ? 'Email input field' : 'Email Input Field. Masukkan email',
                   child: TextFormField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      hintText: 'Masukkan Email',
+                      hintText: hintEmail,
                       hintStyle: const TextStyle(
                         color: kPrimaryColor,
                         fontWeight: FontWeight.w300,
@@ -232,10 +282,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      prefixIcon: const Icon(
-                        Icons.email,
-                        color: kPrimaryColor,
-                      ),
+                      prefixIcon: const Icon(Icons.email, color: kPrimaryColor),
                       border: OutlineInputBorder(
                         borderSide: const BorderSide(
                           color: kPrimaryColor,
@@ -243,29 +290,28 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         borderRadius: BorderRadius.circular(40.0),
                       ),
-                      errorText: isEmailError ? 'Email harus diisi' : null,
+                      errorText: isEmailError ? errEmail : null,
                     ),
                     onChanged: (value) {
                       if (isEmailError && value.isNotEmpty) {
-                        setState(() {
-                          isEmailError = false;
-                        });
+                        setState(() => isEmailError = false);
                       }
                     },
-                    onFieldSubmitted: (value) {
+                    onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(passwordFocusNode);
                     },
                   ),
                 ),
                 const SizedBox(height: 10),
                 Semantics(
-                  label: 'Password Input Field. Masukkan Password',
+                  label:
+                  isEn ? 'Password input field' : 'Password Input Field. Masukkan Password',
                   child: TextFormField(
                     obscureText: kunciPassword,
                     controller: passwordController,
                     focusNode: passwordFocusNode,
                     decoration: InputDecoration(
-                      hintText: 'Masukkan Password',
+                      hintText: hintPass,
                       hintStyle: const TextStyle(
                         color: kPrimaryColor,
                         fontWeight: FontWeight.w300,
@@ -280,9 +326,7 @@ class _LoginPageState extends State<LoginPage> {
                       suffixIcon: GestureDetector(
                         onTap: _togglePasswordVisibility,
                         child: Semantics(
-                          label: kunciPassword
-                              ? 'Show password'
-                              : 'Hide password',
+                          label: kunciPassword ? 'Show password' : 'Hide password',
                           child: Icon(
                             kunciPassword
                                 ? Icons.visibility_off_outlined
@@ -298,36 +342,31 @@ class _LoginPageState extends State<LoginPage> {
                           width: 1.0,
                         ),
                       ),
-                      errorText: isPasswordError ? 'Password harus diisi' : null,
+                      errorText: isPasswordError ? errPass : null,
                     ),
                     onChanged: (value) {
                       if (isPasswordError && value.isNotEmpty) {
-                        setState(() {
-                          isPasswordError = false;
-                        });
+                        setState(() => isPasswordError = false);
                       }
                     },
-                    onFieldSubmitted: (value) {
-                      _login();
-                    },
+                    onFieldSubmitted: (_) => _login(),
                   ),
                 ),
-                SizedBox(height: 4,),
+                const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     GestureDetector(
-                      onTap: _showForgotPasswordDialog,
+                      onTap: () => _showForgotPasswordDialog(isEn),
                       child: Text(
-                        "Lupa Password?",
-                        style: whiteTextStyle.copyWith(
-                          fontSize: 12,
-                        ),
+                        forgot,
+                        style: whiteTextStyle.copyWith(fontSize: 12),
                         textAlign: TextAlign.end,
                       ),
                     ),
                   ],
                 ),
+
                 if (_loginError != null) ...[
                   const SizedBox(height: 10),
                   Container(
@@ -366,9 +405,7 @@ class _LoginPageState extends State<LoginPage> {
                             size: 16,
                           ),
                           onPressed: () {
-                            setState(() {
-                              _loginError = null;
-                            });
+                            setState(() => _loginError = null);
                           },
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(
@@ -382,13 +419,14 @@ class _LoginPageState extends State<LoginPage> {
                 ],
 
                 const SizedBox(height: 10),
+
                 isLoading
                     ? const LoadingButton()
                     : SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: Semantics(
-                    label: 'Login',
-                    hint: 'Press to log in',
+                    label: loginTxt,
+                    hint: isEn ? 'Press to log in' : 'Tekan untuk masuk',
                     button: true,
                     enabled: !isLoading,
                     child: TextButton(
@@ -402,7 +440,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          "Login",
+                          loginTxt,
                           style: whiteTextStyle.copyWith(
                             fontWeight: extraBold,
                             fontSize: 14,
@@ -412,24 +450,27 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Belum punya akun? ", style: secondaryTextStyle),
+                    Text(dontHave, style: secondaryTextStyle),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OnboardingSignupPage(),
+                            builder: (_) => const OnboardingSignupPage(),
                           ),
                         );
                       },
-                      child: Text("Sign Up", style: whiteTextStyle),
+                      child: Text(signUp, style: whiteTextStyle),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 10),
               ],
             ),
@@ -437,11 +478,5 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      kunciPassword = !kunciPassword;
-    });
   }
 }

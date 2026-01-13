@@ -1,5 +1,8 @@
-import 'package:bumilku_app/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import 'package:bumilku_app/theme/theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../self_detection_controller.dart';
 
 class FetalMovementPage extends StatefulWidget {
@@ -12,25 +15,6 @@ class FetalMovementPage extends StatefulWidget {
 }
 
 class _FetalMovementPageState extends State<FetalMovementPage> {
-  final List<String> _activityPatterns = [
-    'Lebih aktif pagi hari',
-    'Lebih aktif siang hari',
-    'Lebih aktif malam hari',
-    'Tidak ada pola khusus'
-  ];
-
-  final List<String> _comparisonOptions = [
-    'Lebih aktif',
-    'Sama saja',
-    'Lebih sedikit'
-  ];
-
-  final List<String> _complaintOptions = [
-    'Pusing/lemas',
-    'Nyeri perut',
-    'Tidak ada'
-  ];
-
   // Controller untuk input field
   final TextEditingController _movementCountController = TextEditingController();
 
@@ -45,9 +29,11 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
   }
 
   void _initializeData() {
-    if (widget.controller.fetalMovementDateTime == null) {
-      widget.controller.fetalMovementDateTime = DateTime.now();
-    }
+    final now = DateTime.now();
+
+    widget.controller.fetalMovementDateTime ??= now;
+
+    // default values -> pakai string default ID dulu, nanti akan di-sync ulang di build()
     if (widget.controller.movementComparison.isEmpty) {
       widget.controller.movementComparison = 'Sama saja';
     }
@@ -55,8 +41,9 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
       widget.controller.fetalActivityPattern = 'Tidak ada pola khusus';
     }
 
-    // Set durasi tetap 12 jam
     widget.controller.fetalMovementDuration = _fixedDurationHours;
+    widget.controller.fetalAdditionalComplaints =
+        widget.controller.fetalAdditionalComplaints ?? <String>[];
   }
 
   void _setupControllers() {
@@ -71,50 +58,45 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     });
   }
 
-  void _showDateTimePicker() async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _showDateTimePicker(BuildContext context) async {
+    final initial = widget.controller.fetalMovementDateTime ?? DateTime.now();
+
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: widget.controller.fetalMovementDateTime ?? DateTime.now(),
+      initialDate: initial,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
 
-    if (picked != null && mounted) {
-      final TimeOfDay? time = await showTimePicker(
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(widget.controller.fetalMovementDateTime ?? DateTime.now()),
+        initialTime: TimeOfDay.fromDateTime(initial),
       );
 
-      if (time != null && mounted) {
+      if (pickedTime != null && mounted) {
         setState(() {
           widget.controller.fetalMovementDateTime = DateTime(
-            picked.year,
-            picked.month,
-            picked.day,
-            time.hour,
-            time.minute,
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
           );
         });
       }
     }
   }
 
-  // PERHITUNGAN DINAMIS - Hitung gerakan per jam
-  double _getMovementsPerHour(int movementCount) {
-    return movementCount / _fixedDurationHours;
-  }
+  double _getMovementsPerHour(int movementCount) => movementCount / _fixedDurationHours;
 
-  // Tentukan status berdasarkan gerakan per jam
   FetalMovementStatus _calculateStatus(int movementCount) {
-    if (movementCount == 0) {
-      return FetalMovementStatus.incomplete;
-    }
+    if (movementCount == 0) return FetalMovementStatus.incomplete;
 
-    // STANDAR BARU: minimal 10 gerakan dalam 12 jam
-    const normalThreshold = 10; // Minimal 10 gerakan dalam 12 jam
-    const warningThreshold = 7; // 7-9 gerakan dalam 12 jam
-    const dangerThreshold = 4;  // 4-6 gerakan dalam 12 jam
-    // Kurang dari 4 gerakan = emergency
+    const normalThreshold = 10; // >=10 normal
+    const warningThreshold = 7; // 7-9 monitoring
+    const dangerThreshold = 4;  // 4-6 attention
+    // <4 emergency
 
     if (movementCount >= normalThreshold) {
       return FetalMovementStatus.normal;
@@ -127,17 +109,11 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     }
   }
 
-  String? _validateMovementCount(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Jumlah gerakan harus diisi';
-    }
+  String? _validateMovementCount(AppLocalizations t, String? value) {
+    if (value == null || value.isEmpty) return t.fetalMoveErrorRequired;
     final count = int.tryParse(value);
-    if (count == null) {
-      return 'Masukkan angka yang valid';
-    }
-    if (count < 0) {
-      return 'Tidak boleh negatif';
-    }
+    if (count == null) return t.fetalMoveErrorInvalidNumber;
+    if (count < 0) return t.fetalMoveErrorNegative;
     return null;
   }
 
@@ -149,14 +125,46 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+
+    // === OPTIONS BERDASARKAN LOCALE ===
+    final activityPatterns = <String>[
+      t.fetalPatternMorning,
+      t.fetalPatternAfternoon,
+      t.fetalPatternNight,
+      t.fetalPatternNoPattern,
+    ];
+
+    final comparisonOptions = <String>[
+      t.fetalCompareMoreActive,
+      t.fetalCompareSame,
+      t.fetalCompareLess,
+    ];
+
+    final complaintOptions = <String>[
+      t.fetalComplaintDizzyWeak,
+      t.fetalComplaintAbdominalPain,
+      t.fetalComplaintNone,
+    ];
+
+    // === SYNC DEFAULT VALUE BIAR GROUPVALUE NYAMBUNG (karena sebelumnya string ID) ===
+    // jika current value bukan bagian dari options locale sekarang → set default locale sekarang
+    if (!activityPatterns.contains(widget.controller.fetalActivityPattern)) {
+      widget.controller.fetalActivityPattern = t.fetalPatternNoPattern;
+    }
+    if (!comparisonOptions.contains(widget.controller.movementComparison)) {
+      widget.controller.movementComparison = t.fetalCompareSame;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Pencatatan Gerakan Janin",
-            style: TextStyle(
+            t.fetalMoveTitle,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: tPrimaryColor,
@@ -164,38 +172,37 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
           const SizedBox(height: 10),
 
-          // Informasi penting
-          _buildInfoCard(),
+          _buildInfoCard(t),
           const SizedBox(height: 16),
 
           Expanded(
             child: ListView(
               children: [
-                _buildSectionTitle("Parameter Utama Pencatatan"),
+                _buildSectionTitle(t.fetalMoveMainParams),
                 const SizedBox(height: 12),
 
-                _buildDateTimeField(),
+                _buildDateTimeField(t, locale),
                 const SizedBox(height: 16),
 
-                _buildMovementCountField(),
+                _buildMovementCountField(t),
                 const SizedBox(height: 16),
 
-                _buildDurationInfo(),
+                _buildDurationInfo(t),
                 const SizedBox(height: 16),
 
-                _buildActivityPatternField(),
+                _buildActivityPatternField(t, activityPatterns),
                 const SizedBox(height: 20),
 
-                _buildSectionTitle("Kondisi Subjektif Ibu"),
+                _buildSectionTitle(t.fetalMoveMotherSubjective),
                 const SizedBox(height: 12),
 
-                _buildMovementComparisonField(),
+                _buildMovementComparisonField(t, comparisonOptions),
                 const SizedBox(height: 16),
 
-                _buildAdditionalComplaintsField(),
+                _buildAdditionalComplaintsField(t, complaintOptions),
                 const SizedBox(height: 20),
 
-                _buildSummarySection(),
+                _buildSummarySection(t),
               ],
             ),
           ),
@@ -204,7 +211,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(AppLocalizations t) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -220,7 +227,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
               Icon(Icons.info, color: Colors.blue[700], size: 16),
               const SizedBox(width: 8),
               Text(
-                "Informasi Penting",
+                t.fetalMoveImportantInfoTitle,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.blue[700],
@@ -230,9 +237,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            "Pencatatan gerakan janin dilakukan selama 12 jam. "
-                "Gerakan janin normal: minimal 10 gerakan dalam 12 jam. "
-                "Catat semua gerakan yang dirasakan dalam periode 12 jam.",
+            t.fetalMoveImportantInfoDesc(_fixedDurationHours),
             style: TextStyle(
               fontSize: 12,
               color: Colors.blue[700],
@@ -246,7 +251,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,
         color: tPrimaryColor,
@@ -254,12 +259,19 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     );
   }
 
-  Widget _buildDateTimeField() {
+  Widget _buildDateTimeField(AppLocalizations t, Locale locale) {
+    final dt = widget.controller.fetalMovementDateTime;
+
+    // Format sesuai locale
+    final df = DateFormat('d MMM y, HH:mm', locale.toLanguageTag());
+
+    final displayText = dt != null ? df.format(dt) : t.fetalMovePickDateTime;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Tanggal & Waktu Mulai Pencatatan",
+          t.fetalMoveStartDateTimeLabel,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -278,17 +290,18 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.controller.fetalMovementDateTime != null
-                    ? "${widget.controller.fetalMovementDateTime!.day}/${widget.controller.fetalMovementDateTime!.month}/${widget.controller.fetalMovementDateTime!.year} ${widget.controller.fetalMovementDateTime!.hour}:${widget.controller.fetalMovementDateTime!.minute.toString().padLeft(2, '0')}"
-                    : "Pilih tanggal & waktu",
-                style: TextStyle(
-                  color: widget.controller.fetalMovementDateTime != null ? Colors.black : Colors.grey[400],
+              Expanded(
+                child: Text(
+                  displayText,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: dt != null ? Colors.black : Colors.grey[400],
+                  ),
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.calendar_today, color: tPrimaryColor),
-                onPressed: _showDateTimePicker,
+                icon: const Icon(Icons.calendar_today, color: tPrimaryColor),
+                onPressed: () => _showDateTimePicker(context),
               ),
             ],
           ),
@@ -297,14 +310,14 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     );
   }
 
-  Widget _buildMovementCountField() {
-    final hasError = _validateMovementCount(_movementCountController.text) != null;
+  Widget _buildMovementCountField(AppLocalizations t) {
+    final hasError = _validateMovementCount(t, _movementCountController.text) != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Jumlah Gerakan dalam 12 Jam",
+          t.fetalMoveCountLabel(_fixedDurationHours),
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -328,16 +341,16 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
                 child: TextFormField(
                   controller: _movementCountController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Masukkan total gerakan dalam 12 jam",
-                    hintStyle: TextStyle(fontSize: 12),
-                    errorStyle: TextStyle(height: 0),
+                    hintText: t.fetalMoveCountHint(_fixedDurationHours),
+                    hintStyle: const TextStyle(fontSize: 12),
+                    errorStyle: const TextStyle(height: 0),
                   ),
                 ),
               ),
               Text(
-                "kali",
+                t.fetalMoveTimesSuffix,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,
@@ -349,27 +362,21 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
         if (hasError) ...[
           const SizedBox(height: 4),
           Text(
-            _validateMovementCount(_movementCountController.text)!,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.red,
-            ),
+            _validateMovementCount(t, _movementCountController.text)!,
+            style: const TextStyle(fontSize: 10, color: Colors.red),
           ),
         ] else ...[
           const SizedBox(height: 4),
           Text(
-            "Target: minimal 10 gerakan dalam 12 jam",
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[500],
-            ),
+            t.fetalMoveTargetHint,
+            style: TextStyle(fontSize: 10, color: Colors.grey[500]),
           ),
         ],
       ],
     );
   }
 
-  Widget _buildDurationInfo() {
+  Widget _buildDurationInfo(AppLocalizations t) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -383,7 +390,7 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              "Durasi Pencatatan: $_fixedDurationHours Jam",
+              t.fetalMoveDurationInfo(_fixedDurationHours),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.green[700],
@@ -396,12 +403,12 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     );
   }
 
-  Widget _buildActivityPatternField() {
+  Widget _buildActivityPatternField(AppLocalizations t, List<String> patterns) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Pola Aktivitas Janin",
+          t.fetalMoveActivityPatternLabel,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -409,28 +416,29 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
         ),
         const SizedBox(height: 8),
-        ..._activityPatterns.map((pattern) => RadioListTile<String>(
-          title: Text(pattern, style: const TextStyle(fontSize: 12)),
-          value: pattern,
-          groupValue: widget.controller.fetalActivityPattern,
-          onChanged: (value) {
-            setState(() {
-              widget.controller.fetalActivityPattern = value!;
-            });
-          },
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-        )),
+        ...patterns.map(
+              (pattern) => RadioListTile<String>(
+            title: Text(pattern, style: const TextStyle(fontSize: 12)),
+            value: pattern,
+            groupValue: widget.controller.fetalActivityPattern,
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => widget.controller.fetalActivityPattern = value);
+            },
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildMovementComparisonField() {
+  Widget _buildMovementComparisonField(AppLocalizations t, List<String> options) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Perbandingan Gerakan dengan Hari Sebelumnya",
+          t.fetalMoveComparisonLabel,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -438,28 +446,31 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
         ),
         const SizedBox(height: 8),
-        ..._comparisonOptions.map((option) => RadioListTile<String>(
-          title: Text(option, style: const TextStyle(fontSize: 12)),
-          value: option,
-          groupValue: widget.controller.movementComparison,
-          onChanged: (value) {
-            setState(() {
-              widget.controller.movementComparison = value!;
-            });
-          },
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-        )),
+        ...options.map(
+              (option) => RadioListTile<String>(
+            title: Text(option, style: const TextStyle(fontSize: 12)),
+            value: option,
+            groupValue: widget.controller.movementComparison,
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => widget.controller.movementComparison = value);
+            },
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildAdditionalComplaintsField() {
+  Widget _buildAdditionalComplaintsField(AppLocalizations t, List<String> options) {
+    final selected = widget.controller.fetalAdditionalComplaints;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Keluhan Lain yang Dirasakan",
+          t.fetalMoveOtherComplaintsLabel,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -467,39 +478,35 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           ),
         ),
         const SizedBox(height: 8),
-        ..._complaintOptions.map((complaint) => CheckboxListTile(
-          title: Text(complaint, style: const TextStyle(fontSize: 12)),
-          value: widget.controller.fetalAdditionalComplaints.contains(complaint),
-          onChanged: (value) {
-            setState(() {
-              if (value == true) {
-                widget.controller.fetalAdditionalComplaints = [
-                  ...widget.controller.fetalAdditionalComplaints,
-                  complaint
-                ];
-              } else {
-                widget.controller.fetalAdditionalComplaints =
-                    widget.controller.fetalAdditionalComplaints
-                        .where((item) => item != complaint)
-                        .toList();
-              }
-            });
-          },
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-          controlAffinity: ListTileControlAffinity.leading,
-        )).toList(),
+        ...options.map(
+              (complaint) => CheckboxListTile(
+            title: Text(complaint, style: const TextStyle(fontSize: 12)),
+            value: selected.contains(complaint),
+            onChanged: (value) {
+              setState(() {
+                if (value == true) {
+                  widget.controller.fetalAdditionalComplaints = [...selected, complaint];
+                } else {
+                  widget.controller.fetalAdditionalComplaints =
+                      selected.where((x) => x != complaint).toList();
+                }
+              });
+            },
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSummarySection() {
+  Widget _buildSummarySection(AppLocalizations t) {
     final movementCount = widget.controller.fetalMovementCount;
     final hasData = movementCount > 0;
 
-    // PERHITUNGAN DINAMIS
     final status = _calculateStatus(movementCount);
-    final movementsPerHour = _getMovementsPerHour(movementCount);
+    final mph = _getMovementsPerHour(movementCount);
 
     if (!hasData) {
       return Container(
@@ -510,11 +517,8 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
           border: Border.all(color: Colors.grey[300]!),
         ),
         child: Text(
-          "Isi jumlah gerakan untuk melihat ringkasan",
-          style: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 12,
-          ),
+          t.fetalMoveSummaryEmpty,
+          style: TextStyle(color: Colors.grey[500], fontSize: 12),
         ),
       );
     }
@@ -522,56 +526,39 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: status.color.withValues(alpha:0.1),
+        color: status.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: status.color.withValues(alpha:0.3),
-        ),
+        border: Border.all(color: status.color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                status.icon,
-                color: status.color,
-                size: 16,
-              ),
+              Icon(status.icon, color: status.color, size: 16),
               const SizedBox(width: 8),
               Text(
-                status.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: status.color,
-                ),
+                status.titleText(t),
+                style: TextStyle(fontWeight: FontWeight.bold, color: status.color),
               ),
             ],
           ),
           const SizedBox(height: 8),
 
-          // INFORMASI GERAKAN
           Text(
-            "Gerakan: $movementCount kali dalam $_fixedDurationHours jam "
-                "(${movementsPerHour.toStringAsFixed(1)} gerakan/jam)",
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
-            ),
+            t.fetalMoveSummaryMoves(movementCount, _fixedDurationHours, mph),
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
           ),
           const SizedBox(height: 6),
 
           Text(
-            status.getMessage(movementCount, _fixedDurationHours, movementsPerHour),
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[700],
-            ),
+            status.getMessage(t, movementCount, _fixedDurationHours, mph),
+            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
           ),
           const SizedBox(height: 8),
 
           Text(
-            "Detail Pencatatan:",
+            t.fetalMoveSummaryDetailTitle,
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: Colors.grey[700],
@@ -579,44 +566,61 @@ class _FetalMovementPageState extends State<FetalMovementPage> {
             ),
           ),
           const SizedBox(height: 4),
-          Text("• Jumlah gerakan: $movementCount kali", style: const TextStyle(fontSize: 11)),
-          Text("• Durasi: $_fixedDurationHours jam", style: const TextStyle(fontSize: 11)),
-          Text("• Target minimal: 10 gerakan", style: const TextStyle(fontSize: 11)),
-          Text("• Pola: ${widget.controller.fetalActivityPattern}", style: const TextStyle(fontSize: 11)),
-          Text("• Perbandingan: ${widget.controller.movementComparison}", style: const TextStyle(fontSize: 11)),
+          Text(t.fetalMoveSummaryDetailCount(movementCount), style: const TextStyle(fontSize: 11)),
+          Text(t.fetalMoveSummaryDetailDuration(_fixedDurationHours), style: const TextStyle(fontSize: 11)),
+          Text(t.fetalMoveSummaryDetailTarget, style: const TextStyle(fontSize: 11)),
+          Text(t.fetalMoveSummaryDetailPattern(widget.controller.fetalActivityPattern), style: const TextStyle(fontSize: 11)),
+          Text(t.fetalMoveSummaryDetailCompare(widget.controller.movementComparison), style: const TextStyle(fontSize: 11)),
           if (widget.controller.fetalAdditionalComplaints.isNotEmpty)
-            Text("• Keluhan: ${widget.controller.fetalAdditionalComplaints.join(', ')}", style: const TextStyle(fontSize: 11)),
+            Text(
+              t.fetalMoveSummaryDetailComplaints(widget.controller.fetalAdditionalComplaints.join(', ')),
+              style: const TextStyle(fontSize: 11),
+            ),
         ],
       ),
     );
   }
 }
 
-// ENUM UNTUK STATUS YANG LEBIH DINAMIS
+// ENUM STATUS
 enum FetalMovementStatus {
-  incomplete(Colors.grey, Icons.hourglass_empty, "Data Belum Lengkap"),
-  normal(Colors.green, Icons.check_circle, "Kondisi Normal"),
-  monitoring(Colors.blue, Icons.timelapse, "Perlu Pemantauan"),
-  attention(Colors.orange, Icons.info, "Perlu Perhatian"),
-  emergency(Colors.red, Icons.warning, "Perhatian Khusus");
+  incomplete(Colors.grey, Icons.hourglass_empty),
+  normal(Colors.green, Icons.check_circle),
+  monitoring(Colors.blue, Icons.timelapse),
+  attention(Colors.orange, Icons.info),
+  emergency(Colors.red, Icons.warning);
 
-  const FetalMovementStatus(this.color, this.icon, this.title);
+  const FetalMovementStatus(this.color, this.icon);
   final Color color;
   final IconData icon;
-  final String title;
 
-  String getMessage(int movementCount, int durationHours, double movementsPerHour) {
+  String titleText(AppLocalizations t) {
+    switch (this) {
+      case FetalMovementStatus.incomplete:
+        return t.fetalStatusIncomplete;
+      case FetalMovementStatus.normal:
+        return t.fetalStatusNormal;
+      case FetalMovementStatus.monitoring:
+        return t.fetalStatusMonitoring;
+      case FetalMovementStatus.attention:
+        return t.fetalStatusAttention;
+      case FetalMovementStatus.emergency:
+        return t.fetalStatusEmergency;
+    }
+  }
+
+  String getMessage(AppLocalizations t, int movementCount, int durationHours, double mph) {
     switch (this) {
       case FetalMovementStatus.normal:
-        return "Gerakan janin dalam batas normal ($movementCount gerakan dalam $durationHours jam).";
+        return t.fetalMsgNormal(movementCount, durationHours);
       case FetalMovementStatus.monitoring:
-        return "Gerakan janin $movementCount kali dalam $durationHours jam. Tetap pantau secara rutin dan perhatikan perubahan gerakan.";
+        return t.fetalMsgMonitoring(movementCount, durationHours);
       case FetalMovementStatus.attention:
-        return "Gerakan janin $movementCount kali dalam $durationHours jam. Disarankan konsultasi dengan tenaga kesehatan.";
+        return t.fetalMsgAttention(movementCount, durationHours);
       case FetalMovementStatus.emergency:
-        return "Gerakan janin hanya $movementCount kali dalam $durationHours jam. Segera hubungi tenaga kesehatan.";
+        return t.fetalMsgEmergency(movementCount, durationHours);
       case FetalMovementStatus.incomplete:
-        return "Lengkapi data pencatatan untuk analisis yang akurat.";
+        return t.fetalMsgIncomplete;
     }
   }
 }

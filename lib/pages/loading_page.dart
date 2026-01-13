@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../cubit/locale_cubit.dart';
 import '../cubit/medis_cubit.dart';
 import '../models/medis_model.dart';
 import '../theme/theme.dart';
 import 'congrats_page.dart';
-import 'HomePage.dart';
 
 class LoadingPage extends StatefulWidget {
   final String userId;
@@ -44,6 +45,7 @@ class _LoadingPageState extends State<LoadingPage>
 
   void _navigateToCongrats(MedisModel? medis) {
     if (!mounted) return;
+
     final fallbackMedis = medis ??
         MedisModel(
           id: 'temp',
@@ -73,74 +75,98 @@ class _LoadingPageState extends State<LoadingPage>
 
   @override
   Widget build(BuildContext context) {
-    final dots = '.' * _dot;
-    final percent = (_controller.value * 100).clamp(0, 100).round();
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, locale) {
+        final isEn = locale.languageCode == 'en';
 
-    return BlocListener<MedisCubit, MedisState>(
-      listener: (context, state) {
-        if (state is MedisSuccess) {
-          final medis = state.activeMedis ??
-              (state.medisHistory.isNotEmpty ? state.medisHistory.first : null);
+        final dots = '.' * _dot;
+        final percent = (_controller.value * 100).clamp(0, 100).round();
 
-          Future.delayed(const Duration(seconds: 3), () {
-            _navigateToCongrats(medis);
-          });
-        } else if (state is MedisFailed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Gagal memuat data medis: ${state.error}")),
-          );
-          Future.delayed(const Duration(seconds: 3), () {
-            _navigateToCongrats(null); // tetap ke Congrats walau error
-          });
-        }
-      },
-      child: Scaffold(
-        backgroundColor: kBackgroundColor,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 110,
-                height: 110,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
-                      backgroundColor: kBoxGreenColor,
-                      strokeWidth: 14,
-                      value: _controller.value,
-                    ),
-                    Text(
-                      '$percent%',
-                      style: primaryTextStyle.copyWith(
-                        fontWeight: bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
+        final preparingText = isEn
+            ? 'Preparing Bumilku$dots'
+            : 'Menyiapkan Bumilku$dots';
+
+        final waitText = isEn ? 'Please wait a moment' : 'Mohon tunggu sebentar';
+
+        final medisErrorText = isEn
+            ? 'Failed to load medical data: '
+            : 'Gagal memuat data medis: ';
+
+        return BlocListener<MedisCubit, MedisState>(
+          listener: (context, state) {
+            if (state is MedisSuccess) {
+              final medis = state.activeMedis ??
+                  (state.medisHistory.isNotEmpty
+                      ? state.medisHistory.first
+                      : null);
+
+              Future.delayed(const Duration(seconds: 3), () {
+                _navigateToCongrats(medis);
+              });
+            } else if (state is MedisFailed) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$medisErrorText${state.error}'),
                 ),
+              );
+
+              Future.delayed(const Duration(seconds: 3), () {
+                _navigateToCongrats(null); // tetap ke Congrats walau error
+              });
+            }
+          },
+          child: Scaffold(
+            backgroundColor: kBackgroundColor,
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 110,
+                    height: 110,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor:
+                          AlwaysStoppedAnimation<Color>(kPrimaryColor),
+                          backgroundColor: kBoxGreenColor,
+                          strokeWidth: 14,
+                          value: _controller.value,
+                        ),
+                        Text(
+                          '$percent%',
+                          style: primaryTextStyle.copyWith(
+                            fontWeight: bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    preparingText,
+                    style: primaryTextStyle.copyWith(
+                      fontWeight: bold,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    waitText,
+                    style: blackTextStyle.copyWith(
+                      fontSize: 12,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Menyiapkan Bumilku$dots',
-                style:
-                primaryTextStyle.copyWith(fontWeight: bold, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Mohon tunggu sebentar',
-                style: blackTextStyle.copyWith(
-                  fontSize: 12,
-                  color: Colors.black54,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

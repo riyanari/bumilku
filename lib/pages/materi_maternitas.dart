@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/locale_cubit.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/theme.dart';
 
 class MateriMaternitas extends StatefulWidget {
@@ -10,7 +13,12 @@ class MateriMaternitas extends StatefulWidget {
 
 class _MateriMaternitasState extends State<MateriMaternitas> {
   final TextEditingController _searchController = TextEditingController();
-  final List<_SectionData> _allSections = [
+  List<_SectionData> get _allSections {
+    final isEn = context.read<LocaleCubit>().state.languageCode == 'en';
+    return isEn ? _sectionsEn : _sectionsId;
+  }
+
+  final List<_SectionData> _sectionsId = [
     _SectionData(
       title: 'Keperawatan Maternitas Secara Teoritis',
       items: [
@@ -63,6 +71,59 @@ class _MateriMaternitasState extends State<MateriMaternitas> {
     ),
   ];
 
+  final List<_SectionData> _sectionsEn = [
+    _SectionData(
+      title: 'Maternal Nursing (Theoretical Overview)',
+      items: [
+        _InfoItem('Definition', 'A nursing field focusing on women (pre-pregnancy, pregnancy, childbirth, postpartum), newborns, and families as key support systems.'),
+        _InfoItem('Core Principles', 'Holistic care, family-centered care, humanistic approach, health promotion & prevention, and evidence-based practice.'),
+        _InfoItem('Role of a Maternal Nurse', 'A mix of clinician, educator, advocate for mother & baby, emotional supporter, and problem solver with empathy.'),
+        _InfoItem('Main Goals', 'Reduce maternal & infant mortality, support physical and mental health, ensure optimal newborn growth, and empower families to provide care.'),
+      ],
+    ),
+    _SectionData(
+      title: 'Health During Pregnancy',
+      items: [
+        _InfoItem('Routine Check-ups', 'Attend regular antenatal visits to monitor fetal growth and detect potential health issues early.'),
+        _InfoItem('Essential Nutrition', 'Eat a balanced diet rich in folate, iron, calcium, and protein. Avoid raw foods, alcohol, and limit caffeine.'),
+        _InfoItem('Activity & Exercise', 'Do light exercise such as walking, prenatal workouts, or yoga. Avoid heavy activities and get adequate rest.'),
+      ],
+    ),
+    _SectionData(
+      title: 'Preparing for Labor',
+      items: [
+        _InfoItem('Signs of Labor', 'Regular contractions, water breaking, and cervical dilation. Contact your doctor/midwife when these occur.'),
+        _InfoItem('Delivery Options', 'Vaginal birth, C-section, or water birth. Discuss the safest method based on your health condition.'),
+        _InfoItem('Before Delivery Checklist', 'Prepare a hospital bag, important documents, and transportation plans to the hospital.'),
+      ],
+    ),
+    _SectionData(
+      title: 'Newborn Care',
+      items: [
+        _InfoItem('Breastfeeding', 'Provide exclusive breastfeeding for 6 months. Ensure proper latch and feed every 2–3 hours or as needed.'),
+        _InfoItem('Umbilical Cord Care', 'Keep the area clean and dry after bathing; avoid excessive powder or alcohol use.'),
+        _InfoItem('Skin Care', 'Use hypoallergenic products, bathe with warm water, and keep skin dry to prevent rashes.'),
+        _InfoItem('Immunization', 'Complete vaccinations according to schedule to protect babies from serious diseases.'),
+      ],
+    ),
+    _SectionData(
+      title: 'Postpartum Recovery & Care',
+      items: [
+        _InfoItem('Postpartum Recovery', 'Follow postpartum care instructions, eat nutritious foods, and resume light exercise only with medical approval.'),
+        _InfoItem('Maternal Mental Health', 'Prioritize rest, family support, and consult professionals if experiencing baby blues or postpartum depression.'),
+      ],
+    ),
+    _SectionData(
+      title: 'Common Issues',
+      items: [
+        _InfoItem('During Pregnancy', 'Anemia, hypertension, diabetes, pregnancy-related stress'),
+        _InfoItem('During Labor', 'Prolonged labor, bleeding, severe pain'),
+        _InfoItem('Postpartum', 'Infection, breastfeeding difficulties, postpartum depression'),
+        _InfoItem('In Newborns', 'Prematurity, low birth weight, infection, jaundice'),
+      ],
+    ),
+  ];
+
   List<_SectionData> _filteredSections = [];
 
   @override
@@ -107,153 +168,172 @@ class _MateriMaternitasState extends State<MateriMaternitas> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Materi Maternitas",
-          style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
-        ),
-        backgroundColor: kPrimaryColor,
-        elevation: 0,
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha:0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, locale) {
+        final t = AppLocalizations.of(context);
+
+        if (t == null) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        // kalau bahasa berubah, refresh data berdasarkan locale + rerun filter
+        final newAll = _allSections;
+        if (_filteredSections.isEmpty || _filteredSections.first.title != newAll.first.title) {
+          _filteredSections = newAll;
+          _filterSections(); // biar query search tetap kepakai
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              // pakai localization: bikin key sendiri atau minimal pakai ternary berbasis locale
+              locale.languageCode == 'en' ? "Maternal Materials" : "Materi Maternitas",
+              style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
+            ),
+            backgroundColor: kPrimaryColor,
+            elevation: 0,
+            centerTitle: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withValues(alpha:0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Cari materi maternitas...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.grey),
-                    onPressed: () {
-                      _searchController.clear();
-                    },
-                  )
-                      : null,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Cari materi maternitas...',
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                        },
+                      )
+                          : null,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          // Hasil pencarian atau "tidak ditemukan"
-          if (_filteredSections.isEmpty && _searchController.text.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.search_off,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Tidak ditemukan hasil untuk "${_searchController.text}"',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
-          else
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header dengan gambar (hanya ditampilkan jika tidak sedang mencari)
-                    if (_searchController.text.isEmpty) ...[
-                      Container(
-                        width: double.infinity,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/matern.png'),
-                            fit: BoxFit.cover,
-                          ),
+              // Hasil pencarian atau "tidak ditemukan"
+              if (_filteredSections.isEmpty && _searchController.text.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tidak ditemukan hasil untuk "${_searchController.text}"',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.black.withValues(alpha:0.4),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header dengan gambar (hanya ditampilkan jika tidak sedang mencari)
+                        if (_searchController.text.isEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              image: const DecorationImage(
+                                image: AssetImage('assets/matern.png'),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.black.withValues(alpha:0.4),
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              child: const Center(
+                                child: Text(
+                                  'Panduan Lengkap Ibu Hamil & Perawatan Bayi',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
                           ),
-                          padding: const EdgeInsets.all(16),
-                          child: const Center(
-                            child: Text(
-                              'Panduan Lengkap Ibu Hamil & Perawatan Bayi',
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Data sections yang sudah difilter
+                        ..._buildFilteredSections(),
+
+                        const SizedBox(height: 24),
+
+                        // Penutup (hanya ditampilkan jika tidak sedang mencari)
+                        if (_searchController.text.isEmpty) ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.pink[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'Selalu konsultasikan dengan tenaga kesehatan profesional untuk perawatan yang tepat sesuai kondisi individu.',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.pink,
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Data sections yang sudah difilter
-                    ..._buildFilteredSections(),
-
-                    const SizedBox(height: 24),
-
-                    // Penutup (hanya ditampilkan jika tidak sedang mencari)
-                    if (_searchController.text.isEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.pink[50],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Selalu konsultasikan dengan tenaga kesehatan profesional untuk perawatan yang tepat sesuai kondisi individu.',
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.pink,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  ],
+                          const SizedBox(height: 24),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-        ],
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
+
 
   List<Widget> _buildFilteredSections() {
     return _filteredSections.map((section) => _buildSection(section)).toList();
