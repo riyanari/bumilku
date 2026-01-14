@@ -637,5 +637,22 @@
   "complaintsCustomHint": "Tulis keluhan lain...",
   "complaintsAddButton": "Tambah",
   "complaintsDuplicateError": "Keluhan sudah ada",
-  "complaintsEmptyError": "Keluhan tidak boleh kosong"
+  "complaintsEmptyError": "Keluhan tidak boleh kosong",
+
+  "tutorialTitle": "Tutorial Aplikasi",
+  "tutorialSubtitle": "Pelajari cara penggunaan",
+  "tutorialPreparing": "Menyiapkan tutorial...",
+  "tutorialExpandTooltip": "Perbesar Video",
+  "tutorialCollapseTooltip": "Perkecil Video",
+  "tutorialStepsHeader": "Langkah-langkah:",
+  "tutorialStep1Title": "Tonton Video",
+  "tutorialStep1Desc": "Simak video tutorial sampai selesai",
+  "tutorialStep2Title": "Buat Akun",
+  "tutorialStep2Desc": "Daftar dengan data diri yang valid",
+  "tutorialStep3Title": "Jelajahi Fitur",
+  "tutorialStep3Desc": "Temukan semua fitur menarik aplikasi",
+  "tutorialStep4Title": "Nikmati Pengalaman",
+  "tutorialStep4Desc": "Gunakan aplikasi dengan maksimal",
+  "tutorialGetStarted": "Mulai Sekarang",
+  "skip": "Skip"
 }

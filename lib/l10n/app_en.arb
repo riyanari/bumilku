@@ -635,5 +635,22 @@
   "complaintsCustomHint": "Write another complaint...",
   "complaintsAddButton": "Add",
   "complaintsDuplicateError": "This complaint already exists",
-  "complaintsEmptyError": "Complaint cannot be empty"
+  "complaintsEmptyError": "Complaint cannot be empty",
+
+  "tutorialTitle": "App Tutorial",
+  "tutorialSubtitle": "Learn how to use the app",
+  "tutorialPreparing": "Preparing tutorial...",
+  "tutorialExpandTooltip": "Expand video",
+  "tutorialCollapseTooltip": "Collapse video",
+  "tutorialStepsHeader": "Steps:",
+  "tutorialStep1Title": "Watch the video",
+  "tutorialStep1Desc": "Follow the tutorial until the end",
+  "tutorialStep2Title": "Create an account",
+  "tutorialStep2Desc": "Sign up with valid personal information",
+  "tutorialStep3Title": "Explore features",
+  "tutorialStep3Desc": "Discover the app’s useful features",
+  "tutorialStep4Title": "Enjoy the experience",
+  "tutorialStep4Desc": "Use the app to the fullest",
+  "tutorialGetStarted": "Get Started",
+  "skip": "Skip"
 }

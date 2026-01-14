@@ -14,6 +14,7 @@ import '../theme/theme.dart';
 import 'calendar_menstruasi.dart';
 import 'login_page.dart';
 import '../cubit/locale_cubit.dart';
+import 'tutorial_video_page.dart'; // Import halaman tutorial video
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,6 +24,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _showTutorialTooltip = false;
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +33,28 @@ class _HomePageState extends State<HomePage> {
     if (user != null) {
       context.read<MedisCubit>().getUserMedis(user.uid);
     }
+
+    // Tampilkan tooltip tutorial saat pertama kali masuk (opsional)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowTutorialTooltip();
+    });
+  }
+
+  void _checkAndShowTutorialTooltip() {
+    // Anda bisa menambahkan logika untuk mengecek apakah user sudah pernah melihat tutorial
+    // Misalnya menggunakan SharedPreferences
+    setState(() {
+      _showTutorialTooltip = true;
+    });
+
+    // Otomatis hide tooltip setelah beberapa detik
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showTutorialTooltip = false;
+        });
+      }
+    });
   }
 
   Widget feature(BuildContext context) {
@@ -54,10 +79,10 @@ class _HomePageState extends State<HomePage> {
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Color(0xffFBE0EC),
+                    color: const Color(0xffFBE0EC),
                     boxShadow: [
                       BoxShadow(
-                        color: tPrimaryColor.withValues(alpha:0.3), // Perbaiki ini
+                        color: kPrimaryColor.withValues(alpha:0.3),
                         blurRadius: 6,
                         spreadRadius: 1,
                         offset: const Offset(0, 5),
@@ -69,7 +94,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.vertical(
+                        borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
                         child: Image.asset(
@@ -79,7 +104,7 @@ class _HomePageState extends State<HomePage> {
                           height: 100,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -90,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -103,13 +128,13 @@ class _HomePageState extends State<HomePage> {
                           maxLines: 2,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: GestureDetector(
                 onTap: () {
@@ -122,10 +147,10 @@ class _HomePageState extends State<HomePage> {
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Color(0xffFBE0EC),
+                    color: const Color(0xffFBE0EC),
                     boxShadow: [
                       BoxShadow(
-                        color: tPrimaryColor.withValues(alpha:0.3), // Perbaiki ini
+                        color: kPrimaryColor.withValues(alpha:0.3),
                         blurRadius: 6,
                         spreadRadius: 1,
                         offset: const Offset(0, 5),
@@ -137,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.vertical(
+                        borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
                         child: Image.asset(
@@ -147,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                           height: 100,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -158,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -171,7 +196,7 @@ class _HomePageState extends State<HomePage> {
                           maxLines: 2,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
@@ -179,7 +204,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -195,10 +220,10 @@ class _HomePageState extends State<HomePage> {
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Color(0xffFBE0EC),
+                    color: const Color(0xffFBE0EC),
                     boxShadow: [
                       BoxShadow(
-                        color: tPrimaryColor.withValues(alpha:0.3), // Perbaiki ini
+                        color: kPrimaryColor.withValues(alpha:0.3),
                         blurRadius: 6,
                         spreadRadius: 1,
                         offset: const Offset(0, 5),
@@ -210,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.vertical(
+                        borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
                         child: Image.asset(
@@ -220,7 +245,7 @@ class _HomePageState extends State<HomePage> {
                           height: 100,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -231,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -244,13 +269,13 @@ class _HomePageState extends State<HomePage> {
                           maxLines: 2,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: GestureDetector(
                 onTap: () {
@@ -263,10 +288,10 @@ class _HomePageState extends State<HomePage> {
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Color(0xffFBE0EC),
+                    color: const Color(0xffFBE0EC),
                     boxShadow: [
                       BoxShadow(
-                        color: tPrimaryColor.withValues(alpha:0.3), // Perbaiki ini
+                        color: kPrimaryColor.withValues(alpha:0.3),
                         blurRadius: 6,
                         spreadRadius: 1,
                         offset: const Offset(0, 5),
@@ -278,7 +303,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.vertical(
+                        borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
                         child: Image.asset(
@@ -288,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                           height: 100,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -299,7 +324,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Text(
@@ -312,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                           maxLines: 2,
                         ),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
@@ -347,7 +372,7 @@ class _HomePageState extends State<HomePage> {
               if (state is AuthInitial) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => LoginPage()),
-                  (route) => false,
+                      (route) => false,
                 );
               }
 
@@ -356,7 +381,7 @@ class _HomePageState extends State<HomePage> {
                   SnackBar(
                     content: Text('Logout gagal: ${state.error}'),
                     backgroundColor: Colors.red,
-                    duration: Duration(seconds: 3),
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }
@@ -364,240 +389,325 @@ class _HomePageState extends State<HomePage> {
             child: SafeArea(
               child: Scaffold(
                 backgroundColor: kBackgroundColor,
-                body: SingleChildScrollView(
-                  physics: AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18.0, 30, 18, 30),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                body: Stack(
+                  children: [
+                    SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(18.0, 30, 18, 30),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Header
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Image.asset(
-                                  "assets/lg_bumilku.png",
-                                  height: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  t.appName,
-                                  style: primaryTextStyle.copyWith(
-                                    fontSize: 18,
-                                    fontWeight: bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                // Profile Icon
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ProfilePage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: kBackground2Color,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.person,
-                                      color: kPrimaryColor,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-
-                                // Language Switcher
-                                // Language Switcher (EN/ID)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: kBackground2Color,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: BlocBuilder<LocaleCubit, Locale>(
-                                    builder: (context, locale) {
-                                      final code = (locale.languageCode == 'en') ? 'EN' : 'ID';
-
-                                      return PopupMenuButton<String>(
-                                        tooltip: "Language",
-                                        // ganti icon jadi teks EN/ID
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                          child: Text(
-                                            code,
-                                            style: primaryTextStyle.copyWith(
-                                              fontSize: 12,
-                                              fontWeight: bold,
-                                              color: kPrimaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        onSelected: (value) {
-                                          debugPrint('[LANG] Popup selected: $value');
-                                          debugPrint(
-                                            '[LANG] Current locale BEFORE set: ${context.read<LocaleCubit>().state}',
-                                          );
-
-                                          if (value == 'id') {
-                                            context.read<LocaleCubit>().setIndonesian();
-                                          } else {
-                                            context.read<LocaleCubit>().setEnglish();
-                                          }
-
-                                          debugPrint('[LANG] Requested change to: $value');
-                                        },
-                                        itemBuilder: (context) => const [
-                                          PopupMenuItem(value: 'id', child: Text('Indonesia')),
-                                          PopupMenuItem(value: 'en', child: Text('English')),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-
-                                // Logout Icon
-                                GestureDetector(
-                                  onTap: () {
-                                    _showLogoutConfirmation(context);
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: kBackground2Color,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.logout,
-                                      color: kPrimaryColor,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 10),
-
-                        // Calendar dan data medis
-                        BlocBuilder<MedisCubit, MedisState>(
-                          builder: (context, state) {
-                            if (state is MedisLoading) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            } else if (state is MedisSuccess) {
-                              final activeMedis = state.activeMedis;
-                              final medisHistory = state.medisHistory;
-
-                              final medisToShow =
-                                  activeMedis ??
-                                  (medisHistory.isNotEmpty
-                                      ? medisHistory.first
-                                      : null);
-
-                              if (medisToShow == null) {
-                                return Column(
+                                Row(
                                   children: [
-                                    Text(t.noPregnancyData),
-                                    SizedBox(height: 10),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _showAddPregnancyDialog(context);
+                                    Image.asset(
+                                      "assets/lg_bumilku.png",
+                                      height: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      t.appName,
+                                      style: primaryTextStyle.copyWith(
+                                        fontSize: 18,
+                                        fontWeight: bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _showTutorialTooltip = false;
+                                        });
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const TutorialVideoPage(fromHome: true),
+                                          ),
+                                        );
                                       },
-                                      child: Text(t.addPregnancy),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: kBackground2Color,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(
+                                          Icons.help_outline,
+                                          color: kPrimaryColor,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    // Profile Icon
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => ProfilePage(),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: kBackground2Color,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(
+                                          Icons.person,
+                                          color: kPrimaryColor,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+
+                                    // Language Switcher
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: kBackground2Color,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: BlocBuilder<LocaleCubit, Locale>(
+                                        builder: (context, locale) {
+                                          final code = (locale.languageCode == 'en') ? 'EN' : 'ID';
+
+                                          return PopupMenuButton<String>(
+                                            tooltip: "Language",
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              child: Text(
+                                                code,
+                                                style: primaryTextStyle.copyWith(
+                                                  fontSize: 12,
+                                                  fontWeight: bold,
+                                                  color: kPrimaryColor,
+                                                ),
+                                              ),
+                                            ),
+                                            onSelected: (value) {
+                                              debugPrint('[LANG] Popup selected: $value');
+                                              debugPrint(
+                                                '[LANG] Current locale BEFORE set: ${context.read<LocaleCubit>().state}',
+                                              );
+
+                                              if (value == 'id') {
+                                                context.read<LocaleCubit>().setIndonesian();
+                                              } else {
+                                                context.read<LocaleCubit>().setEnglish();
+                                              }
+
+                                              debugPrint('[LANG] Requested change to: $value');
+                                            },
+                                            itemBuilder: (context) => const [
+                                              PopupMenuItem(value: 'id', child: Text('Indonesia')),
+                                              PopupMenuItem(value: 'en', child: Text('English')),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+
+                                    // Logout Icon
+                                    GestureDetector(
+                                      onTap: () {
+                                        _showLogoutConfirmation(context);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: kBackground2Color,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(
+                                          Icons.logout,
+                                          color: kPrimaryColor,
+                                          size: 18,
+                                        ),
+                                      ),
                                     ),
                                   ],
-                                );
-                              }
+                                ),
+                              ],
+                            ),
 
-                              return CalendarMenstruasi(
-                                medisId: medisToShow.id,
-                                cycleLength: medisToShow.cycleLength,
-                                lmp: medisToShow.selectedLmp,
-                                edd: medisToShow.edd,
-                                onSave: (cycleLength, lmp) {
-                                  final adjustment = cycleLength - 28;
-                                  final newEdd = lmp.add(
-                                    Duration(days: 280 + adjustment),
+                            const SizedBox(height: 10),
+
+                            // Calendar dan data medis
+                            BlocBuilder<MedisCubit, MedisState>(
+                              builder: (context, state) {
+                                if (state is MedisLoading) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
                                   );
+                                } else if (state is MedisSuccess) {
+                                  final activeMedis = state.activeMedis;
+                                  final medisHistory = state.medisHistory;
 
-                                  final user =
-                                      FirebaseAuth.instance.currentUser;
-                                  if (user != null) {
-                                    if (activeMedis != null) {
-                                      context.read<MedisCubit>().addMedis(
-                                        userId: user.uid,
-                                        cycleLength: cycleLength,
-                                        selectedLmp: lmp,
-                                        edd: newEdd,
-                                        babyName: activeMedis.babyName,
-                                      );
-                                    } else {
-                                      context.read<MedisCubit>().addMedis(
-                                        userId: user.uid,
-                                        cycleLength: cycleLength,
-                                        selectedLmp: lmp,
-                                        edd: newEdd,
-                                      );
-                                    }
+                                  final medisToShow =
+                                      activeMedis ??
+                                          (medisHistory.isNotEmpty
+                                              ? medisHistory.first
+                                              : null);
+
+                                  if (medisToShow == null) {
+                                    return Column(
+                                      children: [
+                                        Text(t.noPregnancyData),
+                                        const SizedBox(height: 10),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            _showAddPregnancyDialog(context);
+                                          },
+                                          child: Text(t.addPregnancy),
+                                        ),
+                                      ],
+                                    );
                                   }
-                                },
-                              );
-                            } else if (state is MedisFailed) {
-                              return Column(
-                                children: [
-                                  Text("Error: ${state.error}"),
-                                  SizedBox(height: 10),
-                                  ElevatedButton(
-                                    onPressed: () {
+
+                                  return CalendarMenstruasi(
+                                    medisId: medisToShow.id,
+                                    cycleLength: medisToShow.cycleLength,
+                                    lmp: medisToShow.selectedLmp,
+                                    edd: medisToShow.edd,
+                                    onSave: (cycleLength, lmp) {
+                                      final adjustment = cycleLength - 28;
+                                      final newEdd = lmp.add(
+                                        Duration(days: 280 + adjustment),
+                                      );
+
                                       final user =
                                           FirebaseAuth.instance.currentUser;
                                       if (user != null) {
-                                        context.read<MedisCubit>().getUserMedis(
-                                          user.uid,
-                                        );
+                                        if (activeMedis != null) {
+                                          context.read<MedisCubit>().addMedis(
+                                            userId: user.uid,
+                                            cycleLength: cycleLength,
+                                            selectedLmp: lmp,
+                                            edd: newEdd,
+                                            babyName: activeMedis.babyName,
+                                          );
+                                        } else {
+                                          context.read<MedisCubit>().addMedis(
+                                            userId: user.uid,
+                                            cycleLength: cycleLength,
+                                            selectedLmp: lmp,
+                                            edd: newEdd,
+                                          );
+                                        }
                                       }
                                     },
-                                    child: Text(t.tryAgain),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              return Column(
-                                children: [
-                                  Text(t.medicalDataNotAvailable),
-                                  SizedBox(height: 10),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      _showAddPregnancyDialog(context);
-                                    },
-                                    child: Text(t.addFirstPregnancy),
-                                  ),
-                                ],
-                              );
-                            }
-                          },
+                                  );
+                                } else if (state is MedisFailed) {
+                                  return Column(
+                                    children: [
+                                      Text("Error: ${state.error}"),
+                                      const SizedBox(height: 10),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          final user =
+                                              FirebaseAuth.instance.currentUser;
+                                          if (user != null) {
+                                            context.read<MedisCubit>().getUserMedis(
+                                              user.uid,
+                                            );
+                                          }
+                                        },
+                                        child: Text(t.tryAgain),
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  return Column(
+                                    children: [
+                                      Text(t.medicalDataNotAvailable),
+                                      const SizedBox(height: 10),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _showAddPregnancyDialog(context);
+                                        },
+                                        child: Text(t.addFirstPregnancy),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            feature(context),
+                          ],
                         ),
-                        SizedBox(height: 20),
-                        feature(context), // Panggil dengan context
-                      ],
+                      ),
                     ),
-                  ),
+
+                    // Floating Button untuk Tutorial (opsional tambahan)
+                    Positioned(
+                      bottom: 20,
+                      right: 20,
+                      child: Column(
+                        children: [
+                          // Tooltip untuk floating button
+                          if (_showTutorialTooltip)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha:0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Tutorial Penggunaan Aplikasi',
+                                style: whiteTextStyle.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: medium,
+                                ),
+                              ),
+                            ),
+
+                          // Floating Action Button untuk Tutorial
+                          // FloatingActionButton(
+                          //   onPressed: () {
+                          //     setState(() {
+                          //       _showTutorialTooltip = false;
+                          //     });
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (_) => const TutorialVideoPage(),
+                          //       ),
+                          //     );
+                          //   },
+                          //   backgroundColor: kPrimaryColor,
+                          //   foregroundColor: Colors.white,
+                          //   elevation: 4,
+                          //   child: const Icon(Icons.play_circle_fill),
+                          // ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -666,8 +776,8 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              final defaultLmp = DateTime.now().subtract(Duration(days: 30));
-              final defaultEdd = defaultLmp.add(Duration(days: 280));
+              final defaultLmp = DateTime.now().subtract(const Duration(days: 30));
+              final defaultEdd = defaultLmp.add(const Duration(days: 280));
 
               context.read<MedisCubit>().addMedis(
                 userId: user.uid,

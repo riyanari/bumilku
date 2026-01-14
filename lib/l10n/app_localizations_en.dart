@@ -1437,4 +1437,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get complaintsEmptyError => 'Complaint cannot be empty';
+
+  @override
+  String get tutorialTitle => 'App Tutorial';
+
+  @override
+  String get tutorialSubtitle => 'Learn how to use the app';
+
+  @override
+  String get tutorialPreparing => 'Preparing tutorial...';
+
+  @override
+  String get tutorialExpandTooltip => 'Expand video';
+
+  @override
+  String get tutorialCollapseTooltip => 'Collapse video';
+
+  @override
+  String get tutorialStepsHeader => 'Steps:';
+
+  @override
+  String get tutorialStep1Title => 'Watch the video';
+
+  @override
+  String get tutorialStep1Desc => 'Follow the tutorial until the end';
+
+  @override
+  String get tutorialStep2Title => 'Create an account';
+
+  @override
+  String get tutorialStep2Desc => 'Sign up with valid personal information';
+
+  @override
+  String get tutorialStep3Title => 'Explore features';
+
+  @override
+  String get tutorialStep3Desc => 'Discover the app’s useful features';
+
+  @override
+  String get tutorialStep4Title => 'Enjoy the experience';
+
+  @override
+  String get tutorialStep4Desc => 'Use the app to the fullest';
+
+  @override
+  String get tutorialGetStarted => 'Get Started';
+
+  @override
+  String get skip => 'Skip';
 }

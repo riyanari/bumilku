@@ -1443,4 +1443,52 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get complaintsEmptyError => 'Keluhan tidak boleh kosong';
+
+  @override
+  String get tutorialTitle => 'Tutorial Aplikasi';
+
+  @override
+  String get tutorialSubtitle => 'Pelajari cara penggunaan';
+
+  @override
+  String get tutorialPreparing => 'Menyiapkan tutorial...';
+
+  @override
+  String get tutorialExpandTooltip => 'Perbesar Video';
+
+  @override
+  String get tutorialCollapseTooltip => 'Perkecil Video';
+
+  @override
+  String get tutorialStepsHeader => 'Langkah-langkah:';
+
+  @override
+  String get tutorialStep1Title => 'Tonton Video';
+
+  @override
+  String get tutorialStep1Desc => 'Simak video tutorial sampai selesai';
+
+  @override
+  String get tutorialStep2Title => 'Buat Akun';
+
+  @override
+  String get tutorialStep2Desc => 'Daftar dengan data diri yang valid';
+
+  @override
+  String get tutorialStep3Title => 'Jelajahi Fitur';
+
+  @override
+  String get tutorialStep3Desc => 'Temukan semua fitur menarik aplikasi';
+
+  @override
+  String get tutorialStep4Title => 'Nikmati Pengalaman';
+
+  @override
+  String get tutorialStep4Desc => 'Gunakan aplikasi dengan maksimal';
+
+  @override
+  String get tutorialGetStarted => 'Mulai Sekarang';
+
+  @override
+  String get skip => 'Skip';
 }

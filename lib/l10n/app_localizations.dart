@@ -2653,6 +2653,102 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Keluhan tidak boleh kosong'**
   String get complaintsEmptyError;
+
+  /// No description provided for @tutorialTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Tutorial Aplikasi'**
+  String get tutorialTitle;
+
+  /// No description provided for @tutorialSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Pelajari cara penggunaan'**
+  String get tutorialSubtitle;
+
+  /// No description provided for @tutorialPreparing.
+  ///
+  /// In id, this message translates to:
+  /// **'Menyiapkan tutorial...'**
+  String get tutorialPreparing;
+
+  /// No description provided for @tutorialExpandTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Perbesar Video'**
+  String get tutorialExpandTooltip;
+
+  /// No description provided for @tutorialCollapseTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Perkecil Video'**
+  String get tutorialCollapseTooltip;
+
+  /// No description provided for @tutorialStepsHeader.
+  ///
+  /// In id, this message translates to:
+  /// **'Langkah-langkah:'**
+  String get tutorialStepsHeader;
+
+  /// No description provided for @tutorialStep1Title.
+  ///
+  /// In id, this message translates to:
+  /// **'Tonton Video'**
+  String get tutorialStep1Title;
+
+  /// No description provided for @tutorialStep1Desc.
+  ///
+  /// In id, this message translates to:
+  /// **'Simak video tutorial sampai selesai'**
+  String get tutorialStep1Desc;
+
+  /// No description provided for @tutorialStep2Title.
+  ///
+  /// In id, this message translates to:
+  /// **'Buat Akun'**
+  String get tutorialStep2Title;
+
+  /// No description provided for @tutorialStep2Desc.
+  ///
+  /// In id, this message translates to:
+  /// **'Daftar dengan data diri yang valid'**
+  String get tutorialStep2Desc;
+
+  /// No description provided for @tutorialStep3Title.
+  ///
+  /// In id, this message translates to:
+  /// **'Jelajahi Fitur'**
+  String get tutorialStep3Title;
+
+  /// No description provided for @tutorialStep3Desc.
+  ///
+  /// In id, this message translates to:
+  /// **'Temukan semua fitur menarik aplikasi'**
+  String get tutorialStep3Desc;
+
+  /// No description provided for @tutorialStep4Title.
+  ///
+  /// In id, this message translates to:
+  /// **'Nikmati Pengalaman'**
+  String get tutorialStep4Title;
+
+  /// No description provided for @tutorialStep4Desc.
+  ///
+  /// In id, this message translates to:
+  /// **'Gunakan aplikasi dengan maksimal'**
+  String get tutorialStep4Desc;
+
+  /// No description provided for @tutorialGetStarted.
+  ///
+  /// In id, this message translates to:
+  /// **'Mulai Sekarang'**
+  String get tutorialGetStarted;
+
+  /// No description provided for @skip.
+  ///
+  /// In id, this message translates to:
+  /// **'Skip'**
+  String get skip;
 }
 
 class _AppLocalizationsDelegate

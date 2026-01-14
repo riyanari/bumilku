@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/theme.dart';
 
 class TutorialVideoPage extends StatefulWidget {
-  const TutorialVideoPage({super.key});
+  final bool fromHome;
+  const TutorialVideoPage({super.key, this.fromHome = false});
 
   @override
   State<TutorialVideoPage> createState() => _TutorialVideoPageState();
@@ -14,9 +16,8 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
   bool _isPlayerReady = false;
   double _progress = 0.0;
   bool _isLoading = true;
-  bool _isExpanded = false; // State untuk expanded mode
+  bool _isExpanded = false;
 
-  // Video ID dari URL: https://youtu.be/rqInLGiWO60?si=ETQ4JQnMt4VJPlhv
   static const String _videoId = 'rqInLGiWO60';
 
   @override
@@ -26,10 +27,10 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
   }
 
   void _initializePlayer() {
-    // Extract video ID dari URL
     final videoId = YoutubePlayer.convertUrlToId(
       'https://youtu.be/rqInLGiWO60?si=ETQ4JQnMt4VJPlhv',
-    ) ?? _videoId;
+    ) ??
+        _videoId;
 
     _controller = YoutubePlayerController(
       initialVideoId: videoId,
@@ -47,7 +48,6 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
       ),
     )..addListener(_playerListener);
 
-    // Simulasi loading
     _simulateLoading();
   }
 
@@ -57,31 +57,31 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
     }
   }
 
-  void _simulateLoading() async {
+  Future<void> _simulateLoading() async {
     for (int i = 0; i <= 100; i += 10) {
       await Future.delayed(const Duration(milliseconds: 100));
-      if (mounted) {
-        setState(() {
-          _progress = i / 100;
-        });
-      }
+      if (!mounted) return;
+      setState(() => _progress = i / 100);
     }
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() => _isLoading = false);
   }
 
   void _goLogin() {
+    if (widget.fromHome) {
+      // Tutorial dibuka dari Home/Login -> cukup balik ke halaman sebelumnya
+      Navigator.pop(context);
+      return;
+    }
+
+    // Tutorial dibuka dari Splash (user belum login) -> lanjut ke login
     Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
   }
 
+
   void _toggleExpand() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
+    setState(() => _isExpanded = !_isExpanded);
   }
 
   @override
@@ -92,53 +92,46 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+
+    // kalau localization belum ready, amanin seperti HomePage
+    if (t == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: Stack(
         children: [
-          // Background dengan gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  kPrimaryColor.withValues(alpha:0.1),
-                  kBackgroundColor.withValues(alpha:0.3),
+                  kPrimaryColor.withValues(alpha: 0.1),
+                  kBackgroundColor.withValues(alpha: 0.3),
                   kBackgroundColor,
                 ],
               ),
             ),
           ),
-
           SafeArea(
             child: Column(
               children: [
-                // Custom AppBar
-                _buildCustomAppBar(),
-
+                _buildCustomAppBar(t),
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: [
                         const SizedBox(height: 20),
-
-                        // Video Player Section
-                        _buildVideoSection(),
-
-                        // Expand/Collapse Button
-                        _buildExpandButton(),
-
-                        // const SizedBox(height: 12),
-
-                        // Tutorial Steps (tampilkan hanya jika tidak expanded)
+                        _buildVideoSection(t),
+                        _buildExpandButton(t),
                         if (!_isExpanded) ...[
-                          _buildTutorialSteps(),
+                          _buildTutorialSteps(t),
                           const SizedBox(height: 30),
-
-                          // Action Button
-                          _buildActionButton(),
+                          _buildActionButton(t),
                           const SizedBox(height: 30),
                         ],
                       ],
@@ -153,7 +146,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
     );
   }
 
-  Widget _buildCustomAppBar() {
+  Widget _buildCustomAppBar(AppLocalizations t) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -162,7 +155,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -174,7 +167,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: kPrimaryColor.withValues(alpha:0.1),
+              color: kPrimaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -193,7 +186,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tutorial Aplikasi',
+                  t.tutorialTitle, // ID/EN
                   style: TextStyle(
                     color: kPrimaryColor,
                     fontSize: 16,
@@ -201,7 +194,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                   ),
                 ),
                 Text(
-                  'Pelajari cara penggunaan',
+                  t.tutorialSubtitle, // ID/EN
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -221,9 +214,9 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               elevation: 0,
             ),
-            child: const Text(
-              'Skip',
-              style: TextStyle(
+            child: Text(
+              t.skip, // ID/EN
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -234,39 +227,32 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
     );
   }
 
-  Widget _buildVideoSection() {
+  Widget _buildVideoSection(AppLocalizations t) {
     final screenHeight = MediaQuery.of(context).size.height;
     final appBarHeight = 80.0;
     final topPadding = 20.0;
 
-    // Hitung height dinamis berdasarkan state expanded
-    double videoHeight = _isExpanded
-        ? screenHeight - appBarHeight - topPadding - 120 // Tinggi maksimal
-        : 280; // Tinggi default
+    final double videoHeight = _isExpanded
+        ? screenHeight - appBarHeight - topPadding - 120
+        : 280;
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: _isExpanded ? 0 : 16,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: _isExpanded ? 0 : 16),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: _isExpanded
-              ? BorderRadius.zero
-              : BorderRadius.circular(20),
+          borderRadius: _isExpanded ? BorderRadius.zero : BorderRadius.circular(20),
           boxShadow: _isExpanded
               ? []
               : [
             BoxShadow(
-              color: kPrimaryColor.withValues(alpha:0.2),
+              color: kPrimaryColor.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: _isExpanded
-              ? BorderRadius.zero
-              : BorderRadius.circular(20),
+          borderRadius: _isExpanded ? BorderRadius.zero : BorderRadius.circular(20),
           child: Container(
             color: Colors.black,
             height: videoHeight,
@@ -274,7 +260,6 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // YouTube Player
                 if (!_isLoading)
                   YoutubePlayer(
                     controller: _controller,
@@ -286,11 +271,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                       backgroundColor: Colors.grey[300]!,
                       bufferedColor: Colors.grey[200]!,
                     ),
-                    onReady: () {
-                      setState(() {
-                        _isPlayerReady = true;
-                      });
-                    },
+                    onReady: () => setState(() => _isPlayerReady = true),
                     bottomActions: [
                       CurrentPosition(),
                       const ProgressBar(isExpanded: true),
@@ -299,8 +280,6 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                       FullScreenButton(),
                     ],
                   ),
-
-                // Loading Overlay
                 if (_isLoading)
                   Container(
                     color: Colors.black,
@@ -318,7 +297,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                                   value: _progress,
                                   strokeWidth: 4,
                                   valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
-                                  backgroundColor: Colors.white.withValues(alpha:0.1),
+                                  backgroundColor: Colors.white.withValues(alpha: 0.1),
                                 ),
                               ),
                               Icon(
@@ -338,9 +317,9 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Menyiapkan tutorial...',
-                            style: TextStyle(
+                          Text(
+                            t.tutorialPreparing, // ID/EN
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                             ),
@@ -357,7 +336,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
     );
   }
 
-  Widget _buildExpandButton() {
+  Widget _buildExpandButton(AppLocalizations t) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -369,7 +348,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
               borderRadius: BorderRadius.circular(25),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha:0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -382,7 +361,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                 color: kPrimaryColor,
                 size: 28,
               ),
-              tooltip: _isExpanded ? 'Perkecil Video' : 'Perbesar Video',
+              tooltip: _isExpanded ? t.tutorialCollapseTooltip : t.tutorialExpandTooltip,
             ),
           ),
         ],
@@ -390,30 +369,30 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
     );
   }
 
-  Widget _buildTutorialSteps() {
+  Widget _buildTutorialSteps(AppLocalizations t) {
     final List<Map<String, dynamic>> steps = [
       {
         'icon': Icons.play_circle_fill,
-        'title': 'Tonton Video',
-        'description': 'Simak video tutorial sampai selesai',
+        'title': t.tutorialStep1Title,
+        'description': t.tutorialStep1Desc,
         'color': kPrimaryColor,
       },
       {
         'icon': Icons.account_circle,
-        'title': 'Buat Akun',
-        'description': 'Daftar dengan data diri yang valid',
+        'title': t.tutorialStep2Title,
+        'description': t.tutorialStep2Desc,
         'color': Colors.blue,
       },
       {
         'icon': Icons.explore,
-        'title': 'Jelajahi Fitur',
-        'description': 'Temukan semua fitur menarik aplikasi',
+        'title': t.tutorialStep3Title,
+        'description': t.tutorialStep3Desc,
         'color': Colors.green,
       },
       {
         'icon': Icons.star,
-        'title': 'Nikmati Pengalaman',
-        'description': 'Gunakan aplikasi dengan maksimal',
+        'title': t.tutorialStep4Title,
+        'description': t.tutorialStep4Desc,
         'color': Colors.orange,
       },
     ];
@@ -423,11 +402,11 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 8, bottom: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 12),
             child: Text(
-              'Langkah-langkah:',
-              style: TextStyle(
+              t.tutorialStepsHeader,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -443,7 +422,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha:0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -455,7 +434,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: (step['color'] as Color).withValues(alpha:0.1),
+                      color: (step['color'] as Color).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -501,7 +480,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
     );
   }
 
-  Widget _buildActionButton() {
+  Widget _buildActionButton(AppLocalizations t) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: SizedBox(
@@ -516,14 +495,14 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: 5,
-            shadowColor: kPrimaryColor.withValues(alpha:0.3),
+            shadowColor: kPrimaryColor.withValues(alpha: 0.3),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Mulai Sekarang',
-                style: TextStyle(
+              Text(
+                t.tutorialGetStarted, // ID/EN
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                 ),
@@ -533,7 +512,7 @@ class _TutorialVideoPageState extends State<TutorialVideoPage> {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha:0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(

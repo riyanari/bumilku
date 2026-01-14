@@ -363,7 +363,7 @@ class _LoginPageState extends State<LoginPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const TutorialVideoPage()),
+                            MaterialPageRoute(builder: (_) => const TutorialVideoPage(fromHome: true)),
                           );
                         },
                         child: Row(
