@@ -1425,4 +1425,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hospitalRsiSultanAgung => 'RSI Sultan Agung';
+
+  @override
+  String get complaintsCustomHint => 'Write another complaint...';
+
+  @override
+  String get complaintsAddButton => 'Add';
+
+  @override
+  String get complaintsDuplicateError => 'This complaint already exists';
+
+  @override
+  String get complaintsEmptyError => 'Complaint cannot be empty';
 }

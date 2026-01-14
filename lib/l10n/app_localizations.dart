@@ -2629,6 +2629,30 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'RSI Sultan Agung'**
   String get hospitalRsiSultanAgung;
+
+  /// No description provided for @complaintsCustomHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Tulis keluhan lain...'**
+  String get complaintsCustomHint;
+
+  /// No description provided for @complaintsAddButton.
+  ///
+  /// In id, this message translates to:
+  /// **'Tambah'**
+  String get complaintsAddButton;
+
+  /// No description provided for @complaintsDuplicateError.
+  ///
+  /// In id, this message translates to:
+  /// **'Keluhan sudah ada'**
+  String get complaintsDuplicateError;
+
+  /// No description provided for @complaintsEmptyError.
+  ///
+  /// In id, this message translates to:
+  /// **'Keluhan tidak boleh kosong'**
+  String get complaintsEmptyError;
 }
 
 class _AppLocalizationsDelegate

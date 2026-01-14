@@ -1431,4 +1431,16 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get hospitalRsiSultanAgung => 'RSI Sultan Agung';
+
+  @override
+  String get complaintsCustomHint => 'Tulis keluhan lain...';
+
+  @override
+  String get complaintsAddButton => 'Tambah';
+
+  @override
+  String get complaintsDuplicateError => 'Keluhan sudah ada';
+
+  @override
+  String get complaintsEmptyError => 'Keluhan tidak boleh kosong';
 }

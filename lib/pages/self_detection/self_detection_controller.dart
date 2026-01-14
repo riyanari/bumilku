@@ -60,6 +60,7 @@ class SelfDetectionController extends ChangeNotifier {
   final TextEditingController currentAgeController = TextEditingController();
   final TextEditingController physicalActivityController = TextEditingController();
   final TextEditingController familySupportController = TextEditingController();
+  final TextEditingController customComplaintController = TextEditingController();
 
   // Data gerakan janin
   DateTime? _fetalMovementDateTime;
@@ -205,8 +206,27 @@ class SelfDetectionController extends ChangeNotifier {
     currentAgeController.dispose();
     physicalActivityController.dispose();
     familySupportController.dispose();
+    customComplaintController.dispose();
     super.dispose();
   }
+
+  void addCustomComplaint(String complaint) {
+    final trimmed = complaint.trim();
+    if (trimmed.isEmpty) return;
+
+    final exists = complaints.any((c) => c.toLowerCase() == trimmed.toLowerCase());
+    if (exists) return;
+
+    // MASUK PALING ATAS
+    complaints.insert(0, trimmed);
+
+    complaintSeverity[trimmed] = 0;     // default normal
+    complaintSelected[trimmed] = true;  // langsung terpilih
+
+    customComplaintController.clear();
+    notifyListeners();
+  }
+
 
   void _calculateBMI() {
     double? height = double.tryParse(heightController.text);

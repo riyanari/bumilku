@@ -632,5 +632,10 @@
   "signupHospitalHint": "Pilih rumah sakit",
   "signupHospitalRequired": "Rumah sakit wajib dipilih",
   "hospitalRsudKisaDepok": "RSUD Kisa Depok",
-  "hospitalRsiSultanAgung": "RSI Sultan Agung"
+  "hospitalRsiSultanAgung": "RSI Sultan Agung",
+
+  "complaintsCustomHint": "Tulis keluhan lain...",
+  "complaintsAddButton": "Tambah",
+  "complaintsDuplicateError": "Keluhan sudah ada",
+  "complaintsEmptyError": "Keluhan tidak boleh kosong"
 }

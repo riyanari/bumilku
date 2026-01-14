@@ -630,5 +630,10 @@
   "signupHospitalHint": "Select a hospital",
   "signupHospitalRequired": "Hospital is required",
   "hospitalRsudKisaDepok": "RSUD Kisa Depok",
-  "hospitalRsiSultanAgung": "RSI Sultan Agung"
+  "hospitalRsiSultanAgung": "RSI Sultan Agung",
+
+  "complaintsCustomHint": "Write another complaint...",
+  "complaintsAddButton": "Add",
+  "complaintsDuplicateError": "This complaint already exists",
+  "complaintsEmptyError": "Complaint cannot be empty"
 }
