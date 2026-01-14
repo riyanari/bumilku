@@ -5,6 +5,7 @@ import 'package:bumilku_app/pages/HomePage.dart';
 import 'package:bumilku_app/pages/admin/list_bunda_page.dart';
 import 'package:bumilku_app/pages/login_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
+import 'package:bumilku_app/pages/tutorial_video_page.dart';
 import 'package:bumilku_app/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
             initialRoute: '/splash',
             routes: {
               '/splash': (_) => const SplashPage(),
+              '/tutorial': (_) => const TutorialVideoPage(),
               '/login': (_) => const LoginPage(),
               '/home': (_) => const HomePage(),
               '/onboarding': (_) => OnboardingSignupPage(),

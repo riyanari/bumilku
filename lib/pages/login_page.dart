@@ -1,5 +1,6 @@
 import 'package:bumilku_app/pages/signup/email_verification_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
+import 'package:bumilku_app/pages/tutorial_video_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -354,8 +355,31 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 4),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const TutorialVideoPage()),
+                          );
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.play_circle_outline, color: Colors.white, size: 18),
+                            const SizedBox(width: 6),
+                            Text(
+                              isEn ? 'Watch tutorial' : 'Lihat tutorial',
+                              style: whiteTextStyle.copyWith(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     GestureDetector(
                       onTap: () => _showForgotPasswordDialog(isEn),
                       child: Text(

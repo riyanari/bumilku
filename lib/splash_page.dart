@@ -38,8 +38,9 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
 
     if (user == null) {
-      print("=== [SplashPage] User belum login → ke /login");
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+      print("=== [SplashPage] User belum login → ke /tutorial");
+      // Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/tutorial', (_) => false);
     } else {
       try {
         // 🔄 RELOAD USER UNTUK MENDAPATKAN STATUS EMAIL VERIFICATION TERBARU
@@ -98,13 +99,14 @@ class _SplashPageState extends State<SplashPage> {
             Navigator.pushNamedAndRemoveUntil(context, '/onboarding', (_) => false);
           }
         } else {
-          print("!!! [SplashPage] AuthCubit state tidak valid → ke login");
-          Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+          print("!!! [SplashPage] AuthCubit state tidak valid → ke tutorial");
+          // Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+          Navigator.pushNamedAndRemoveUntil(context, '/tutorial', (_) => false);
         }
       } catch (e) {
         print("!!! [SplashPage] ERROR: $e");
         // Fallback ke login jika ada error
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+        Navigator.pushNamedAndRemoveUntil(context, '/tutorial', (_) => false);
       }
     }
   }
