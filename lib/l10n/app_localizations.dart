@@ -2599,6 +2599,36 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Gagal menghapus: {error}'**
   String deleteFailed(Object error);
+
+  /// No description provided for @signupHospitalLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Rumah Sakit'**
+  String get signupHospitalLabel;
+
+  /// No description provided for @signupHospitalHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Pilih rumah sakit'**
+  String get signupHospitalHint;
+
+  /// No description provided for @signupHospitalRequired.
+  ///
+  /// In id, this message translates to:
+  /// **'Rumah sakit wajib dipilih'**
+  String get signupHospitalRequired;
+
+  /// No description provided for @hospitalRsudKisaDepok.
+  ///
+  /// In id, this message translates to:
+  /// **'RSUD Kisa Depok'**
+  String get hospitalRsudKisaDepok;
+
+  /// No description provided for @hospitalRsiSultanAgung.
+  ///
+  /// In id, this message translates to:
+  /// **'RSI Sultan Agung'**
+  String get hospitalRsiSultanAgung;
 }
 
 class _AppLocalizationsDelegate

@@ -12,6 +12,7 @@ class UserServices {
         'email': user.email,
         'name': user.name,
         'role': user.role,
+        'hospitalId': user.hospitalId,
         'alamat': user.alamat,
         'tglLahir': user.tglLahir,
         'emailVerified': user.emailVerified, // TAMBAHKAN STATUS VERIFIKASI
@@ -47,6 +48,7 @@ class UserServices {
         email: data['email'],
         name: data['name'],
         role: data['role'],
+        hospitalId: data['hospitalId'],
         alamat: data['alamat'],
         tglLahir: (data['tglLahir'] as Timestamp).toDate(),
         emailVerified: data['emailVerified'] ?? false,
@@ -76,6 +78,7 @@ class UserServices {
         email: data['email'] ?? '', // TAMBAHKAN EMAIL
         name: data['name'],
         role: data['role'],
+        hospitalId: data['hospitalId'],
         alamat: data['alamat'],
         tglLahir: data['tglLahir'] != null
             ? (data['tglLahir'] as Timestamp).toDate()

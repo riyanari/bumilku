@@ -79,6 +79,111 @@ class _ListBundaPageState extends State<ListBundaPage> {
     );
   }
 
+  Widget _buildLoggedInUserCard(BuildContext context, UserModel user) {
+    final t = AppLocalizations.of(context)!;
+    final isEn = Localizations.localeOf(context).languageCode == 'en';
+
+    String hospitalLabel(String hospitalId) {
+      switch (hospitalId) {
+        case 'rsud_kisa_depok':
+          return 'RSUD Kisa Depok';
+        case 'rsi_sultan_agung':
+          return 'RSI Sultan Agung';
+        default:
+          return isEn ? 'Unknown Hospital' : 'RS tidak diketahui';
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.pink.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.pink.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.pink),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '@${user.email}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _chipInfo(Icons.verified_user_rounded, user.role.toUpperCase()),
+                    _chipInfo(Icons.local_hospital_rounded, hospitalLabel(user.hospitalId)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chipInfo(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.pink.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.pink.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.pink),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -128,9 +233,17 @@ class _ListBundaPageState extends State<ListBundaPage> {
           ),
           child: Column(
             children: [
+              BlocBuilder<AuthCubit, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthSuccess) {
+                    return _buildLoggedInUserCard(context, state.user);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
               // Search Bar
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -168,15 +281,10 @@ class _ListBundaPageState extends State<ListBundaPage> {
                 ),
               ),
 
-              // List Bunda
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .where('role', isEqualTo: 'bunda')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                child: BlocBuilder<AuthCubit, AuthState>(
+                  builder: (context, authState) {
+                    if (authState is! AuthSuccess) {
                       return const Center(
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
@@ -184,166 +292,173 @@ class _ListBundaPageState extends State<ListBundaPage> {
                       );
                     }
 
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return _buildEmptyNoData(t);
-                    }
+                    final adminHospitalId = authState.user.hospitalId;
 
-                    final users = snapshot.data!.docs.map((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      return UserModel(
-                        id: doc.id,
-                        email: data['email'] ?? '',
-                        name: data['name'] ?? '',
-                        role: data['role'] ?? '',
-                        alamat: data['alamat'] ?? '',
-                        tglLahir: (data['tglLahir'] as Timestamp).toDate(),
-                      );
-                    }).toList();
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .where('role', isEqualTo: 'bunda')
+                          .where('hospitalId', isEqualTo: adminHospitalId) // ✅ FILTER RS ADMIN
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+                            ),
+                          );
+                        }
 
-                    final filteredUsers = _filterUsers(users, _searchQuery);
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return _buildEmptyNoData(t);
+                        }
 
-                    if (filteredUsers.isEmpty) {
-                      return _buildEmptyNotFound(t);
-                    }
+                        final users = snapshot.data!.docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return UserModel(
+                            id: doc.id,
+                            email: data['email'] ?? '',
+                            name: data['name'] ?? '',
+                            role: data['role'] ?? '',
+                            hospitalId: data['hospitalId'] ?? '',
+                            alamat: data['alamat'] ?? '',
+                            tglLahir: (data['tglLahir'] as Timestamp).toDate(),
+                          );
+                        }).toList();
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      itemCount: filteredUsers.length,
-                      itemBuilder: (context, index) {
-                        final user = filteredUsers[index];
-                        final umur = _hitungUmur(user.tglLahir);
-                        final initials = _getInitials(user.name);
-                        final avatarColor = _getAvatarColor(index);
+                        final filteredUsers = _filterUsers(users, _searchQuery);
 
-                        return GestureDetector(
-                          onTap: () => _navigateToBundaMonitoring(context, user),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: Material(
-                              elevation: 4,
-                              borderRadius: BorderRadius.circular(16),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    // Avatar Circle
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: avatarColor.withValues(alpha: 0.2),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: avatarColor, width: 2),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          initials,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: avatarColor,
+                        if (filteredUsers.isEmpty) {
+                          return _buildEmptyNotFound(t);
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          itemCount: filteredUsers.length,
+                          itemBuilder: (context, index) {
+                            final user = filteredUsers[index];
+                            final umur = _hitungUmur(user.tglLahir);
+                            final initials = _getInitials(user.name);
+                            final avatarColor = _getAvatarColor(index);
+
+                            return GestureDetector(
+                              onTap: () => _navigateToBundaMonitoring(context, user),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                child: Material(
+                                  elevation: 4,
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 60,
+                                          height: 60,
+                                          decoration: BoxDecoration(
+                                            color: avatarColor.withValues(alpha: 0.2),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: avatarColor, width: 2),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              initials,
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: avatarColor,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(width: 16),
-
-                                    // User Info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Expanded(
-                                                child: Text(
-                                                  user.name,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black87,
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      user.name,
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.black87,
+                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
+                                                  const SizedBox(width: 10),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.pink.shade50,
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(Icons.pregnant_woman, size: 12, color: Colors.pink.shade700),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          t.badgeMother,
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.pink.shade700,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              const SizedBox(width: 10),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.pink.shade50,
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.pregnant_woman,
-                                                      size: 12,
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                children: [
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        _buildInfoRow(Icons.person_outline, user.email),
+                                                        const SizedBox(height: 4),
+                                                        _buildInfoRow(Icons.location_on_outlined, user.alamat),
+                                                        const SizedBox(height: 4),
+                                                        _buildInfoRow(
+                                                          Icons.calendar_today_outlined,
+                                                          "${DateFormat('dd/MM/yyyy').format(user.tglLahir)} • $umur ${t.yearsOldShort}",
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Container(
+                                                    padding: const EdgeInsets.all(8),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.pink.shade50,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.arrow_forward_ios_rounded,
+                                                      size: 16,
                                                       color: Colors.pink.shade700,
                                                     ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      t.badgeMother, // "Bunda" / "Mother"
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.pink.shade700,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-
-                                          const SizedBox(height: 8),
-
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    _buildInfoRow(Icons.person_outline, user.email),
-                                                    const SizedBox(height: 4),
-                                                    _buildInfoRow(Icons.location_on_outlined, user.alamat),
-                                                    const SizedBox(height: 4),
-                                                    _buildInfoRow(
-                                                      Icons.calendar_today_outlined,
-                                                      "${DateFormat('dd/MM/yyyy').format(user.tglLahir)} • $umur ${t.yearsOldShort}",
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding: const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.pink.shade50,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Icon(
-                                                  Icons.arrow_forward_ios_rounded,
-                                                  size: 16,
-                                                  color: Colors.pink.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         );
                       },
                     );

@@ -1410,4 +1410,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String deleteFailed(Object error) {
     return 'Failed to delete: $error';
   }
+
+  @override
+  String get signupHospitalLabel => 'Hospital';
+
+  @override
+  String get signupHospitalHint => 'Select a hospital';
+
+  @override
+  String get signupHospitalRequired => 'Hospital is required';
+
+  @override
+  String get hospitalRsudKisaDepok => 'RSUD Kisa Depok';
+
+  @override
+  String get hospitalRsiSultanAgung => 'RSI Sultan Agung';
 }

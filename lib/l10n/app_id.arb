@@ -626,5 +626,11 @@
 
   "deleteSuccess": "Data berhasil dihapus",
   "deleteFailed": "Gagal menghapus: {error}",
-  "@deleteFailed": { "placeholders": { "error": {} } }
+  "@deleteFailed": { "placeholders": { "error": {} } },
+
+  "signupHospitalLabel": "Rumah Sakit",
+  "signupHospitalHint": "Pilih rumah sakit",
+  "signupHospitalRequired": "Rumah sakit wajib dipilih",
+  "hospitalRsudKisaDepok": "RSUD Kisa Depok",
+  "hospitalRsiSultanAgung": "RSI Sultan Agung"
 }

@@ -97,6 +97,7 @@ class AuthServices {
     required String name,
     required String password,
     required String role,
+    required String hospitalId,
     required String alamat,
     required DateTime tglLahir,
   }) async {
@@ -119,6 +120,7 @@ class AuthServices {
         email: email.trim(),
         name: name,
         role: role,
+        hospitalId: hospitalId,
         alamat: alamat,
         tglLahir: tglLahir,
         emailVerified: false,

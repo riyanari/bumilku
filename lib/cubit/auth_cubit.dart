@@ -30,6 +30,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String email,
     required String password,
     required String role,
+    required String hospitalId,
     required String alamat,
     required DateTime tglLahir,
   }) async {
@@ -42,6 +43,7 @@ class AuthCubit extends Cubit<AuthState> {
         password: password,
         name: name,
         role: role,
+        hospitalId: hospitalId,
         alamat: alamat,
         tglLahir: tglLahir,
       );

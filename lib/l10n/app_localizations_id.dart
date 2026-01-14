@@ -1416,4 +1416,19 @@ class AppLocalizationsId extends AppLocalizations {
   String deleteFailed(Object error) {
     return 'Gagal menghapus: $error';
   }
+
+  @override
+  String get signupHospitalLabel => 'Rumah Sakit';
+
+  @override
+  String get signupHospitalHint => 'Pilih rumah sakit';
+
+  @override
+  String get signupHospitalRequired => 'Rumah sakit wajib dipilih';
+
+  @override
+  String get hospitalRsudKisaDepok => 'RSUD Kisa Depok';
+
+  @override
+  String get hospitalRsiSultanAgung => 'RSI Sultan Agung';
 }

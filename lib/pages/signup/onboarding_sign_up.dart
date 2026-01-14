@@ -23,6 +23,13 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
+  String? _selectedHospitalId;
+
+  static const _hospitalOptions = <Map<String, String>>[
+    {'id': 'rsud_kisa_depok', 'label_id': 'RSUD Kisa Depok', 'label_en': 'RSUD Kisa Depok'},
+    {'id': 'rsi_sultan_agung', 'label_id': 'RSI Sultan Agung', 'label_en': 'RSI Sultan Agung'},
+  ];
+
   // === Page 0 ===
   final _namaController = TextEditingController();
   final _alamatController = TextEditingController();
@@ -92,6 +99,15 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
         return;
       }
 
+      if (_selectedHospitalId == null) {
+        _showErrorSnackBar(
+          isEn ? "Please select a hospital." : "Silakan pilih rumah sakit.",
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+
       // Stream subscription untuk mendengarkan state changes
       final completer = Completer<void>();
       StreamSubscription? authSubscription;
@@ -116,6 +132,7 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
           role: "bunda",
+          hospitalId: _selectedHospitalId!,
           alamat: _alamatController.text.trim(),
           tglLahir: _selectedTanggalLahir!,
         );
@@ -242,9 +259,11 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
         final nextText = isEn ? 'Next' : 'Lanjutkan';
         final registerText = isEn ? 'Register' : 'Daftar';
 
-        final canNextPage0 = _namaController.text.trim().isNotEmpty &&
-            _alamatController.text.trim().isNotEmpty &&
-            _tanggalLahirController.text.trim().isNotEmpty;
+        final canNextPage0 =
+            _namaController.text.trim().isNotEmpty &&
+                _alamatController.text.trim().isNotEmpty &&
+                _tanggalLahirController.text.trim().isNotEmpty &&
+                _selectedHospitalId != null; // NEW
 
         final canNextPage1 = selectedLmp != null;
 
@@ -272,7 +291,14 @@ class _OnboardingSignupPageState extends State<OnboardingSignupPage> {
                         onTanggalPicked: (date) {
                           setState(() => _selectedTanggalLahir = date);
                         },
+
+                        // ✅ NEW
+                        selectedHospitalId: _selectedHospitalId,
+                        onHospitalChanged: (val) {
+                          setState(() => _selectedHospitalId = val);
+                        },
                       ),
+
                       DataMensPage(
                         cycleLength: cycleLength,
                         selectedLmp: selectedLmp,

@@ -9,6 +9,9 @@ class UserModel extends Equatable{
   final String alamat;
   final DateTime tglLahir;
   final bool emailVerified;
+
+  final String hospitalId;
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -19,6 +22,7 @@ class UserModel extends Equatable{
     required this.role,
     required this.alamat,
     required this.tglLahir,
+    required this.hospitalId,
     this.emailVerified = false, // DEFAULT FALSE
     this.createdAt,
     this.updatedAt,
@@ -39,6 +43,7 @@ class UserModel extends Equatable{
       role: role,
       alamat: alamat ?? this.alamat,
       tglLahir: tglLahir ?? this.tglLahir,
+      hospitalId: hospitalId,
       emailVerified: emailVerified ?? this.emailVerified,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -53,6 +58,7 @@ class UserModel extends Equatable{
     role,
     alamat,
     tglLahir,
+    hospitalId,
     emailVerified,
     createdAt,
     updatedAt,

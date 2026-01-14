@@ -408,6 +408,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ),
                               ),
+
                               const SizedBox(height: 16),
 
                               _buildFormField(
@@ -424,6 +425,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   }
                                   return null;
                                 },
+                              ),
+                              const SizedBox(height: 16),
+
+                              _buildInfoCard(
+                                icon: Icons.local_hospital_rounded,
+                                title: isEn ? 'Hospital' : 'Rumah Sakit',
+                                value: _hospitalLabel(user.hospitalId, isEn),
+                                color: Colors.purple,
                               ),
                               const SizedBox(height: 32),
 
@@ -446,6 +455,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 value: user.role,
                                 color: Colors.green,
                               ),
+
                               const SizedBox(height: 32),
 
                               Container(
@@ -761,5 +771,16 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
+  }
+
+  String _hospitalLabel(String hospitalId, bool isEn) {
+    switch (hospitalId) {
+      case 'rsud_kisa_depok':
+        return isEn ? 'RSUD Kisa Depok' : 'RSUD Kisa Depok';
+      case 'rsi_sultan_agung':
+        return isEn ? 'RSI Sultan Agung' : 'RSI Sultan Agung';
+      default:
+        return isEn ? 'Unknown Hospital' : 'RS tidak diketahui';
+    }
   }
 }
