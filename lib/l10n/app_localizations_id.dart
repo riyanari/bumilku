@@ -1491,4 +1491,16 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get skip => 'Skip';
+
+  @override
+  String get vitalFhrLabel => 'Denyut jantung janin (x/menit)';
+
+  @override
+  String get vitalFhrRequired => 'Denyut jantung janin harus diisi';
+
+  @override
+  String get vitalNormalFhr => '• Denyut jantung janin: 120 - 160 x/menit';
+
+  @override
+  String get vitalFhrRange => 'Nilai normal 120 - 160 x/menit';
 }

@@ -61,6 +61,8 @@ class SelfDetectionController extends ChangeNotifier {
   final TextEditingController physicalActivityController = TextEditingController();
   final TextEditingController familySupportController = TextEditingController();
   final TextEditingController customComplaintController = TextEditingController();
+  final TextEditingController fetalHeartRateController = TextEditingController();
+
 
   // Data gerakan janin
   DateTime? _fetalMovementDateTime;
@@ -207,6 +209,7 @@ class SelfDetectionController extends ChangeNotifier {
     physicalActivityController.dispose();
     familySupportController.dispose();
     customComplaintController.dispose();
+    fetalHeartRateController.dispose();
     super.dispose();
   }
 

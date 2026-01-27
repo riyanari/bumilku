@@ -100,6 +100,18 @@ class VitalDataPage extends StatelessWidget {
                     return null;
                   },
                 ),
+                CustomInputField(
+                  controller: controller.fetalHeartRateController,
+                  label: t.vitalFhrLabel, // "Denyut jantung janin (x/menit)"
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return t.vitalFhrRequired;
+                    final v = int.tryParse(value);
+                    if (v == null) return t.vitalValidNumber;
+                    return null; // (validasi range opsional)
+                  },
+                ),
+
 
                 CustomInputField(
                   controller: controller.respirationController,
@@ -153,6 +165,10 @@ class VitalDataPage extends StatelessWidget {
                       ),
                       Text(
                         t.vitalNormalPulse,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        t.vitalNormalFhr,
                         style: const TextStyle(fontSize: 12),
                       ),
                       Text(

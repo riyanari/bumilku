@@ -654,5 +654,11 @@
   "tutorialStep4Title": "Nikmati Pengalaman",
   "tutorialStep4Desc": "Gunakan aplikasi dengan maksimal",
   "tutorialGetStarted": "Mulai Sekarang",
-  "skip": "Skip"
+  "skip": "Skip",
+
+  "vitalFhrLabel": "Denyut jantung janin (x/menit)",
+  "vitalFhrRequired": "Denyut jantung janin harus diisi",
+  "vitalNormalFhr": "• Denyut jantung janin: 120 - 160 x/menit",
+  "vitalFhrRange": "Nilai normal 120 - 160 x/menit"
+
 }

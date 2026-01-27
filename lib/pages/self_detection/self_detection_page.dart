@@ -126,6 +126,12 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
           (value) => value.isEmpty ? 'Suhu tubuh harus diisi' : double.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
           (value) => value.isEmpty ? 'Nadi harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
           (value) => value.isEmpty ? 'Frekuensi napas harus diisi' : int.tryParse(value) == null ? 'Masukkan angka yang valid' : null,
+          (value) => value.isEmpty
+          ? 'Denyut jantung janin harus diisi'
+          : int.tryParse(value) == null
+          ? 'Masukkan angka yang valid'
+          : null,
+
     ];
 
     final controllers = [
@@ -133,6 +139,7 @@ class _SelfDetectionPageViewState extends State<SelfDetectionPageView> {
       _controller.diastolicBpController,
       _controller.temperatureController,
       _controller.pulseController,
+      _controller.fetalHeartRateController,
       _controller.respirationController,
     ];
 

@@ -652,5 +652,11 @@
   "tutorialStep4Title": "Enjoy the experience",
   "tutorialStep4Desc": "Use the app to the fullest",
   "tutorialGetStarted": "Get Started",
-  "skip": "Skip"
+  "skip": "Skip",
+
+  "vitalFhrLabel": "Fetal heart rate (beats/min)",
+  "vitalFhrRequired": "Fetal heart rate is required",
+  "vitalNormalFhr": "• Fetal heart rate: 120 - 160 beats/min",
+  "vitalFhrRange": "Normal range is 120 - 160 beats/min"
+
 }

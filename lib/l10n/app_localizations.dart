@@ -2749,6 +2749,30 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Skip'**
   String get skip;
+
+  /// No description provided for @vitalFhrLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Denyut jantung janin (x/menit)'**
+  String get vitalFhrLabel;
+
+  /// No description provided for @vitalFhrRequired.
+  ///
+  /// In id, this message translates to:
+  /// **'Denyut jantung janin harus diisi'**
+  String get vitalFhrRequired;
+
+  /// No description provided for @vitalNormalFhr.
+  ///
+  /// In id, this message translates to:
+  /// **'• Denyut jantung janin: 120 - 160 x/menit'**
+  String get vitalNormalFhr;
+
+  /// No description provided for @vitalFhrRange.
+  ///
+  /// In id, this message translates to:
+  /// **'Nilai normal 120 - 160 x/menit'**
+  String get vitalFhrRange;
 }
 
 class _AppLocalizationsDelegate
