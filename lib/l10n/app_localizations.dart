@@ -2773,6 +2773,12 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Nilai normal 120 - 160 x/menit'**
   String get vitalFhrRange;
+
+  /// No description provided for @complaintSti.
+  ///
+  /// In id, this message translates to:
+  /// **'Infeksi Menular Seksual (IMS)'**
+  String get complaintSti;
 }
 
 class _AppLocalizationsDelegate

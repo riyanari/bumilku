@@ -1497,4 +1497,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vitalFhrRange => 'Normal range is 120 - 160 beats/min';
+
+  @override
+  String get complaintSti => 'Sexually transmitted infection (STI)';
 }

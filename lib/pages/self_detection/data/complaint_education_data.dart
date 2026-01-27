@@ -42,6 +42,7 @@ enum ComplaintKey {
   blurredVision,
   earlyContractions,
   fetalMovement,
+  sti,
 }
 
 
@@ -127,6 +128,20 @@ class ComplaintEducationData {
       risk: "Bengkak mendadak + hipertensi (tekanan darah tinggi) → preeklamsia.",
       tips: "Istirahat dengan kaki tinggi, minum cukup, kurangi garam.",
       warning: "Bengkak wajah/tangan + sakit kepala → tanda bahaya.",
+    ),
+
+    ComplaintKey.sti: ComplaintEducation(
+      title: "Infeksi Menular Seksual (IMS)",
+      theory:
+      "Infeksi Menular Seksual (IMS) adalah infeksi yang dapat menular melalui hubungan seksual. Pada masa kehamilan, IMS perlu mendapat perhatian karena dapat memengaruhi kesehatan ibu dan tumbuh kembang janin.",
+      normalCondition:
+      "Sebagian IMS tidak menimbulkan gejala, sehingga ibu hamil bisa merasa sehat meskipun sedang terinfeksi.",
+      risk:
+      "Jika tidak terdeteksi dan tidak diobati, IMS dapat meningkatkan risiko persalinan prematur, bayi lahir dengan berat badan rendah, serta penularan infeksi dari ibu ke bayi. IMS yang perlu diwaspadai antara lain sifilis, HIV, gonore, klamidia, hepatitis B, dan herpes genital.",
+      tips:
+      "Lakukan pencegahan dengan setia pada satu pasangan, menjaga kebersihan organ reproduksi, menggunakan kondom bila berisiko, serta memeriksakan diri bila muncul keluhan seperti keputihan tidak normal, nyeri saat buang air kecil, atau nyeri perut bawah. Ikuti pemeriksaan kehamilan rutin (ANC), termasuk skrining IMS sesuai anjuran tenaga kesehatan.",
+      warning:
+      "Jika memiliki keluhan atau kekhawatiran terkait IMS, segera konsultasikan dengan tenaga kesehatan. Bumilku hadir untuk membantu ibu hamil mendapatkan informasi yang tepat demi kehamilan yang sehat dan aman.",
     ),
 
     ComplaintKey.cravings: ComplaintEducation(
@@ -256,6 +271,20 @@ class ComplaintEducationData {
   // EN DATA (terjemahan)
   // =========================
   static final Map<ComplaintKey, ComplaintEducation> _en = {
+    ComplaintKey.sti: ComplaintEducation(
+      title: "Sexually Transmitted Infection (STI)",
+      theory:
+      "Sexually transmitted infections (STIs) are infections that can spread through sexual contact. During pregnancy, STIs need special attention because they may affect the mother’s health and the baby’s development.",
+      normalCondition:
+      "Some STIs may cause no symptoms, so a pregnant woman can feel healthy even when infected.",
+      risk:
+      "If not detected and treated, STIs may increase the risk of preterm birth, low birth weight, and transmission of infection from mother to baby. STIs to watch for include syphilis, HIV, gonorrhea, chlamydia, hepatitis B, and genital herpes.",
+      tips:
+      "Prevention includes staying with one trusted partner, maintaining genital hygiene, using condoms if at risk, and getting checked if you experience abnormal discharge, pain when urinating, or lower abdominal pain. Attend routine antenatal care (ANC), including STI screening as advised by healthcare professionals.",
+      warning:
+      "If you have symptoms or concerns related to STIs, consult a healthcare professional promptly. Bumilku helps provide accurate information for a healthy and safe pregnancy.",
+    ),
+
     ComplaintKey.nauseaVomiting: ComplaintEducation(
       title: "Nausea and Vomiting",
       theory:
@@ -523,6 +552,7 @@ class ComplaintEducationData {
       t.complaintBlurredVision: ComplaintKey.blurredVision,
       t.complaintEarlyContractions: ComplaintKey.earlyContractions,
       t.complaintFetalMovement: ComplaintKey.fetalMovement,
+      t.complaintSti: ComplaintKey.sti,
     };
 
     // fallback juga (kalau title ID lama masih lewat)
@@ -548,6 +578,7 @@ class ComplaintEducationData {
       "Pandangan Kabur": ComplaintKey.blurredVision,
       "Kontraksi Dini": ComplaintKey.earlyContractions,
       "Gerakan Janin": ComplaintKey.fetalMovement,
+      "Infeksi Menular Seksual (IMS)": ComplaintKey.sti,
     };
 
     return map[title] ?? fallback[title];

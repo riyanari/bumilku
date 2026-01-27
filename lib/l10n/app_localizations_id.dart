@@ -1503,4 +1503,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get vitalFhrRange => 'Nilai normal 120 - 160 x/menit';
+
+  @override
+  String get complaintSti => 'Infeksi Menular Seksual (IMS)';
 }

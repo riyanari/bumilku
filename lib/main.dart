@@ -7,7 +7,6 @@ import 'package:bumilku_app/pages/login_page.dart';
 import 'package:bumilku_app/pages/signup/onboarding_sign_up.dart';
 import 'package:bumilku_app/pages/tutorial_video_page.dart';
 import 'package:bumilku_app/splash_page.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -20,19 +19,8 @@ import 'l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // ✅ Aktifkan App Check (pilih salah satu mode di bawah)
-  await FirebaseAppCheck.instance.activate(
-    // Untuk DEV cepat (disarankan saat development)
-    androidProvider: AndroidProvider.debug,
-
-    // Untuk PRODUCTION (lebih aman)
-    // androidProvider: AndroidProvider.playIntegrity,
-  );
-
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

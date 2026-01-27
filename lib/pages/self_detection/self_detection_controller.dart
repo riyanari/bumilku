@@ -122,6 +122,7 @@ class SelfDetectionController extends ChangeNotifier {
     "Ngantuk dan pusing", "Perubahan mood", "Masalah tidur", "Hilang nafsu makan",
     "Detak jantung cepat", "Nyeri pinggang / punggung", "Sesak napas",
     "Pandangan kabur / berkunang-kunang", "Kontraksi dini (perut sering kencang sebelum waktunya)",
+    "Infeksi Menular Seksual (IMS)",
   ];
 
   final Map<String, int> complaintSeverity = {
@@ -132,6 +133,7 @@ class SelfDetectionController extends ChangeNotifier {
     "Perubahan mood": 0, "Masalah tidur": 0, "Hilang nafsu makan": 0,
     "Detak jantung cepat": 1, "Nyeri pinggang / punggung": 0, "Sesak napas": 2,
     "Pandangan kabur / berkunang-kunang": 2, "Kontraksi dini (perut sering kencang sebelum waktunya)": 2,
+    "Infeksi Menular Seksual (IMS)": 2,
   };
 
   final Map<String, bool> complaintSelected = {};
