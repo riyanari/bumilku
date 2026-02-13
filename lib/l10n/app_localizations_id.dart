@@ -1499,11 +1499,48 @@ class AppLocalizationsId extends AppLocalizations {
   String get vitalFhrRequired => 'Denyut jantung janin harus diisi';
 
   @override
-  String get vitalNormalFhr => '• Denyut jantung janin: 120 - 160 x/menit';
+  String get vitalNormalFhr => '• Denyut jantung janin: 120 - 60 x/menit';
 
   @override
   String get vitalFhrRange => 'Nilai normal 120 - 160 x/menit';
 
   @override
   String get complaintSti => 'Infeksi Menular Seksual (IMS)';
+
+  @override
+  String get bmiStatusHighRisk => 'Risiko tinggi';
+
+  @override
+  String get bmiStatusAtRisk => 'Berisiko';
+
+  @override
+  String get bmiStatusNormal => 'Normal';
+
+  @override
+  String get bmiIdealGainLabel => 'Kenaikan BB ideal:';
+
+  @override
+  String bmiIdealGainValue(String min, String max) {
+    return '$min–$max kg';
+  }
+
+  @override
+  String bmiUnderweightDetail(String min, String max) {
+    return 'Kurus → $min–$max kg';
+  }
+
+  @override
+  String bmiNormalDetail(String min, String max) {
+    return 'Normal → $min–$max kg';
+  }
+
+  @override
+  String bmiOverweightDetail(String min, String max) {
+    return 'Kelebihan berat → $min–$max kg';
+  }
+
+  @override
+  String bmiObesityDetail(String min, String max) {
+    return 'Obesitas → $min–$max kg';
+  }
 }

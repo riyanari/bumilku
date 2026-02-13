@@ -656,9 +656,41 @@
 
   "vitalFhrLabel": "Fetal heart rate (beats/min)",
   "vitalFhrRequired": "Fetal heart rate is required",
-  "vitalNormalFhr": "• Fetal heart rate: 120 - 160 beats/min",
+  "vitalNormalFhr": "• Fetal heart rate: 120 - 60 beats/min",
   "vitalFhrRange": "Normal range is 120 - 160 beats/min",
-  "complaintSti": "Sexually transmitted infection (STI)"
+  "complaintSti": "Sexually transmitted infection (STI)",
 
+  "bmiStatusHighRisk": "High risk",
+  "bmiStatusAtRisk": "At risk",
+  "bmiStatusNormal": "Normal",
+
+  "bmiIdealGainLabel": "Recommended weight gain:",
+  "bmiIdealGainValue": "{min}–{max} kg",
+  "@bmiIdealGainValue": {
+    "placeholders": {
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+
+  "bmiUnderweightDetail": "Underweight → {min}–{max} kg",
+  "@bmiUnderweightDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  },
+
+  "bmiNormalDetail": "Normal → {min}–{max} kg",
+  "@bmiNormalDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  },
+
+  "bmiOverweightDetail": "Overweight → {min}–{max} kg",
+  "@bmiOverweightDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  },
+
+  "bmiObesityDetail": "Obesity → {min}–{max} kg",
+  "@bmiObesityDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  }
 
 }

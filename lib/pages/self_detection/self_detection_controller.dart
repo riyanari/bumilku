@@ -178,7 +178,8 @@ class SelfDetectionController extends ChangeNotifier {
       complaintSelected[c] = false;
     }
     heightController.addListener(_calculateBMI);
-    currentWeightController.addListener(_calculateBMI);
+    weightBeforeController.addListener(_calculateBMI);
+    // currentWeightController.addListener(_calculateBMI);
   }
 
   @override
@@ -233,15 +234,29 @@ class SelfDetectionController extends ChangeNotifier {
   }
 
 
+  // void _calculateBMI() {
+  //   double? height = double.tryParse(heightController.text);
+  //   double? currentWeight = double.tryParse(currentWeightController.text);
+  //   if (height != null && currentWeight != null && height > 0) {
+  //     double heightInMeters = height / 100;
+  //     bmiValue = currentWeight / (heightInMeters * heightInMeters);
+  //     notifyListeners();
+  //   }
+  // }
   void _calculateBMI() {
-    double? height = double.tryParse(heightController.text);
-    double? currentWeight = double.tryParse(currentWeightController.text);
-    if (height != null && currentWeight != null && height > 0) {
-      double heightInMeters = height / 100;
-      bmiValue = currentWeight / (heightInMeters * heightInMeters);
-      notifyListeners();
+    final heightCm = double.tryParse(heightController.text);
+    final preWeightKg = double.tryParse(weightBeforeController.text);
+
+    if (heightCm != null && preWeightKg != null && heightCm > 0) {
+      final heightM = heightCm / 100;
+      bmiValue = preWeightKg / (heightM * heightM);
+    } else {
+      bmiValue = null; // optional: biar card hilang kalau input invalid
     }
+
+    notifyListeners();
   }
+
 
   String _getRecommendation(String riskLevel) {
     switch (riskLevel) {

@@ -1493,11 +1493,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vitalFhrRequired => 'Fetal heart rate is required';
 
   @override
-  String get vitalNormalFhr => '• Fetal heart rate: 120 - 160 beats/min';
+  String get vitalNormalFhr => '• Fetal heart rate: 120 - 60 beats/min';
 
   @override
   String get vitalFhrRange => 'Normal range is 120 - 160 beats/min';
 
   @override
   String get complaintSti => 'Sexually transmitted infection (STI)';
+
+  @override
+  String get bmiStatusHighRisk => 'High risk';
+
+  @override
+  String get bmiStatusAtRisk => 'At risk';
+
+  @override
+  String get bmiStatusNormal => 'Normal';
+
+  @override
+  String get bmiIdealGainLabel => 'Recommended weight gain:';
+
+  @override
+  String bmiIdealGainValue(String min, String max) {
+    return '$min–$max kg';
+  }
+
+  @override
+  String bmiUnderweightDetail(String min, String max) {
+    return 'Underweight → $min–$max kg';
+  }
+
+  @override
+  String bmiNormalDetail(String min, String max) {
+    return 'Normal → $min–$max kg';
+  }
+
+  @override
+  String bmiOverweightDetail(String min, String max) {
+    return 'Overweight → $min–$max kg';
+  }
+
+  @override
+  String bmiObesityDetail(String min, String max) {
+    return 'Obesity → $min–$max kg';
+  }
 }

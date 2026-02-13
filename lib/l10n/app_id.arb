@@ -658,8 +658,41 @@
 
   "vitalFhrLabel": "Denyut jantung janin (x/menit)",
   "vitalFhrRequired": "Denyut jantung janin harus diisi",
-  "vitalNormalFhr": "• Denyut jantung janin: 120 - 160 x/menit",
+  "vitalNormalFhr": "• Denyut jantung janin: 120 - 60 x/menit",
   "vitalFhrRange": "Nilai normal 120 - 160 x/menit",
-  "complaintSti": "Infeksi Menular Seksual (IMS)"
+  "complaintSti": "Infeksi Menular Seksual (IMS)",
+
+  "bmiStatusHighRisk": "Risiko tinggi",
+  "bmiStatusAtRisk": "Berisiko",
+  "bmiStatusNormal": "Normal",
+
+  "bmiIdealGainLabel": "Kenaikan BB ideal:",
+  "bmiIdealGainValue": "{min}–{max} kg",
+  "@bmiIdealGainValue": {
+    "placeholders": {
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+
+  "bmiUnderweightDetail": "Kurus → {min}–{max} kg",
+  "@bmiUnderweightDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  },
+
+  "bmiNormalDetail": "Normal → {min}–{max} kg",
+  "@bmiNormalDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  },
+
+  "bmiOverweightDetail": "Kelebihan berat → {min}–{max} kg",
+  "@bmiOverweightDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  },
+
+  "bmiObesityDetail": "Obesitas → {min}–{max} kg",
+  "@bmiObesityDetail": {
+    "placeholders": { "min": { "type": "String" }, "max": { "type": "String" } }
+  }
 
 }

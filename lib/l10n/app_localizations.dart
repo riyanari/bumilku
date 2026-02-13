@@ -2765,7 +2765,7 @@ abstract class AppLocalizations {
   /// No description provided for @vitalNormalFhr.
   ///
   /// In id, this message translates to:
-  /// **'• Denyut jantung janin: 120 - 160 x/menit'**
+  /// **'• Denyut jantung janin: 120 - 60 x/menit'**
   String get vitalNormalFhr;
 
   /// No description provided for @vitalFhrRange.
@@ -2779,6 +2779,60 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Infeksi Menular Seksual (IMS)'**
   String get complaintSti;
+
+  /// No description provided for @bmiStatusHighRisk.
+  ///
+  /// In id, this message translates to:
+  /// **'Risiko tinggi'**
+  String get bmiStatusHighRisk;
+
+  /// No description provided for @bmiStatusAtRisk.
+  ///
+  /// In id, this message translates to:
+  /// **'Berisiko'**
+  String get bmiStatusAtRisk;
+
+  /// No description provided for @bmiStatusNormal.
+  ///
+  /// In id, this message translates to:
+  /// **'Normal'**
+  String get bmiStatusNormal;
+
+  /// No description provided for @bmiIdealGainLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Kenaikan BB ideal:'**
+  String get bmiIdealGainLabel;
+
+  /// No description provided for @bmiIdealGainValue.
+  ///
+  /// In id, this message translates to:
+  /// **'{min}–{max} kg'**
+  String bmiIdealGainValue(String min, String max);
+
+  /// No description provided for @bmiUnderweightDetail.
+  ///
+  /// In id, this message translates to:
+  /// **'Kurus → {min}–{max} kg'**
+  String bmiUnderweightDetail(String min, String max);
+
+  /// No description provided for @bmiNormalDetail.
+  ///
+  /// In id, this message translates to:
+  /// **'Normal → {min}–{max} kg'**
+  String bmiNormalDetail(String min, String max);
+
+  /// No description provided for @bmiOverweightDetail.
+  ///
+  /// In id, this message translates to:
+  /// **'Kelebihan berat → {min}–{max} kg'**
+  String bmiOverweightDetail(String min, String max);
+
+  /// No description provided for @bmiObesityDetail.
+  ///
+  /// In id, this message translates to:
+  /// **'Obesitas → {min}–{max} kg'**
+  String bmiObesityDetail(String min, String max);
 }
 
 class _AppLocalizationsDelegate

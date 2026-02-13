@@ -14,6 +14,9 @@ class PhysicalDataPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
 
+    return AnimatedBuilder(
+      animation: controller,
+  builder: (context, state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Column(
@@ -79,7 +82,7 @@ class PhysicalDataPage extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: _getBmiColor(controller.bmiValue!),
+                      color: _getBmiStatusColor(controller.bmiValue!),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -90,7 +93,7 @@ class PhysicalDataPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: _getBmiTextColor(controller.bmiValue!),
+                            color: _getBmiStatusTextColor(controller.bmiValue!),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -98,9 +101,19 @@ class PhysicalDataPage extends StatelessWidget {
                           _getBmiCategoryText(t, controller.bmiValue!),
                           style: TextStyle(
                             fontSize: 14,
-                            color: _getBmiTextColor(controller.bmiValue!),
+                            color: _getBmiStatusTextColor(controller.bmiValue!),
                           ),
                         ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _getIdealWeightGainText(t, controller.bmiValue!),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _getBmiStatusTextColor(controller.bmiValue!),
+                          ),
+                        ),
+
                       ],
                     ),
                   ),
@@ -144,21 +157,50 @@ class PhysicalDataPage extends StatelessWidget {
         ],
       ),
     );
+  },
+);
   }
 
   // Helper warna IMT
-  Color _getBmiColor(double bmi) {
-    if (bmi < 18.5) return Colors.orange[100]!;
+  // Color _getBmiColor(double bmi) {
+  //   if (bmi < 18.5) return Colors.orange[100]!;
+  //   if (bmi < 25) return Colors.green[100]!;
+  //   if (bmi < 30) return Colors.orange[100]!;
+  //   return Colors.red[100]!;
+  // }
+  //
+  // Color _getBmiTextColor(double bmi) {
+  //   if (bmi < 18.5) return Colors.orange[800]!;
+  //   if (bmi < 25) return Colors.green[800]!;
+  //   if (bmi < 30) return Colors.orange[800]!;
+  //   return Colors.red[800]!;
+  // }
+
+  Color _getBmiStatusColor(double bmi) {
+    if (bmi < 18.5) return Colors.red[100]!;
     if (bmi < 25) return Colors.green[100]!;
-    if (bmi < 30) return Colors.orange[100]!;
+    if (bmi < 30) return Colors.yellow[100]!;
     return Colors.red[100]!;
   }
 
-  Color _getBmiTextColor(double bmi) {
-    if (bmi < 18.5) return Colors.orange[800]!;
+  Color _getBmiStatusTextColor(double bmi) {
+    if (bmi < 18.5) return Colors.red[800]!;
     if (bmi < 25) return Colors.green[800]!;
-    if (bmi < 30) return Colors.orange[800]!;
+    if (bmi < 30) return Colors.orange[800]!; // text kuning biasanya kurang kebaca, pakai orange gelap
     return Colors.red[800]!;
+  }
+
+  String _getIdealWeightGainText(AppLocalizations t, double bmi) {
+    if (bmi < 18.5) {
+      return "${t.bmiIdealGainLabel} ${t.bmiIdealGainValue("12", "18")}";
+    }
+    if (bmi < 25) {
+      return "${t.bmiIdealGainLabel} ${t.bmiIdealGainValue("11", "16")}";
+    }
+    if (bmi < 30) {
+      return "${t.bmiIdealGainLabel} ${t.bmiIdealGainValue("7", "11")}";
+    }
+    return "${t.bmiIdealGainLabel} ${t.bmiIdealGainValue("5", "9")}";
   }
 
   String _getBmiCategoryText(AppLocalizations t, double bmi) {

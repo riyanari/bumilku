@@ -41,6 +41,7 @@ class ResultPage extends StatelessWidget {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -75,11 +76,22 @@ class ResultPage extends StatelessWidget {
     final fetalActivityPattern = riskResult['fetalActivityPattern']?.toString() ?? '';
 
     // Risk level: from movementCount if we have movement data, else use raw
-    final riskLevelRaw =
-        riskResult['riskLevel']?.toString().toLowerCase() ?? 'unknown';
-    final riskLevel = hasFetalMovementData
+    final riskLevelRaw = riskResult['riskLevel']?.toString().toLowerCase() ?? 'unknown';
+
+    final movementRisk = hasFetalMovementData
         ? _riskLevelFromMovementCount(fetalMovementCount)
-        : riskLevelRaw;
+        : 'unknown';
+
+    final bool hasIMS = details.any((e) {
+      final s = e.toString().toLowerCase();
+      return s.contains('ims') || s.contains('infeksi menular seksual');
+    });
+
+    final bool hasRedFlag = riskResult['hasRedFlag'] == true;
+
+    final String riskLevel = hasIMS ? 'risiko tinggi'
+        : (hasRedFlag ? 'risiko tinggi'
+        : riskLevelRaw);
 
     final riskData = _getRiskData(t, riskLevel);
 
